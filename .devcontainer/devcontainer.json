@@ -1,0 +1,39 @@
+{
+  "name": "Dokku + Kuma",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": ["--env-file", ".devcontainer/.env"],
+  // Configure tool-specific properties.
+  "customizations": {
+    "settings": {
+      "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    // Configure properties specific to VS Code.
+    "vscode": {
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "hashicorp.terraform"
+      ],
+      "settings": {
+        "files.autoSave": "afterDelay",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8080, 5681, 5682],
+  // Use 'mounts' to mount the source code into the container.
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+  ],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postAttachCommand": "bash"
+}
