@@ -1,0 +1,73 @@
+services:
+  apps:
+    build:
+      context: ..
+      dockerfile: ./.devcontainer/Dockerfile
+    env_file: .env
+    volumes:
+      - ..:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: sleep infinity
+    networks:
+      - service_mesh
+    privileged: true
+
+  dokku:
+    image: dokku/dokku:0.35.12
+    container_name: dokku
+    ports:
+      - "3022:22"
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - "/var/lib/dokku:/mnt/dokku"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      DOKKU_HOSTNAME: dokku.me
+      DOKKU_HOST_ROOT: /var/lib/dokku/home/dokku
+      DOKKU_LIB_HOST_ROOT: /var/lib/dokku/var/lib/dokku
+    restart: unless-stopped
+    networks:
+      - service_mesh
+
+  kuma-control-plane:
+    build:
+      context: ..
+      dockerfile: modules/kuma/Dockerfile
+    environment:
+      KUMA_MODE: standalone
+    ports:
+      - "5681:5681" # Admin REST API
+      # - "8080:8080" # Kuma GUI
+      - "5678:5678" # Dataplane communication
+    networks:
+      - service_mesh
+
+  kong:
+    image: kong:latest
+    environment:
+      KONG_DATABASE: "off"
+      KONG_PROXY_ACCESS_LOG: "/dev/stdout"
+      KONG_ADMIN_ACCESS_LOG: "/dev/stdout"
+      KONG_PROXY_ERROR_LOG: "/dev/stderr"
+      KONG_ADMIN_ERROR_LOG: "/dev/stderr"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+    ports:
+      - "8000:8000" # Proxy
+      - "8001:8001" # Admin API
+    networks:
+      - service_mesh
+
+  dind:
+    image: docker:24.0.5-dind
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    volumes:
+      - /var/lib/docker
+    networks:
+      - service_mesh
+
+networks:
+  service_mesh:
+    driver: bridge

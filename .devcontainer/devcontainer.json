@@ -1,9 +1,8 @@
 {
-  "name": "Dokku + Kuma",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "runArgs": ["--env-file", ".devcontainer/.env"],
+  "name": "Hyper Service Platform (Dokku, Kuma, Kong, Services exemples)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "apps",
+  "workspaceFolder": "/workspace",
   // Configure tool-specific properties.
   "customizations": {
     "settings": {
@@ -34,6 +33,6 @@
     "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
   ],
   // Use 'postCreateCommand' to run commands after the container is created.
-  // "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": "bash"
 }

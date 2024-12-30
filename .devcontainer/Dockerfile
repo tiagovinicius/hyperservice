@@ -1,19 +1,17 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
-# # Instalação de dependências básicas
-# RUN apt-get update && apt-get install -y \
-#     curl software-properties-common git docker.io \
-#     docker-compose unzip wget
+RUN echo "Install base dependencies" && \
+    apt-get update && apt-get install -y \
+    sudo build-essential git docker.io docker-compose python3 python3-pip python3-setuptools
 
-# # Configuração do Dokku
-# RUN wget https://raw.githubusercontent.com/dokku/dokku/v0.30.1/bootstrap.sh && \
-#     DOKKU_TAG=v0.30.1 bash bootstrap.sh
+RUN echo "Install python3-distutils-extra" && \
+    apt-get install -y python3-distutils-extra
 
-# # Instalação do Kuma
-# RUN curl -L https://kuma.io/installer.sh | sh && \
-#     cp /opt/kuma/bin/kumactl /usr/local/bin/kumactl
+RUN echo "Setting workspace dir"
+WORKDIR /workspace
 
-# # Configuração do Kuma para modo universal
-# RUN /opt/kuma/bin/kuma-cp run --mode universal &
+RUN echo "Copying apps code"
+COPY . .
 
-# EXPOSE 80 443 5681 5682
+# Inicie o Docker daemon
+CMD ["dockerd-entrypoint.sh"]
