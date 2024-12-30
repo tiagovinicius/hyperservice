@@ -16,8 +16,7 @@
         "GitHub.copilot",
         "GitHub.copilot-chat",
         "esbenp.prettier-vscode",
-        "ms-azuretools.vscode-docker",
-        "hashicorp.terraform"
+        "ms-azuretools.vscode-docker"
       ],
       "settings": {
         "files.autoSave": "afterDelay",
@@ -27,7 +26,7 @@
     }
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [8080, 5681, 5682],
+  "forwardPorts": [22, 80, 443, 5681, 5678, 8000, 8001],
   // Use 'mounts' to mount the source code into the container.
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"

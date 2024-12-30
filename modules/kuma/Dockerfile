@@ -8,6 +8,4 @@ RUN echo "Setup Kuma" && \
     curl -L https://kuma.io/installer.sh | VERSION=2.9.2 sh - && \
     mv kuma-2.9.2/bin/* /usr/local/bin/
 
-WORKDIR /workspace
-
 CMD ["kuma-cp", "run"]
