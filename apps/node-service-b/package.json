@@ -1,0 +1,16 @@
+{
+    "name": "service-b",
+    "version": "1.0.0",
+    "description": "Service B consuming data from Service A",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+      "express": "^4.18.2",
+      "axios": "^1.5.0"
+    }
+  }
+  

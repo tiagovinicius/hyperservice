@@ -1,5 +1,6 @@
 services:
   apps:
+    container_name: example-apps
     build:
       context: ..
       dockerfile: ./.devcontainer/Dockerfile
@@ -12,12 +13,14 @@ services:
       - service_mesh
     privileged: true
 
-  dokku:
-    image: dokku/dokku:0.35.12
-    container_name: dokku
+  deployment-platform:
+    container_name: deployment-platform
+    build:
+      context: ..
+      dockerfile: ./modules/dokku/Dockerfile
     ports:
       - "3022:22"
-      - "8080:80"
+      - "80:80"
       - "8443:443"
     volumes:
       - "/var/lib/dokku:/mnt/dokku"
@@ -30,7 +33,8 @@ services:
     networks:
       - service_mesh
 
-  kuma-control-plane:
+  control-plane:
+    container_name: control-plane
     build:
       context: ..
       dockerfile: modules/kuma/Dockerfile
@@ -38,12 +42,13 @@ services:
       KUMA_MODE: standalone
     ports:
       - "5681:5681" # Admin REST API
-      # - "8080:8080" # Kuma GUI
+      - "8080:8080" # Kuma GUI
       - "5678:5678" # Dataplane communication
     networks:
       - service_mesh
 
-  kong:
+  ingress:
+    container_name: ingress
     image: kong:latest
     environment:
       KONG_DATABASE: "off"
@@ -58,7 +63,8 @@ services:
     networks:
       - service_mesh
 
-  dind:
+  docker-in-docker:
+    container_name: docker-in-docker
     image: docker:24.0.5-dind
     privileged: true
     environment:
@@ -67,6 +73,29 @@ services:
       - /var/lib/docker
     networks:
       - service_mesh
+
+  service-a:
+    build:
+      context: ../apps/node-service-a
+    container_name: service-a
+    networks:
+      - service_mesh
+    environment:
+      KUMA_DPP: "service-a"
+    depends_on:
+      - control-plane
+
+  service-b:
+    build:
+      context: ../apps/node-service-b
+    container_name: service-b
+    networks:
+      - service_mesh
+    environment:
+      KUMA_DPP: "service-b"
+    depends_on:
+      - control-plane
+      - service-a
 
 networks:
   service_mesh:

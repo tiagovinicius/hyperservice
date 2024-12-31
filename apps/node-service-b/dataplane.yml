@@ -1,0 +1,13 @@
+type: Dataplane
+mesh: default
+name: service-b
+networking:
+  address: 172.18.0.3
+  inbound:
+    - port: 3002
+      tags:
+        kuma.io/service: service-b
+  outbound:
+    - port: 3001
+      tags:
+        kuma.io/service: service-a
