@@ -2,7 +2,7 @@ type: Dataplane
 mesh: default
 name: service-b
 networking:
-  address: 172.18.0.3
+  address: "$CONTAINER_IP"
   inbound:
     - port: 3002
       tags:

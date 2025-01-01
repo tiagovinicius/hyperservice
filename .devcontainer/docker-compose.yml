@@ -9,8 +9,10 @@ services:
       - ..:/workspace:cached
       - /var/run/docker.sock:/var/run/docker.sock
     command: sleep infinity
+    depends_on:
+      - control-plane
     networks:
-      - service_mesh
+      - service-mesh
     privileged: true
 
   deployment-platform:
@@ -31,7 +33,7 @@ services:
       DOKKU_LIB_HOST_ROOT: /var/lib/dokku/var/lib/dokku
     restart: unless-stopped
     networks:
-      - service_mesh
+      - service-mesh
 
   control-plane:
     container_name: control-plane
@@ -45,7 +47,7 @@ services:
       - "8080:8080" # Kuma GUI
       - "5678:5678" # Dataplane communication
     networks:
-      - service_mesh
+      - service-mesh
 
   gateway:
     container_name: gateway
@@ -62,7 +64,7 @@ services:
       - "8000:8000" # Proxy
       - "8001:8001" # Admin API
     networks:
-      - service_mesh
+      - service-mesh
 
   docker-in-docker:
     container_name: docker-in-docker
@@ -73,31 +75,31 @@ services:
     volumes:
       - /var/lib/docker
     networks:
-      - service_mesh
+      - service-mesh
 
   service-a:
     build:
       context: ../apps/node-service-a
     container_name: service-a
-    networks:
-      - service_mesh
     environment:
       KUMA_DPP: "service-a"
     depends_on:
       - control-plane
+    networks:
+      - service-mesh
 
   service-b:
     build:
       context: ../apps/node-service-b
     container_name: service-b
-    networks:
-      - service_mesh
     environment:
       KUMA_DPP: "service-b"
     depends_on:
       - control-plane
       - service-a
+    networks:
+      - service-mesh
 
 networks:
-  service_mesh:
-    driver: bridge
+  service-mesh:
+    driver: host

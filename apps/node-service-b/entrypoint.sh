@@ -3,8 +3,11 @@ echo "Installing dependencies"
 npm install
 
 echo "Setting up dataplane"
-kumactl config control-planes add --name=my-kuma --address=http://172.18.0.2:5681
-kumactl apply -f ./dataplane.yml
+CONTROL_PLANE_IP=172.19.0.4
+export CONTAINER_IP=$(hostname -i)
+echo "Container IP is $CONTAINER_IP"
+kumactl config control-planes add --name=my-kuma --address=http://$CONTROL_PLANE_IP:5681
+envsubst < ./dataplane.yml | kumactl apply -f -
 
 echo "Starting service"
 node app.js

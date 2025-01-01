@@ -2,7 +2,8 @@ FROM ubuntu:24.04
 
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
-    sudo build-essential git docker.io docker-compose
+    sudo build-essential git docker.io docker-compose \
+    jq wget curl
 
 RUN echo "Installing Node environment" && \
     sudo apt-get install -y nodejs npm
@@ -20,6 +21,3 @@ WORKDIR /workspace
 
 RUN echo "Copying apps code"
 COPY . .
-
-# Inicie o Docker daemon
-CMD ["dockerd-entrypoint.sh"]

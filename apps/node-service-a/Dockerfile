@@ -1,5 +1,9 @@
 FROM node:22
 
+RUN echo "Install base dependencies" && \
+    apt-get update && apt-get install -y \
+    curl gettext-base
+
 # Instalação do npm
 COPY package*.json ./
 

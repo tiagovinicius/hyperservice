@@ -1,7 +1,3 @@
-#!/bin/bash
-echo "Installing dependencies"
-npm install
-
 echo "Setting up dataplane"
 CONTROL_PLANE_IP=172.19.0.4
 export CONTAINER_IP=$(hostname -i)
@@ -9,5 +5,5 @@ echo "Container IP is $CONTAINER_IP"
 kumactl config control-planes add --name=my-kuma --address=http://$CONTROL_PLANE_IP:5681
 envsubst < ./dataplane.yml | kumactl apply -f -
 
-echo "Starting service"
-node app.js
+echo "Starting Kong"
+kong docker-start
