@@ -38,3 +38,4 @@ build/
 
 # Kuma Configurations (if dynamically generated)
 kuma-configs/*.generated.yaml
+modules/kuma/tokens

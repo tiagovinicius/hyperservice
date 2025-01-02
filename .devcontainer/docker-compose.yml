@@ -14,6 +14,8 @@ services:
     networks:
       - service-mesh
     privileged: true
+    secrets:
+      - control-plane-admin-user-token
 
   deployment-platform:
     container_name: deployment-platform
@@ -41,13 +43,15 @@ services:
       context: ..
       dockerfile: modules/kuma/Dockerfile
     environment:
-      KUMA_MODE: standalone
+      KUMA_MODE: zone
     ports:
       - "5681:5681" # Admin REST API
       - "8080:8080" # Kuma GUI
       - "5678:5678" # Dataplane communication
     networks:
       - service-mesh
+    secrets:
+      - control-plane-admin-user-token
 
   gateway:
     container_name: gateway
@@ -65,6 +69,8 @@ services:
       - "8001:8001" # Admin API
     networks:
       - service-mesh
+    secrets:
+      - control-plane-admin-user-token
 
   docker-in-docker:
     container_name: docker-in-docker
@@ -83,10 +89,14 @@ services:
     container_name: service-a
     environment:
       KUMA_DPP: "service-a"
+      CONTROL_PLANE_ADMIN_USER_TOKEN_FILE: /run/secrets/control-plane-admin-user-token
     depends_on:
       - control-plane
+      - apps
     networks:
       - service-mesh
+    secrets:
+      - control-plane-admin-user-token
 
   service-b:
     build:
@@ -94,12 +104,20 @@ services:
     container_name: service-b
     environment:
       KUMA_DPP: "service-b"
+      CONTROL_PLANE_ADMIN_USER_TOKEN_FILE: /run/secrets/control-plane-admin-user-token
     depends_on:
       - control-plane
+      - apps
       - service-a
     networks:
       - service-mesh
+    secrets:
+      - control-plane-admin-user-token
 
 networks:
   service-mesh:
     driver: host
+
+secrets:
+  control-plane-admin-user-token:
+    file: ../modules/kuma/tokens/.control-plane-admin-user
