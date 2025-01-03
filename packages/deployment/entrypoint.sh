@@ -3,10 +3,8 @@ echo "Installing dependencies"
 npm install
 
 echo "Setting up dataplane"
-DATA_PLANE_NAME=service-a
-CONTROL_PLANE_IP=172.19.0.4
-CONTROL_PLANE_NAME=control-plane
-CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat /run/secrets/control-plane-admin-user-token)
+CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat "${CONTROL_PLANE_ADMIN_USER_TOKEN_FILE}")
+echo "Control plane admin user token is ${CONTROL_PLANE_ADMIN_USER_TOKEN}"
 export CONTAINER_IP=$(hostname -i)
 kumactl config control-planes add \
   --name=default \

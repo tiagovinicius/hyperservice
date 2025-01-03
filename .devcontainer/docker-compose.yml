@@ -84,10 +84,15 @@ services:
 
   service-a:
     build:
-      context: ../apps/node-service-a
+      context: ../packages/deployment
     container_name: service-a
+    volumes:
+      - ../apps/node-service-a:/app
     environment:
       KUMA_DPP: "service-a"
+      DATA_PLANE_NAME: "service-a"
+      CONTROL_PLANE_IP: "172.19.0.2"
+      CONTROL_PLANE_NAME: "control-plane"
       CONTROL_PLANE_ADMIN_USER_TOKEN_FILE: /run/secrets/control-plane-admin-user-token
     depends_on:
       - control-plane
@@ -100,10 +105,15 @@ services:
 
   service-b:
     build:
-      context: ../apps/node-service-b
+      context: ../packages/deployment
     container_name: service-b
+    volumes:
+      - ../apps/node-service-b:/app
     environment:
       KUMA_DPP: "service-b"
+      DATA_PLANE_NAME: "service-b"
+      CONTROL_PLANE_IP: "172.19.0.2"
+      CONTROL_PLANE_NAME: "control-plane"
       CONTROL_PLANE_ADMIN_USER_TOKEN_FILE: /run/secrets/control-plane-admin-user-token
     depends_on:
       - control-plane

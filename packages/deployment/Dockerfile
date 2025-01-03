@@ -5,15 +5,12 @@ RUN echo "Install base dependencies" && \
     curl gettext-base wget jq coreutils \
     sudo nano iptables iptables-persistent nftables
 
-# Instalação do npm
-COPY package*.json ./
-
-# Copia o código da aplicação
-COPY . .
-
 RUN echo "Setup Kuma to use CLIs" && \
     curl -L https://kuma.io/installer.sh | VERSION=2.9.2 sh - && \
     mv kuma-2.9.2/bin/* /usr/local/bin/
-    
+
+WORKDIR /app
+
+COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

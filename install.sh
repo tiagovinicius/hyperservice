@@ -3,10 +3,6 @@
 # Array of file paths
 FILES=(
   "modules/kuma/tokens/.control-plane-admin-user-token"
-  "apps/node-service-a/logs/dataplane-logs.txt"
-  "apps/node-service-a/logs/app-logs.txt"
-  "apps/node-service-b/logs/dataplane-logs.txt"
-  "apps/node-service-b/logs/app-logs.txt"
 )
 
 # Loop through each file path in the array
