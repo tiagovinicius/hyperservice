@@ -40,8 +40,7 @@ services:
   control-plane:
     container_name: control-plane
     build:
-      context: ..
-      dockerfile: modules/kuma/Dockerfile
+      context: ../modules/kuma
     environment:
       KUMA_MODE: zone
     ports:
@@ -97,6 +96,7 @@ services:
       - service-mesh
     secrets:
       - control-plane-admin-user-token
+    privileged: true
 
   service-b:
     build:
@@ -113,6 +113,7 @@ services:
       - service-mesh
     secrets:
       - control-plane-admin-user-token
+    privileged: true
 
 networks:
   service-mesh:

@@ -2,7 +2,8 @@ FROM node:22
 
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
-    curl gettext-base wget jq coreutils strace nano
+    curl gettext-base wget jq coreutils \
+    sudo nano iptables iptables-persistent nftables
 
 # Instalação do npm
 COPY package*.json ./
