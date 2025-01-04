@@ -1,7 +1,5 @@
 FROM node:22
 
-RUN ls
-
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
     curl gettext-base wget jq coreutils \

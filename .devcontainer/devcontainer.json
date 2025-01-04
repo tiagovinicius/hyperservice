@@ -36,6 +36,6 @@
     "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
   ],
   // Starts control-plane, set up kmctl in devcontainer and load env vars in /etc/environment
-  "postCreateCommand": "bash modules/kuma/control-plane-deployment/entrypoint.sh && bash modules/kuma/data-plane-deployment/build-image.sh",
+  "postCreateCommand": "bash modules/kuma/control-plane-deployment/entrypoint.sh && bash modules/kuma/data-plane-deployment/build-image.sh &&  bash install.sh",
   "postAttachCommand": "[ -f /etc/environment ] && (echo 'Loading /etc/environment...' && set -a && . /etc/environment && set +a && exec bash) || echo '/etc/environment not found'"
 }

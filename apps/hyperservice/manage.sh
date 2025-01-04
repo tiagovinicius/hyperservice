@@ -8,7 +8,7 @@ NAME
 
 DESCRIPTION
     This command-line tool manages hyperservices in the service mesh. 
-    It allows you to start, restart, stop, clean, list, or execute commands in hyperservices.
+    It allows you to start, restart, stop, clean, list, execute commands, or view logs for hyperservices.
 
 OPTIONS
     --workdir <workdir>
@@ -24,44 +24,51 @@ OPTIONS
         The following operations are available:
 
           start
-              hyperservice --workdir <workdir> --name <name> start
+              hyperservice --workdir <workdir> <name> start
               Start the hyperservice, creating it if it doesn't exist.
 
           restart
-              hyperservice --workdir <workdir> --name <name> restart
+              hyperservice --workdir <workdir> <name> restart
               Remove the hyperservice (if exists) and create a new one.
 
           stop
-              hyperservice --name <name> stop
+              hyperservice <name> stop
               Stop a running hyperservice.
 
           clean
-              hyperservice --name <name> clean
+              hyperservice <name> clean
               Remove the hyperservice completely.
 
           exec
-              hyperservice --name <name> exec
+              hyperservice <name> exec
               Open an interactive bash shell in the hyperservice container.
+
+          logs
+              hyperservice <name> logs
+              View the logs of the specified hyperservice.
 
           ls
               hyperservice ls
-              List all containers with specific details.
+              List all hyperservices with specific details.
 
 USAGE EXAMPLES
     Start a hyperservice:
-        hyperservice --workdir apps/node-service-a --name service-a start
+        hyperservice --workdir apps/node-service-a service-a start
 
     Restart a hyperservice:
-        hyperservice --workdir apps/node-service-a --name service-a restart
+        hyperservice --workdir apps/node-service-a service-a restart
 
     Stop a hyperservice:
-        hyperservice --name service-a stop
+        hyperservice service-a stop
 
     Clean a hyperservice:
-        hyperservice --name service-a clean
+        hyperservice service-a clean
 
     Open an interactive shell:
-        hyperservice --name service-a exec
+        hyperservice service-a exec
+
+    View logs of a hyperservice:
+        hyperservice service-a logs
 
     List all containers:
         hyperservice ls
@@ -78,7 +85,7 @@ ACTION=""
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     --workdir) WORKDIR="$2"; shift 2 ;;
-    start|restart|stop|clean|exec|ls) ACTION="$1"; shift ;;
+    start|restart|stop|clean|exec|logs|ls) ACTION="$1"; shift ;;
     *) 
       if [[ -z "$NAME" ]]; then
         NAME="$1"
@@ -116,6 +123,8 @@ fi
 # Normalize LOCAL_WORKSPACE_FOLDER to remove trailing slash
 LOCAL_WORKSPACE_FOLDER="${LOCAL_WORKSPACE_FOLDER%/}"
 
+echo "Workdir is /workspace/$WORKDIR" 
+
 # Check if the hyperservice exists
 hyperservice_exists() {
   docker ps -a --format "{{.Names}}" | grep -qw "$NAME"
@@ -133,7 +142,7 @@ case $ACTION in
         --name "$NAME" \
         --volume "${LOCAL_WORKSPACE_FOLDER}:/workspace" \
         --volume "/etc/environment:/etc/environment:ro" \
-        --workdir "$WORKDIR" \
+        --workdir "/workspace/$WORKDIR" \
         --env-file "/etc/environment" \
         --env "KUMA_DPP=$NAME" \
         --env "DATA_PLANE_NAME=$NAME" \
@@ -153,14 +162,14 @@ case $ACTION in
       --name "$NAME" \
       --volume "${LOCAL_WORKSPACE_FOLDER}:/workspace" \
       --volume "/etc/environment:/etc/environment:ro" \
-      --workdir "$WORKDIR" \
+      --workdir "/workspace/$WORKDIR" \
       --env-file "/etc/environment" \
       --env "KUMA_DPP=$NAME" \
       --env "DATA_PLANE_NAME=$NAME" \
       --env "CONTROL_PLANE_NAME=control-plane" \
       --network service-mesh \
       --privileged \
-        hyper-dataplane-image
+      hyper-dataplane-image
     ;;
   stop)
     if hyperservice_exists; then
@@ -184,6 +193,15 @@ case $ACTION in
     if hyperservice_exists; then
       echo "Opening bash shell in hyperservice: $NAME"
       docker exec -it "$NAME" /bin/bash
+    else
+      echo "Error: Hyperservice '$NAME' does not exist."
+      exit 1
+    fi
+    ;;
+  logs)
+    if hyperservice_exists; then
+      echo "Displaying logs for hyperservice: $NAME"
+      docker logs "$NAME"
     else
       echo "Error: Hyperservice '$NAME' does not exist."
       exit 1

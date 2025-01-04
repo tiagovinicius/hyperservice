@@ -28,5 +28,5 @@ runuser -u kuma-dp -- \
     2>&1 | tee logs/dataplane-logs.txt &
 
 echo "Starting service"
-node app.js \
+npm run dev \
   2>&1 | tee logs/app-logs.txt

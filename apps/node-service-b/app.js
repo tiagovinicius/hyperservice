@@ -7,9 +7,8 @@ const PORT = process.env.PORT || 3002;
 app.get("/fetch-data", async (req, res) => {
   try {
     const response = await axios.get("http://service-a.mesh/data");
-    console.log("TEM CACHE AQUI COM CERTEZA");
     res.json({
-      message: "Data fetched from Service A",
+      message: "Data fetched from Service A FVSNDSJD",
       data: response.data,
     });
   } catch (error) {

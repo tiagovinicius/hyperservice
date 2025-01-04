@@ -4,7 +4,8 @@
     "description": "Service B consuming data from Service A",
     "main": "app.js",
     "scripts": {
-      "start": "node app.js"
+      "start": "node app.js",
+      "dev": "node app.js"
     },
     "author": "Your Name",
     "license": "MIT",
