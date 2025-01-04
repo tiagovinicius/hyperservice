@@ -19,5 +19,4 @@ RUN echo "Setup Kuma to use CLIs" && \
 RUN echo "Setting workspace dir"
 WORKDIR /workspace
 
-RUN echo "Copying apps code"
-COPY . .
+CMD ["kuma-cp", "run"]

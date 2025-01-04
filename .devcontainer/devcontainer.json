@@ -1,9 +1,13 @@
 {
   "name": "Hyper Service Platform (Dokku, Kuma, Kong, Services exemples)",
   "dockerComposeFile": "docker-compose.yml",
-  "service": "apps",
+  "service": "hype-services",
   "workspaceFolder": "/workspace",
   // Configure tool-specific properties.
+  "containerEnv": {
+    "NODE_ENV": "production",
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
   "customizations": {
     "settings": {
       "terminal.integrated.shell.linux": "/bin/bash"
@@ -31,7 +35,7 @@
   "mounts": [
     "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
   ],
-  // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "bash .devcontainer/setup.sh",
-  "postAttachCommand": "bash"
+  // Starts control-plane, set up kmctl in devcontainer and load env vars in /etc/environment
+  "postCreateCommand": "bash modules/kuma/control-plane-deployment/entrypoint.sh && bash modules/kuma/data-plane-deployment/build-image.sh",
+  "postAttachCommand": "[ -f /etc/environment ] && (echo 'Loading /etc/environment...' && set -a && . /etc/environment && set +a && exec bash) || echo '/etc/environment not found'"
 }

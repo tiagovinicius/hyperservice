@@ -1,21 +1,28 @@
 services:
-  apps:
-    container_name: example-apps
+  hype-services:
+    container_name: control-plane
     build:
       context: ..
-      dockerfile: ./.devcontainer/Dockerfile
-    env_file: .env
+      dockerfile: modules/kuma/control-plane-deployment/Dockerfile
+    env_file:
+      - .env
+      - /etc/environment
     volumes:
       - ..:/workspace:cached
       - /var/run/docker.sock:/var/run/docker.sock
-    command: sleep infinity
-    depends_on:
-      - control-plane
+    privileged: true
+    ports:
+      - "5681:5681" # Admin REST API
+      - "8080:8080" # Kuma GUI
+      - "5678:5678" # Dataplane communication
     networks:
       - service-mesh
-    privileged: true
-    secrets:
-      - control-plane-admin-user-token
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5681/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   deployment-platform:
     container_name: deployment-platform
@@ -37,40 +44,6 @@ services:
     networks:
       - service-mesh
 
-  control-plane:
-    container_name: control-plane
-    build:
-      context: ../modules/kuma
-    environment:
-      KUMA_MODE: zone
-    ports:
-      - "5681:5681" # Admin REST API
-      - "8080:8080" # Kuma GUI
-      - "5678:5678" # Dataplane communication
-    networks:
-      - service-mesh
-    secrets:
-      - control-plane-admin-user-token
-
-  gateway:
-    container_name: gateway
-    image: kong:latest
-    environment:
-      KONG_DATABASE: "off"
-      KONG_PROXY_ACCESS_LOG: "/dev/stdout"
-      KONG_ADMIN_ACCESS_LOG: "/dev/stdout"
-      KONG_PROXY_ERROR_LOG: "/dev/stderr"
-      KONG_ADMIN_ERROR_LOG: "/dev/stderr"
-      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
-      KONG_ADMIN_GUI_URL: "http://localhost:8002"
-    ports:
-      - "8000:8000" # Proxy
-      - "8001:8001" # Admin API
-    networks:
-      - service-mesh
-    secrets:
-      - control-plane-admin-user-token
-
   docker-in-docker:
     container_name: docker-in-docker
     image: docker:24.0.5-dind
@@ -78,57 +51,12 @@ services:
     environment:
       DOCKER_TLS_CERTDIR: ""
     volumes:
+      - ..:/workspace:cached
       - /var/lib/docker
     networks:
       - service-mesh
 
-  service-a:
-    build:
-      context: ../packages/deployment
-    container_name: service-a
-    volumes:
-      - ../apps/node-service-a:/app
-    environment:
-      KUMA_DPP: "service-a"
-      DATA_PLANE_NAME: "service-a"
-      CONTROL_PLANE_IP: "172.19.0.2"
-      CONTROL_PLANE_NAME: "control-plane"
-      CONTROL_PLANE_ADMIN_USER_TOKEN_FILE: /run/secrets/control-plane-admin-user-token
-    depends_on:
-      - control-plane
-      - apps
-    networks:
-      - service-mesh
-    secrets:
-      - control-plane-admin-user-token
-    privileged: true
-
-  service-b:
-    build:
-      context: ../packages/deployment
-    container_name: service-b
-    volumes:
-      - ../apps/node-service-b:/app
-    environment:
-      KUMA_DPP: "service-b"
-      DATA_PLANE_NAME: "service-b"
-      CONTROL_PLANE_IP: "172.19.0.2"
-      CONTROL_PLANE_NAME: "control-plane"
-      CONTROL_PLANE_ADMIN_USER_TOKEN_FILE: /run/secrets/control-plane-admin-user-token
-    depends_on:
-      - control-plane
-      - apps
-      - service-a
-    networks:
-      - service-mesh
-    secrets:
-      - control-plane-admin-user-token
-    privileged: true
-
 networks:
   service-mesh:
-    driver: host
-
-secrets:
-  control-plane-admin-user-token:
-    file: ../modules/kuma/tokens/.control-plane-admin-user
+    name: service-mesh
+    driver: bridge

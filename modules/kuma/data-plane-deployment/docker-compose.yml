@@ -1,0 +1,42 @@
+services:
+  service-a:
+    build:
+      context: .
+    container_name: service-a
+    volumes:
+      - ${LOCAL_WORKSPACE_FOLDER}:/workspace
+      - /etc/environment:/etc/environment:ro
+    working_dir: /workspace/apps/node-service-a
+    env_file:
+      - /etc/environment
+    environment:
+      KUMA_DPP: "service-a"
+      DATA_PLANE_NAME: "service-a"
+      CONTROL_PLANE_NAME: "control-plane"
+    networks:
+      - service-mesh
+    privileged: true
+
+  service-b:
+    build:
+      context: .
+    container_name: service-b
+    volumes:
+      - ../../../apps/node-service-b:/app
+      - /etc/environment:/etc/environment:ro
+    env_file:
+      - /etc/environment
+    environment:
+      KUMA_DPP: "service-b"
+      DATA_PLANE_NAME: "service-b"
+      CONTROL_PLANE_NAME: "control-plane"
+    depends_on:
+      - service-a
+    networks:
+      - service-mesh
+    privileged: true
+
+networks:
+  service-mesh:
+    external: true
+

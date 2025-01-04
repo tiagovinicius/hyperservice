@@ -1,12 +1,16 @@
-FROM kong:latest
+FROM node:22
+
+RUN ls
 
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
-    sudo build-essential git curl gettext-base
+    curl gettext-base wget jq coreutils \
+    sudo nano iptables iptables-persistent nftables
 
-RUN echo "Setup Kuma" && \
+RUN echo "Setup Kuma to use CLIs" && \
     curl -L https://kuma.io/installer.sh | VERSION=2.9.2 sh - && \
     mv kuma-2.9.2/bin/* /usr/local/bin/
 
+COPY /entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,9 +1,12 @@
 #!/bin/bash
+echo "test" > test.txt
+
 echo "Installing dependencies"
 npm install
 
+echo "Local workspace folder is $LOCAL_WORKSPACE_FOLDER"
+
 echo "Setting up dataplane"
-CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat "${CONTROL_PLANE_ADMIN_USER_TOKEN_FILE}")
 echo "Control plane admin user token is ${CONTROL_PLANE_ADMIN_USER_TOKEN}"
 export CONTAINER_IP=$(hostname -i)
 kumactl config control-planes add \
