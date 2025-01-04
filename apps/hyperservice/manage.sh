@@ -4,13 +4,13 @@
 usage() {
   cat <<EOF
 NAME
-    hyperservice - Manage hyperservices using Docker
+    hyperservice - Manage hyperservices in the service mesh
 
 SYNOPSIS
     hyperservice --workdir <workdir> --name <name> <action>
 
 DESCRIPTION
-    This script is a command-line tool to manage hyperservices using Docker. 
+    This script is a command-line tool to manage hyperservices in the service mesh. 
     It allows you to start, restart, stop, or clean hyperservices.
 
 OPTIONS
@@ -25,10 +25,16 @@ OPTIONS
 
 USAGE EXAMPLES
     Start a hyperservice:
-        hyperservice --workdir /workspace/apps/node-service-a --name service-a start
+        hyperservice --workdir apps/node-service-a --name service-a start
 
     Restart a hyperservice:
-        hyperservice --workdir /workspace/apps/node-service-a --name service-a restart
+        hyperservice --workdir apps/node-service-a --name service-a restart
+
+    Stop a hyperservice:
+        hyperservice --name service-a stop
+
+    Clean a hyperservice:
+        hyperservice --name service-a clean
 
 EOF
   exit 1
