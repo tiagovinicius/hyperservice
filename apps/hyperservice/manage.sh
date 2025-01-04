@@ -6,22 +6,46 @@ usage() {
 NAME
     hyperservice - Manage hyperservices in the service mesh
 
-SYNOPSIS
-    hyperservice --workdir <workdir> --name <name> <action>
-
 DESCRIPTION
-    This script is a command-line tool to manage hyperservices in the service mesh. 
-    It allows you to start, restart, stop, or clean hyperservices.
+    This command-line tool manages hyperservices in the service mesh. 
+    It allows you to start, restart, stop, clean, list, or execute commands in hyperservices.
 
 OPTIONS
-    --workdir <workdir>   Specify the working directory inside the container.
-    --name <name>         Set the name of the hyperservice to manage.
-    <action>              The action to perform on the hyperservice.
-                          Available actions:
-                            - start    Start the hyperservice, creating it if it doesn't exist.
-                            - restart  Remove the hyperservice (if exists) and create a new one.
-                            - stop     Stop a running hyperservice.
-                            - clean    Remove the hyperservice completely.
+    --workdir <workdir>
+        Specify the working directory inside the container.
+        Required for 'start' and 'restart' actions.
+
+    <name>
+        Set the name of the hyperservice to manage.
+        Required for all actions except 'ls'.
+
+    <operation>
+        Set the operation to be executed by hyperservice.
+        The following operations are available:
+
+          start
+              hyperservice --workdir <workdir> --name <name> start
+              Start the hyperservice, creating it if it doesn't exist.
+
+          restart
+              hyperservice --workdir <workdir> --name <name> restart
+              Remove the hyperservice (if exists) and create a new one.
+
+          stop
+              hyperservice --name <name> stop
+              Stop a running hyperservice.
+
+          clean
+              hyperservice --name <name> clean
+              Remove the hyperservice completely.
+
+          exec
+              hyperservice --name <name> exec
+              Open an interactive bash shell in the hyperservice container.
+
+          ls
+              hyperservice ls
+              List all containers with specific details.
 
 USAGE EXAMPLES
     Start a hyperservice:
@@ -36,6 +60,12 @@ USAGE EXAMPLES
     Clean a hyperservice:
         hyperservice --name service-a clean
 
+    Open an interactive shell:
+        hyperservice --name service-a exec
+
+    List all containers:
+        hyperservice ls
+
 EOF
   exit 1
 }
@@ -48,15 +78,22 @@ ACTION=""
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     --workdir) WORKDIR="$2"; shift 2 ;;
-    --name) NAME="$2"; shift 2 ;;
-    start|restart|stop|clean) ACTION="$1"; shift ;;
-    *) echo "Unknown parameter: $1"; usage ;;
+    start|restart|stop|clean|exec|ls) ACTION="$1"; shift ;;
+    *) 
+      if [[ -z "$NAME" ]]; then
+        NAME="$1"
+        shift
+      else
+        echo "Unknown parameter: $1"
+        usage
+      fi
+      ;;
   esac
 done
 
 # Validate required parameters
-if [[ -z "$NAME" || -z "$ACTION" ]]; then
-  echo "Error: --name and an action are required."
+if [[ -z "$NAME" && "$ACTION" != "ls" ]]; then
+  echo "Error: <name> is required for all actions except 'ls'."
   usage
 fi
 
@@ -65,8 +102,13 @@ if [[ "$ACTION" == "start" || "$ACTION" == "restart" ]] && [[ -z "$WORKDIR" ]]; 
   usage
 fi
 
+if [[ "$NAME" =~ \  ]]; then
+  echo "Error: <name> cannot contain spaces."
+  usage
+fi
+
 # Ensure LOCAL_WORKSPACE_FOLDER is set as an environment variable
-if [[ -z "$LOCAL_WORKSPACE_FOLDER" ]]; then
+if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" ]]; then
   echo "Error: LOCAL_WORKSPACE_FOLDER environment variable is not set."
   exit 1
 fi
@@ -78,12 +120,6 @@ LOCAL_WORKSPACE_FOLDER="${LOCAL_WORKSPACE_FOLDER%/}"
 hyperservice_exists() {
   docker ps -a --format "{{.Names}}" | grep -qw "$NAME"
 }
-
-if [[ "$ACTION" == "start" || "$ACTION" == "restart" ]] && [[ ! -d "$WORKDIR" ]]; then
-  echo "Error: The directory '$WORKDIR' does not exist in the mounted LOCAL_WORKSPACE_FOLDER."
-  echo "Ensure that the directory exists on the host and matches the expected structure."
-  exit 1
-fi
 
 # Handle actions
 case $ACTION in
@@ -124,7 +160,7 @@ case $ACTION in
       --env "CONTROL_PLANE_NAME=control-plane" \
       --network service-mesh \
       --privileged \
-      hyper-dataplane-image
+        hyper-dataplane-image
     ;;
   stop)
     if hyperservice_exists; then
@@ -143,6 +179,19 @@ case $ACTION in
       echo "Error: Hyperservice '$NAME' does not exist."
       exit 1
     fi
+    ;;
+  exec)
+    if hyperservice_exists; then
+      echo "Opening bash shell in hyperservice: $NAME"
+      docker exec -it "$NAME" /bin/bash
+    else
+      echo "Error: Hyperservice '$NAME' does not exist."
+      exit 1
+    fi
+    ;;
+  ls)
+    echo "Listing all containers:"
+    docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.CreatedAt}}\t{{.Ports}}"
     ;;
   *)
     echo "Unknown action: $ACTION"
