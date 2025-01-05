@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Source operation functions
+SCRIPT_PATH=$(readlink -f "$0")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+OPERATIONS_DIR="$SCRIPT_DIR/operations"
+
+source "$OPERATIONS_DIR/start.sh"
+source "$OPERATIONS_DIR/restart.sh"
+source "$OPERATIONS_DIR/stop.sh"
+source "$OPERATIONS_DIR/clean.sh"
+source "$OPERATIONS_DIR/exec.sh"
+source "$OPERATIONS_DIR/logs.sh"
+source "$OPERATIONS_DIR/ls.sh"
+
 # Display usage information
 usage() {
   cat <<EOF
@@ -133,83 +146,25 @@ hyperservice_exists() {
 # Handle actions
 case $ACTION in
   start)
-    if hyperservice_exists; then
-      echo "Starting existing hyperservice: $NAME"
-      docker start "$NAME"
-    else
-      echo "Creating and starting hyperservice: $NAME"
-      docker run -d \
-        --name "$NAME" \
-        --volume "${LOCAL_WORKSPACE_FOLDER}:/workspace" \
-        --volume "/etc/environment:/etc/environment:ro" \
-        --workdir "/workspace/$WORKDIR" \
-        --env-file "/etc/environment" \
-        --env "KUMA_DPP=$NAME" \
-        --env "DATA_PLANE_NAME=$NAME" \
-        --env "CONTROL_PLANE_NAME=control-plane" \
-        --network service-mesh \
-        --privileged \
-        hyper-dataplane-image
-    fi
+    start_hyperservice "$NAME" "$WORKDIR"
     ;;
   restart)
-    if hyperservice_exists; then
-      echo "Removing existing hyperservice: $NAME"
-      docker rm -f "$NAME"
-    fi
-    echo "Creating and starting hyperservice: $NAME"
-    docker run -d \
-      --name "$NAME" \
-      --volume "${LOCAL_WORKSPACE_FOLDER}:/workspace" \
-      --volume "/etc/environment:/etc/environment:ro" \
-      --workdir "/workspace/$WORKDIR" \
-      --env-file "/etc/environment" \
-      --env "KUMA_DPP=$NAME" \
-      --env "DATA_PLANE_NAME=$NAME" \
-      --env "CONTROL_PLANE_NAME=control-plane" \
-      --network service-mesh \
-      --privileged \
-      hyper-dataplane-image
+    restart_hyperservice "$NAME" "$WORKDIR"
     ;;
   stop)
-    if hyperservice_exists; then
-      echo "Stopping hyperservice: $NAME"
-      docker stop "$NAME"
-    else
-      echo "Error: Hyperservice '$NAME' does not exist."
-      exit 1
-    fi
+    stop_hyperservice "$NAME"
     ;;
   clean)
-    if hyperservice_exists; then
-      echo "Removing hyperservice: $NAME"
-      docker rm -f "$NAME"
-    else
-      echo "Error: Hyperservice '$NAME' does not exist."
-      exit 1
-    fi
+    clean_hyperservice "$NAME"
     ;;
   exec)
-    if hyperservice_exists; then
-      echo "Opening bash shell in hyperservice: $NAME"
-      docker exec -it "$NAME" /bin/bash
-    else
-      echo "Error: Hyperservice '$NAME' does not exist."
-      exit 1
-    fi
+    exec_hyperservice "$NAME"
     ;;
   logs)
-    if hyperservice_exists; then
-      echo "Displaying logs for hyperservice: $NAME"
-      docker logs "$NAME"
-    else
-      echo "Error: Hyperservice '$NAME' does not exist."
-      exit 1
-    fi
+    logs_hyperservice "$NAME"
     ;;
   ls)
-    echo "Listing all containers:"
-    docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.CreatedAt}}\t{{.Ports}}"
+    ls_hyperservices
     ;;
   *)
     echo "Unknown action: $ACTION"
