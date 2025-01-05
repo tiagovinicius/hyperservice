@@ -4,7 +4,7 @@ services:
       context: .
     container_name: service-a
     volumes:
-      - ${LOCAL_WORKSPACE_FOLDER}:/workspace
+      - ${LOCAL_WORKSPACE_FOLDER}:/workspace:delegated
       - /etc/environment:/etc/environment:ro
     working_dir: /workspace/apps/node-service-a
     env_file:
@@ -22,7 +22,7 @@ services:
       context: .
     container_name: service-b
     volumes:
-      - ../../../apps/node-service-b:/app
+      - ${LOCAL_WORKSPACE_FOLDER}:/workspace:delegated
       - /etc/environment:/etc/environment:ro
     env_file:
       - /etc/environment
@@ -39,4 +39,3 @@ services:
 networks:
   service-mesh:
     external: true
-

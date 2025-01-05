@@ -8,8 +8,9 @@ services:
       - .env
       - /etc/environment
     volumes:
-      - ..:/workspace:cached
+      - ..:/workspace:delegated
       - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.ssh:/root/.ssh:ro
     privileged: true
     ports:
       - "5681:5681" # Admin REST API
@@ -51,7 +52,7 @@ services:
     environment:
       DOCKER_TLS_CERTDIR: ""
     volumes:
-      - ..:/workspace:cached
+      - ..:/workspace:delegated
       - /var/lib/docker
     networks:
       - service-mesh
