@@ -22,7 +22,7 @@ services:
       context: .
     container_name: service-b
     volumes:
-      - ../../../apps/node-service-b:/app:delegated
+      - ${LOCAL_WORKSPACE_FOLDER}:/workspace:delegated
       - /etc/environment:/etc/environment:ro
     env_file:
       - /etc/environment
