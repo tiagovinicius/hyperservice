@@ -1,6 +1,6 @@
 # Function to view logs of hyperservice
 
-logs_hyperservice() {
+service_logs() {
   local name="$1"
 
   echo "Viewing logs for hyperservice: $name"

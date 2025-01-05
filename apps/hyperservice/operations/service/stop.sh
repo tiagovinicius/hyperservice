@@ -1,6 +1,6 @@
 # Function to stop hyperservice
 
-stop_hyperservice() {
+service_stop() {
   local name="$1"
 
   echo "Stopping hyperservice: $name"

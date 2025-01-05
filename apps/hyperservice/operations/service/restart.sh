@@ -1,6 +1,6 @@
 # Function to restart hyperservice
 
-restart_hyperservice() {
+service_restart() {
   local name="$1"
   local workdir="$2"
 

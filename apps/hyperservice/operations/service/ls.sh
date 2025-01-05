@@ -1,6 +1,6 @@
 # Function to list hyperservices
 
-ls_hyperservices() {
+service_ls() {
   echo "Listing all hyperservices:"
 
   # List all hyperservices with specific details

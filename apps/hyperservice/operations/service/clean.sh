@@ -1,6 +1,6 @@
 # Function to clean hyperservice
 
-clean_hyperservice() {
+service_clean() {
   local name="$1"
 
   echo "Cleaning hyperservice: $name"
