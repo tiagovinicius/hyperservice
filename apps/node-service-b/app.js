@@ -8,7 +8,7 @@ app.get("/fetch-data", async (req, res) => {
   try {
     const response = await axios.get("http://service-a.mesh/data");
     res.json({
-      message: "Data fetched from Service A FVSNDSJD",
+      message: "Data fetched from Service A",
       data: response.data,
     });
   } catch (error) {
