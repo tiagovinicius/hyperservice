@@ -20,7 +20,8 @@
         "GitHub.copilot",
         "GitHub.copilot-chat",
         "esbenp.prettier-vscode",
-        "ms-azuretools.vscode-docker"
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot-workspace"
       ],
       "settings": {
         "files.autoSave": "afterDelay",
