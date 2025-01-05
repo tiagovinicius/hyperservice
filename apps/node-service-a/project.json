@@ -1,0 +1,39 @@
+{
+  "name": "node-service-a",
+  "version": "1.0.0",
+  "sourceRoot": "apps/node-service-a/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/node:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/node-service-a",
+        "main": "apps/node-service-a/src/main.ts",
+        "tsConfig": "apps/node-service-a/tsconfig.app.json",
+        "assets": ["apps/node-service-a/src/assets"]
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/node:serve",
+      "options": {
+        "buildTarget": "node-service-a:build"
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/node-service-a"],
+      "options": {
+        "jestConfig": "apps/node-service-a/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "dev": {
+      "executor": "@nrwl/node:execute",
+      "options": {
+        "buildTarget": "node-service-a:build",
+        "watch": true
+      }
+    }
+  }
+}

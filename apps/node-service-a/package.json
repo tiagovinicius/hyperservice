@@ -5,7 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nx dev node-service-a",
+    "build": "nx build node-service-a",
+    "serve": "nx serve node-service-a"
   },
   "author": "Your Name",
   "license": "MIT",
@@ -13,6 +15,10 @@
     "express": "^4.18.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "@nrwl/cli": "latest",
+    "@nrwl/workspace": "latest",
+    "@nrwl/node": "latest",
+    "nx": "latest"
   }
 }

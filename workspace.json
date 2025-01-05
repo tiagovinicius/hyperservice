@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "projects": {
+    "node-service-a": {
+      "root": "apps/node-service-a",
+      "sourceRoot": "apps/node-service-a/src",
+      "projectType": "application"
+    },
+    "node-service-b": {
+      "root": "apps/node-service-b",
+      "sourceRoot": "apps/node-service-b/src",
+      "projectType": "application"
+    }
+  }
+}

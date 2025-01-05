@@ -1,20 +1,26 @@
 {
-    "name": "service-b",
-    "version": "1.0.0",
-    "description": "Service B consuming data from Service A",
-    "main": "app.js",
-    "scripts": {
-      "start": "node app.js",
-      "dev": "nodemon app.js"
-    },
-    "author": "Your Name",
-    "license": "MIT",
-    "dependencies": {
-      "express": "^4.18.2",
-      "axios": "^1.5.0"
-    },
-    "devDependencies": {
-      "nodemon": "^3.1.9"
-    }
+  "name": "service-b",
+  "version": "1.0.0",
+  "description": "Service B consuming data from Service A",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nx dev node-service-b",
+    "build": "nx build node-service-b",
+    "serve": "nx serve node-service-b",
+    "test": "nx test node-service-b"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "@nrwl/cli": "latest",
+    "@nrwl/workspace": "latest",
+    "@nrwl/node": "latest",
+    "nx": "latest"
   }
-  
+}
