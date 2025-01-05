@@ -3,15 +3,15 @@
 # Source operation functions
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-OPERATIONS_DIR="$SCRIPT_DIR/operations/service"
+SERVICE_OPERATIONS_DIR="$SCRIPT_DIR/operations/service"
 
-source "$OPERATIONS_DIR/start.sh"
-source "$OPERATIONS_DIR/restart.sh"
-source "$OPERATIONS_DIR/stop.sh"
-source "$OPERATIONS_DIR/clean.sh"
-source "$OPERATIONS_DIR/exec.sh"
-source "$OPERATIONS_DIR/logs.sh"
-source "$OPERATIONS_DIR/ls.sh"
+source "$SERVICE_OPERATIONS_DIR/start.sh"
+source "$SERVICE_OPERATIONS_DIR/restart.sh"
+source "$SERVICE_OPERATIONS_DIR/stop.sh"
+source "$SERVICE_OPERATIONS_DIR/clean.sh"
+source "$SERVICE_OPERATIONS_DIR/exec.sh"
+source "$SERVICE_OPERATIONS_DIR/logs.sh"
+source "$SERVICE_OPERATIONS_DIR/ls.sh"
 
 # Display usage information
 usage() {
