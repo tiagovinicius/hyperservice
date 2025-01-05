@@ -4,7 +4,6 @@
   "description": "Service A providing data",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
     "dev": "nx dev node-service-a",
     "build": "nx build node-service-a",
     "serve": "nx serve node-service-a"

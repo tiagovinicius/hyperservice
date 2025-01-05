@@ -1,16 +1,16 @@
 {
   "name": "node-service-a",
   "version": "1.0.0",
-  "sourceRoot": "apps/node-service-a/src",
+  "sourceRoot": "apps/node-service-a",
   "projectType": "application",
   "targets": {
     "build": {
       "executor": "@nrwl/node:build",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/node-service-a",
-        "main": "apps/node-service-a/src/main.ts",
-        "tsConfig": "apps/node-service-a/tsconfig.app.json",
+        "outputPath": "apps/node-service-a/dist",
+        "main": "apps/node-service-a/app.ts",
+        "tsConfig": "apps/node-service-a/tsconfig.json",
         "assets": ["apps/node-service-a/src/assets"]
       }
     },
@@ -29,7 +29,7 @@
       }
     },
     "dev": {
-      "executor": "@nrwl/node:execute",
+      "executor": "@nrwl/node:serve",
       "options": {
         "buildTarget": "node-service-a:build",
         "watch": true
