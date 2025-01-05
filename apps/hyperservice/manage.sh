@@ -3,15 +3,15 @@
 # Source operation functions
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-OPERATIONS_DIR="$SCRIPT_DIR/operations"
+SERVICE_OPERATIONS_DIR="$SCRIPT_DIR/operations/service"
 
-source "$OPERATIONS_DIR/start.sh"
-source "$OPERATIONS_DIR/restart.sh"
-source "$OPERATIONS_DIR/stop.sh"
-source "$OPERATIONS_DIR/clean.sh"
-source "$OPERATIONS_DIR/exec.sh"
-source "$OPERATIONS_DIR/logs.sh"
-source "$OPERATIONS_DIR/ls.sh"
+source "$SERVICE_OPERATIONS_DIR/start.sh"
+source "$SERVICE_OPERATIONS_DIR/restart.sh"
+source "$SERVICE_OPERATIONS_DIR/stop.sh"
+source "$SERVICE_OPERATIONS_DIR/clean.sh"
+source "$SERVICE_OPERATIONS_DIR/exec.sh"
+source "$SERVICE_OPERATIONS_DIR/logs.sh"
+source "$SERVICE_OPERATIONS_DIR/ls.sh"
 
 # Display usage information
 usage() {
@@ -146,25 +146,25 @@ hyperservice_exists() {
 # Handle actions
 case $ACTION in
   start)
-    start_hyperservice "$NAME" "$WORKDIR"
+    service_start "$NAME" "$WORKDIR"
     ;;
   restart)
-    restart_hyperservice "$NAME" "$WORKDIR"
+    service_restart "$NAME" "$WORKDIR"
     ;;
   stop)
-    stop_hyperservice "$NAME"
+    service_stop "$NAME"
     ;;
   clean)
-    clean_hyperservice "$NAME"
+    service_clean "$NAME"
     ;;
   exec)
-    exec_hyperservice "$NAME"
+    service_exec "$NAME"
     ;;
   logs)
-    logs_hyperservice "$NAME"
+    service_logs "$NAME"
     ;;
   ls)
-    ls_hyperservices
+    service_ls
     ;;
   *)
     echo "Unknown action: $ACTION"

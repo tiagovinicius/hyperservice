@@ -1,6 +1,6 @@
 # Function to exec hyperservice
 
-exec_hyperservice() {
+service_exec() {
   local name="$1"
 
   echo "Executing hyperservice: $name"

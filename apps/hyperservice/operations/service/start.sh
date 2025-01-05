@@ -1,6 +1,6 @@
 # Function to start hyperservice
 
-start_hyperservice() {
+service_start() {
   local name="$1"
   local workdir="$2"
 
