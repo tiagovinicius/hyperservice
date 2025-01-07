@@ -1,0 +1,15 @@
+type: MeshTrafficPermission
+name: allow-from-self
+mesh: default
+spec:
+  targetRef:
+    kind: MeshSubset
+    tags:
+      kuma.io/service: service-b
+  from:
+    - targetRef:
+        kind: MeshSubset
+        tags:
+          kuma.io/service: service-b
+      default:
+        action: Allow

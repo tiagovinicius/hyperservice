@@ -136,8 +136,6 @@ fi
 # Normalize LOCAL_WORKSPACE_FOLDER to remove trailing slash
 LOCAL_WORKSPACE_FOLDER="${LOCAL_WORKSPACE_FOLDER%/}"
 
-echo "Workdir is /workspace/$WORKDIR" 
-
 # Check if the hyperservice exists
 hyperservice_exists() {
   docker ps -a --format "{{.Names}}" | grep -qw "$NAME"

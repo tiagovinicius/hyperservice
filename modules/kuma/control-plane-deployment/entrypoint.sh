@@ -16,3 +16,11 @@ kumactl config control-planes add \
  --name default \
  --address http://localhost:5681 \
  --skip-verify
+
+echo "Applying policies"
+POLICIES_DIR="/workspace/.hyperservice/policies"
+for FILE in $(ls "$POLICIES_DIR"/*.yml | sort); do
+    echo "Applying $FILE"
+    echo "$(envsubst < "$FILE")"
+    echo "$(envsubst < "$FILE")" | kumactl apply -f -
+done
