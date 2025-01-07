@@ -10,7 +10,7 @@ services:
     volumes:
       - ..:/workspace:delegated
       - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.ssh:/root/.ssh:ro
+      - ~/.ssh:/root/.ssh:rw
     privileged: true
     ports:
       - "5681:5681" # Admin REST API
