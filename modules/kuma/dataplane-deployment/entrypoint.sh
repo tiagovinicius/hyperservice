@@ -1,20 +1,21 @@
 #!/bin/bash
-echo "test" > test.txt
+git config --global --add safe.directory /workspace
 
 echo "Installing dependencies"
 npm install
+npm install --global @moonrepo/cli
 
-echo "Local workspace folder is $LOCAL_WORKSPACE_FOLDER"
+echo "Creating directories"
+mkdir -p logs
 
 echo "Setting up dataplane"
-echo "Control plane admin user token is ${CONTROL_PLANE_ADMIN_USER_TOKEN}"
 export CONTAINER_IP=$(hostname -i)
 kumactl config control-planes add \
   --name=default \
   --address=http://$CONTROL_PLANE_IP:5681 \
   --auth-type=tokens \
   --auth-conf token=${CONTROL_PLANE_ADMIN_USER_TOKEN}
-kumactl generate dataplane-token --tag kuma.io/service=$DATA_PLANE_NAME --valid-for=720h > /.token
+kumactl generate dataplane-token --tag kuma.io/service=$DATAPLANE_NAME --valid-for=720h > /.token
 useradd -u 5678 -U kuma-dp
 kumactl install transparent-proxy \
   --kuma-dp-user kuma-dp \
@@ -28,5 +29,5 @@ runuser -u kuma-dp -- \
     2>&1 | tee logs/dataplane-logs.txt &
 
 echo "Starting service"
-npm run dev \
+moon $DATAPLANE_NAME:dev \
   2>&1 | tee logs/app-logs.txt

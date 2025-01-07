@@ -5,7 +5,6 @@
   "workspaceFolder": "/workspace",
   // Configure tool-specific properties.
   "containerEnv": {
-    "NODE_ENV": "production",
     "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
   "customizations": {
@@ -34,9 +33,9 @@
   "forwardPorts": [22, 80, 443, 5681, 5678, 8000, 8001],
   // Use 'mounts' to mount the source code into the container.
   "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated"
   ],
   // Starts control-plane, set up kmctl in devcontainer and load env vars in /etc/environment
-  "postCreateCommand": "bash modules/kuma/control-plane-deployment/entrypoint.sh && bash modules/kuma/data-plane-deployment/build-image.sh &&  bash install.sh",
+  "postCreateCommand": "bash modules/kuma/control-plane-deployment/entrypoint.sh && bash modules/kuma/dataplane-deployment/build-image.sh &&  bash apps/hyperservice/install.sh",
   "postAttachCommand": "[ -f /etc/environment ] && (echo 'Loading /etc/environment...' && set -a && . /etc/environment && set +a && exec bash) || echo '/etc/environment not found'"
 }

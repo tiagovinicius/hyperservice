@@ -66,10 +66,10 @@ OPTIONS
 
 USAGE EXAMPLES
     Start a hyperservice:
-        hyperservice --workdir apps/node-service-a service-a start
+        hyperservice --workdir apps/service-a service-a start
 
     Restart a hyperservice:
-        hyperservice --workdir apps/node-service-a service-a restart
+        hyperservice --workdir apps/service-a service-a restart
 
     Stop a hyperservice:
         hyperservice service-a stop

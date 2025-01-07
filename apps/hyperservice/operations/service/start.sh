@@ -18,7 +18,7 @@ service_start() {
       --workdir "/workspace/$WORKDIR" \
       --env-file "/etc/environment" \
       --env "KUMA_DPP=$NAME" \
-      --env "DATA_PLANE_NAME=$NAME" \
+      --env "DATAPLANE_NAME=$NAME" \
       --env "CONTROL_PLANE_NAME=control-plane" \
       --network service-mesh \
       --privileged \

@@ -1,5 +1,5 @@
-const express = require("express");
-const axios = require("axios");
+import express from "express";
+import axios from "axios";
 const app = express();
 
 const PORT = process.env.PORT || 3002;
@@ -12,7 +12,11 @@ app.get("/fetch-data", async (req, res) => {
       data: response.data,
     });
   } catch (error) {
-    console.error(error.message);
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error("An unknown error occurred");
+    }
     res.status(500).json({ error: "Failed to fetch data from Service A" });
   }
 });
