@@ -12,6 +12,7 @@ source "$SERVICE_OPERATIONS_DIR/clean.sh"
 source "$SERVICE_OPERATIONS_DIR/exec.sh"
 source "$SERVICE_OPERATIONS_DIR/logs.sh"
 source "$SERVICE_OPERATIONS_DIR/ls.sh"
+source "$SERVICE_OPERATIONS_DIR/up.sh"
 
 # Display usage information
 usage() {
@@ -66,11 +67,11 @@ OPTIONS
 
           up
               hyperservice up
-              Start all hyperservices defined in the JSON.
+              Start all hyperservices in the workspace.
 
           up --recreate
               hyperservice --recreate up
-              Recreate and start all hyperservices defined in the JSON.
+              Recreate and start all hyperservices in the workspace.
 
 USAGE EXAMPLES
     Start a hyperservice:
@@ -91,7 +92,7 @@ USAGE EXAMPLES
     View logs of a hyperservice:
         hyperservice service-a logs
 
-    List all containers:
+    List all hyperservices:
         hyperservice ls
 
     Start all hyperservices:
@@ -160,28 +161,6 @@ LOCAL_WORKSPACE_FOLDER="${LOCAL_WORKSPACE_FOLDER%/}"
 # Check if the hyperservice exists
 hyperservice_exists() {
   docker ps -a --format "{{.Names}}" | grep -qw "$NAME"
-}
-
-# Function to handle the 'up' command
-service_up() {
-  local recreate="$1"
-  local json_output
-  json_output=$(moon query projects --json)
-
-  echo "$json_output" | jq -c '.projects[]' | while read -r project; do
-    local name
-    local workdir
-    name=$(echo "$project" | jq -r '.id')
-    workdir=$(echo "$project" | jq -r '.source')
-
-    if [[ -f "$workdir/.hyperservice/dataplane.yml" ]]; then
-      if [[ "$recreate" == "true" ]]; then
-        hyperservice --workdir "$workdir" --recreate "$name" start
-      else
-        hyperservice --workdir "$workdir" "$name" start
-      fi
-    fi
-  done
 }
 
 # Handle actions
