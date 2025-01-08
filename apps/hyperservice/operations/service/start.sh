@@ -27,4 +27,3 @@ service_start() {
 
   echo "Hyperservice $name started successfully."
 }
-

@@ -134,11 +134,6 @@ if [[ "$ACTION" != "start" && "$RECREATE" == "true" ]]; then
   usage
 fi
 
-if [[ "$ACTION" != "start" && "$RECREATE" == "true" ]]; then
-  echo "Error: --recreate is only valid with the 'start' action."
-  usage
-fi
-
 if [[ "$NAME" =~ \  ]]; then
   echo "Error: <name> cannot contain spaces."
   usage
