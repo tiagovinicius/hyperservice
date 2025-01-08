@@ -23,3 +23,6 @@ for FILE in $(ls "$POLICIES_DIR"/*.yml | sort); do
     echo "Applying $FILE"
     echo "$(envsubst < "$FILE")" | kumactl apply -f -
 done
+
+echo "Installing observability"
+kumactl install observability

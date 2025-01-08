@@ -1,0 +1,17 @@
+type: MeshMetric
+mesh: default
+name: metrics-default
+spec:
+  targetRef:
+    kind: Mesh
+  default:
+    sidecar:
+      includeUnused: true
+      profiles:
+        appendProfiles:
+          - name: Basic
+    backends:
+      - type: Prometheus
+        prometheus:
+          port: 5670
+          path: "/metrics"

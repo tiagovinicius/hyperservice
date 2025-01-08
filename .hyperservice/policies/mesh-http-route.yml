@@ -1,0 +1,22 @@
+type: MeshHTTPRoute
+name: http-route-from-edge-gateway
+mesh: default
+spec:
+  targetRef:
+    kind: MeshGateway
+    name: edge-gateway
+    tags:
+      port: http-8080
+  to:
+    - targetRef:
+        kind: Mesh
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: "/fetch-data"
+          default:
+            backendRefs:
+              - kind: MeshService
+                name: service-b
+                port: 3002
