@@ -13,6 +13,7 @@ source "$SERVICE_OPERATIONS_DIR/exec.sh"
 source "$SERVICE_OPERATIONS_DIR/logs.sh"
 source "$SERVICE_OPERATIONS_DIR/ls.sh"
 source "$SERVICE_OPERATIONS_DIR/up.sh"
+source "$SERVICE_OPERATIONS_DIR/down.sh"
 
 # Display usage information
 usage() {
@@ -31,6 +32,9 @@ OPTIONS
 
     --recreate
         If specified with the 'start' action, the hyperservice will be recreated.
+
+    --clean
+        If specified with the 'down' action, the hyperservice will be cleaned.
 
     <name>
         Set the name of the hyperservice to manage.
@@ -73,6 +77,14 @@ OPTIONS
               hyperservice --recreate up
               Recreate and start all hyperservices in the workspace.
 
+          down
+              hyperservice down
+              Stop all hyperservices in the workspace.
+
+          down --clean
+              hyperservice --clean down
+              Clean all hyperservices in the workspace.
+
 USAGE EXAMPLES
     Start a hyperservice:
         hyperservice --workdir apps/service-a service-a start
@@ -101,6 +113,12 @@ USAGE EXAMPLES
     Recreate and start all hyperservices:
         hyperservice --recreate up
 
+    Stop all hyperservices:
+        hyperservice down
+
+    Clean all hyperservices:
+        hyperservice --clean down
+
 EOF
   exit 1
 }
@@ -110,12 +128,14 @@ WORKDIR=""
 NAME=""
 ACTION=""
 RECREATE=""
+CLEAN=""
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     --workdir) WORKDIR="$2"; shift 2 ;;
     --recreate) RECREATE="true"; shift ;;
-    start|stop|clean|exec|logs|ls|up) ACTION="$1"; shift ;;
+    --clean) CLEAN="true"; shift ;;
+    start|stop|clean|exec|logs|ls|up|down) ACTION="$1"; shift ;;
     *) 
       if [[ -z "$NAME" ]]; then
         NAME="$1"
@@ -129,8 +149,8 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Validate required parameters
-if [[ -z "$NAME" && "$ACTION" != "ls" && "$ACTION" != "up" ]]; then
-  echo "Error: <name> is required for all actions except 'ls' and 'up'."
+if [[ -z "$NAME" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" ]]; then
+  echo "Error: <name> is required for all actions except 'ls', 'up', and 'down'."
   usage
 fi
 
@@ -144,13 +164,18 @@ if [[ "$ACTION" != "start" && "$RECREATE" == "true" && "$ACTION" != "up" ]]; the
   usage
 fi
 
+if [[ "$ACTION" != "down" && "$CLEAN" == "true" ]]; then
+  echo "Error: --clean is only valid with the 'down' action."
+  usage
+fi
+
 if [[ "$NAME" =~ \  ]]; then
   echo "Error: <name> cannot contain spaces."
   usage
 fi
 
 # Ensure LOCAL_WORKSPACE_FOLDER is set as an environment variable
-if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" && "$ACTION" != "up" ]]; then
+if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" ]]; then
   echo "Error: LOCAL_WORKSPACE_FOLDER environment variable is not set."
   exit 1
 fi
@@ -189,6 +214,13 @@ case $ACTION in
     ;;
   up)
     service_up "$RECREATE"
+    ;;
+  down)
+    if [[ "$CLEAN" == "true" ]]; then
+      service_down_clean
+    else
+      service_down
+    fi
     ;;
   *)
     echo "Unknown action: $ACTION"
