@@ -71,9 +71,6 @@ USAGE EXAMPLES
     Start a hyperservice with recreation:
         hyperservice --workdir apps/service-a --recreate service-a start
 
-    Restart a hyperservice:
-        hyperservice --workdir apps/service-a service-a restart
-
     Stop a hyperservice:
         hyperservice service-a stop
 
