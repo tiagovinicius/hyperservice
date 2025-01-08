@@ -12,6 +12,7 @@ source "$SERVICE_OPERATIONS_DIR/clean.sh"
 source "$SERVICE_OPERATIONS_DIR/exec.sh"
 source "$SERVICE_OPERATIONS_DIR/logs.sh"
 source "$SERVICE_OPERATIONS_DIR/ls.sh"
+source "$SERVICE_OPERATIONS_DIR/up.sh"
 
 # Display usage information
 usage() {
@@ -64,6 +65,14 @@ OPTIONS
               hyperservice ls
               List all hyperservices with specific details.
 
+          up
+              hyperservice up
+              Start all hyperservices in the workspace.
+
+          up --recreate
+              hyperservice --recreate up
+              Recreate and start all hyperservices in the workspace.
+
 USAGE EXAMPLES
     Start a hyperservice:
         hyperservice --workdir apps/service-a service-a start
@@ -83,8 +92,14 @@ USAGE EXAMPLES
     View logs of a hyperservice:
         hyperservice service-a logs
 
-    List all containers:
+    List all hyperservices:
         hyperservice ls
+
+    Start all hyperservices:
+        hyperservice up
+
+    Recreate and start all hyperservices:
+        hyperservice --recreate up
 
 EOF
   exit 1
@@ -100,7 +115,7 @@ while [[ "$#" -gt 0 ]]; do
   case $1 in
     --workdir) WORKDIR="$2"; shift 2 ;;
     --recreate) RECREATE="true"; shift ;;
-    start|stop|clean|exec|logs|ls) ACTION="$1"; shift ;;
+    start|stop|clean|exec|logs|ls|up) ACTION="$1"; shift ;;
     *) 
       if [[ -z "$NAME" ]]; then
         NAME="$1"
@@ -114,8 +129,8 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Validate required parameters
-if [[ -z "$NAME" && "$ACTION" != "ls" ]]; then
-  echo "Error: <name> is required for all actions except 'ls'."
+if [[ -z "$NAME" && "$ACTION" != "ls" && "$ACTION" != "up" ]]; then
+  echo "Error: <name> is required for all actions except 'ls' and 'up'."
   usage
 fi
 
@@ -124,8 +139,8 @@ if [[ "$ACTION" == "start" || "$ACTION" == "restart" ]] && [[ -z "$WORKDIR" ]]; 
   usage
 fi
 
-if [[ "$ACTION" != "start" && "$RECREATE" == "true" ]]; then
-  echo "Error: --recreate is only valid with the 'start' action."
+if [[ "$ACTION" != "start" && "$RECREATE" == "true" && "$ACTION" != "up" ]]; then
+  echo "Error: --recreate is only valid with the 'start' and 'up' actions."
   usage
 fi
 
@@ -135,7 +150,7 @@ if [[ "$NAME" =~ \  ]]; then
 fi
 
 # Ensure LOCAL_WORKSPACE_FOLDER is set as an environment variable
-if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" ]]; then
+if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" && "$ACTION" != "up" ]]; then
   echo "Error: LOCAL_WORKSPACE_FOLDER environment variable is not set."
   exit 1
 fi
@@ -171,6 +186,9 @@ case $ACTION in
     ;;
   ls)
     service_ls
+    ;;
+  up)
+    service_up "$RECREATE"
     ;;
   *)
     echo "Unknown action: $ACTION"
