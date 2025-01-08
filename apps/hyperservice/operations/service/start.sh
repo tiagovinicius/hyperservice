@@ -27,3 +27,13 @@ service_start() {
 
   echo "Hyperservice $name started successfully."
 }
+
+# Function to handle the --recreate option
+
+service_start_with_recreate() {
+  local name="$1"
+  local workdir="$2"
+
+  echo "Recreating hyperservice: $name"
+  service_restart "$name" "$workdir"
+}

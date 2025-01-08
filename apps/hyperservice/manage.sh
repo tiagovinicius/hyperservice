@@ -31,6 +31,9 @@ OPTIONS
     --recreate
         If specified with the 'start' action, the hyperservice will be recreated.
 
+    --recreate
+        If specified with the 'start' action, the hyperservice will be recreated.
+
     <name>
         Set the name of the hyperservice to manage.
         Required for all actions except 'ls'.
@@ -40,6 +43,7 @@ OPTIONS
         The following operations are available:
 
           start
+              hyperservice --workdir <workdir> [--recreate] <name> start
               hyperservice --workdir <workdir> [--recreate] <name> start
               Start the hyperservice, creating it if it doesn't exist.
               If --recreate is specified, the hyperservice will be recreated.
@@ -95,6 +99,7 @@ WORKDIR=""
 NAME=""
 ACTION=""
 RECREATE=""
+RECREATE=""
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
@@ -121,6 +126,11 @@ fi
 
 if [[ "$ACTION" == "start" || "$ACTION" == "restart" ]] && [[ -z "$WORKDIR" ]]; then
   echo "Error: --workdir is required for 'start' and 'restart' actions."
+  usage
+fi
+
+if [[ "$ACTION" != "start" && "$RECREATE" == "true" ]]; then
+  echo "Error: --recreate is only valid with the 'start' action."
   usage
 fi
 
