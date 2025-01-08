@@ -28,6 +28,9 @@ OPTIONS
         Specify the working directory inside the container.
         Required for 'start' and 'restart' actions.
 
+    --recreate
+        If specified with the 'start' action, the hyperservice will be recreated.
+
     <name>
         Set the name of the hyperservice to manage.
         Required for all actions except 'ls'.
@@ -37,12 +40,9 @@ OPTIONS
         The following operations are available:
 
           start
-              hyperservice --workdir <workdir> <name> start
+              hyperservice --workdir <workdir> [--recreate] <name> start
               Start the hyperservice, creating it if it doesn't exist.
-
-          restart
-              hyperservice --workdir <workdir> <name> restart
-              Remove the hyperservice (if exists) and create a new one.
+              If --recreate is specified, the hyperservice will be recreated.
 
           stop
               hyperservice <name> stop
@@ -68,8 +68,8 @@ USAGE EXAMPLES
     Start a hyperservice:
         hyperservice --workdir apps/service-a service-a start
 
-    Restart a hyperservice:
-        hyperservice --workdir apps/service-a service-a restart
+    Start a hyperservice with recreation:
+        hyperservice --workdir apps/service-a --recreate service-a start
 
     Stop a hyperservice:
         hyperservice service-a stop
@@ -94,11 +94,13 @@ EOF
 WORKDIR=""
 NAME=""
 ACTION=""
+RECREATE=""
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     --workdir) WORKDIR="$2"; shift 2 ;;
-    start|restart|stop|clean|exec|logs|ls) ACTION="$1"; shift ;;
+    --recreate) RECREATE="true"; shift ;;
+    start|stop|clean|exec|logs|ls) ACTION="$1"; shift ;;
     *) 
       if [[ -z "$NAME" ]]; then
         NAME="$1"
@@ -119,6 +121,11 @@ fi
 
 if [[ "$ACTION" == "start" || "$ACTION" == "restart" ]] && [[ -z "$WORKDIR" ]]; then
   echo "Error: --workdir is required for 'start' and 'restart' actions."
+  usage
+fi
+
+if [[ "$ACTION" != "start" && "$RECREATE" == "true" ]]; then
+  echo "Error: --recreate is only valid with the 'start' action."
   usage
 fi
 
@@ -144,10 +151,11 @@ hyperservice_exists() {
 # Handle actions
 case $ACTION in
   start)
-    service_start "$NAME" "$WORKDIR"
-    ;;
-  restart)
-    service_restart "$NAME" "$WORKDIR"
+    if [[ "$RECREATE" == "true" ]]; then
+      service_restart "$NAME" "$WORKDIR"
+    else
+      service_start "$NAME" "$WORKDIR"
+    fi
     ;;
   stop)
     service_stop "$NAME"
