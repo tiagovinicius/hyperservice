@@ -31,13 +31,13 @@ for FILE in $(ls "$POLICIES_DIR"/*.yml | sort); do
 done
 
 echo "Installing observability"
-kumactl install observability
+kumactl install observability > /dev/null
 
 
 echo "Waiting control plane to be running"
 timeout=300
 elapsed=0
-while ! curl -sf http://localhost:5681/; do
+while ! curl -sf http://localhost:5681/ > /dev/null 2>&1; do
   if [ $elapsed -ge $timeout ]; then
     echo "Timeout waiting for control plane to be running."
     exit 1
