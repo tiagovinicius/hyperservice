@@ -15,6 +15,7 @@ service_restart() {
     --name "$NAME" \
     --volume "${LOCAL_WORKSPACE_FOLDER}:/workspace" \
     --volume "/etc/environment:/etc/environment:ro" \
+    --volume "/etc/shared/environment:/etc/shared/environment" \
     --workdir "/workspace/$WORKDIR" \
     --env-file "/etc/environment" \
     --env "KUMA_DPP=$NAME" \

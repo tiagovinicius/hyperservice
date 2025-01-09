@@ -26,3 +26,14 @@ done
 
 echo "Installing observability"
 kumactl install observability
+
+# Set CONTROL_PLANE_STATUS to initializing
+flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "initializing" > /etc/shared/environment/CONTROL_PLANE_STATUS'
+
+# Set CONTROL_PLANE_STATUS to running when control plane is ready
+if curl -f http://localhost:5681/; then
+  flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "running" > /etc/shared/environment/CONTROL_PLANE_STATUS'
+fi
+
+# Set CONTROL_PLANE_STATUS to stopped when control plane is about to be done by docker
+trap 'flock /etc/shared/environment/CONTROL_PLANE_STATUS -c "echo stopped > /etc/shared/environment/CONTROL_PLANE_STATUS"' SIGTERM SIGINT SIGKILL

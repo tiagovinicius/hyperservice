@@ -8,6 +8,21 @@ npm install --global @moonrepo/cli
 echo "Creating directories"
 mkdir -p logs
 
+# Create the path /etc/shared/environment if it does not exist
+mkdir -p /etc/shared/environment
+
+# Wait for CONTROL_PLANE_STATUS to be running with a timeout
+timeout=300
+elapsed=0
+while [ "$(cat /etc/shared/environment/CONTROL_PLANE_STATUS)" != "running" ]; do
+  if [ $elapsed -ge $timeout ]; then
+    echo "Timeout waiting for control plane to be running."
+    exit 1
+  fi
+  echo "Waiting for control plane to be running..."
+  sleep 5
+  elapsed=$((elapsed + 5))
+done
 
 echo "Connecting to mesh"
 export CONTAINER_IP=$(hostname -i)
@@ -37,7 +52,6 @@ runuser -u kuma-dp -- \
     --dataplane-token-file=/.token \
     --dataplane="$(envsubst < ./.hyperservice/dataplane.yml)" \
     2>&1 | tee logs/dataplane-logs.txt &
-
 
 echo "Starting service"
 moon $DATAPLANE_NAME:dev \

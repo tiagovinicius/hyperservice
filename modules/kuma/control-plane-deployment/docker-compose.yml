@@ -1,0 +1,27 @@
+services:
+  control-plane:
+    container_name: control-plane
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /etc/shared/environment:/etc/shared/environment
+    environment:
+      - GIT_NAME=${GIT_NAME}
+      - GIT_EMAIL=${GIT_EMAIL}
+      - LOCAL_WORKSPACE_FOLDER=${LOCAL_WORKSPACE_FOLDER}
+    ports:
+      - "5681:5681"
+      - "8080:8080"
+      - "5678:5678"
+    networks:
+      - service-mesh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5681/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+networks:
+  service-mesh:
+    external: true
