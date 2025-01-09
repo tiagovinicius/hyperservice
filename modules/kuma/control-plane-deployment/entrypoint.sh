@@ -4,21 +4,26 @@ git config --global user.email $GIT_EMAIL
 git config --global --add safe.directory /workspace
 
 echo "Setting CONTROL_PLANE_STATUS to initializing"
-flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "initializing" > /etc/shared/environment/CONTROL_PLANE_STATUS'
+flock /etc/shared/environment/CONTROL_PLANE_STATUS \
+  -c 'echo "initializing" > /etc/shared/environment/CONTROL_PLANE_STATUS'
 
 echo "Hooking CONTROL_PLANE_STATUS to stopped when control plane is about to be done"
 trap 'flock /etc/shared/environment/CONTROL_PLANE_STATUS -c "echo stopped > /etc/shared/environment/CONTROL_PLANE_STATUS"' SIGTERM SIGINT SIGKILL
 
-
-echo "LOCAL_WORKSPACE_FOLDER=$LOCAL_WORKSPACE_FOLDER" >> /etc/environment
+echo "Setting LOCAL_WORKSPACE_FOLDER"
+flock /etc/shared/environment/LOCAL_WORKSPACE_FOLDER \
+  -c 'echo $LOCAL_WORKSPACE_FOLDER > /etc/shared/environment/LOCAL_WORKSPACE_FOLDER'
 echo "Local workspace folder is $LOCAL_WORKSPACE_FOLDER"
 
 echo "Setting up kumactl"
 CONTROL_PLANE_NAME=control-plane
 export CONTROL_PLANE_IP=$(hostname -i)
-echo "CONTROL_PLANE_IP=$CONTROL_PLANE_IP" >> /etc/environment
+flock /etc/shared/environment/CONTROL_PLANE_IP \
+  -c 'echo $CONTROL_PLANE_IP > /etc/shared/environment/CONTROL_PLANE_IP'
+
 export CONTROL_PLANE_ADMIN_USER_TOKEN=$(bash -c "docker exec -it $CONTROL_PLANE_NAME curl http://localhost:5681/global-secrets/admin-user-token" | jq -r .data | base64 -d)
-echo "CONTROL_PLANE_ADMIN_USER_TOKEN=$CONTROL_PLANE_ADMIN_USER_TOKEN" >> /etc/environment
+flock /etc/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN \
+  -c 'echo $CONTROL_PLANE_ADMIN_USER_TOKEN > /etc/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN'
 kumactl config control-planes add \
  --name default \
  --address http://localhost:5681 \
@@ -46,4 +51,5 @@ while ! curl -sf http://localhost:5681/ > /dev/null 2>&1; do
   sleep 5
   elapsed=$((elapsed + 5))
 done
-flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "running" > /etc/shared/environment/CONTROL_PLANE_STATUS'
+flock /etc/shared/environment/CONTROL_PLANE_STATUS \
+  -c 'echo "running" > /etc/shared/environment/CONTROL_PLANE_STATUS'

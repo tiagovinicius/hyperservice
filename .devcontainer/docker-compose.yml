@@ -6,7 +6,6 @@ services:
       dockerfile: modules/kuma/control-plane-deployment/Dockerfile
     env_file:
       - .env
-      - /etc/environment
     volumes:
       - ..:/workspace:delegated
       - /etc/shared/environment:/etc/shared/environment

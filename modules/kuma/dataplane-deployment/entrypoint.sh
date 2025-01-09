@@ -23,6 +23,8 @@ mkdir -p logs
 
 echo "Connecting to mesh"
 export CONTAINER_IP=$(hostname -i)
+CONTROL_PLANE_IP=$(cat /etc/shared/environment/CONTROL_PLANE_IP)
+CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat /etc/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN)
 kumactl config control-planes add \
   --name=default \
   --address=http://$CONTROL_PLANE_IP:5681 \

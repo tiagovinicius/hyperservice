@@ -14,13 +14,10 @@ service_restart() {
   docker run -d \
     --name "$NAME" \
     --volume "${LOCAL_WORKSPACE_FOLDER}:/workspace" \
-    --volume "/etc/environment:/etc/environment:ro" \
     --volume "/etc/shared/environment:/etc/shared/environment" \
     --workdir "/workspace/$WORKDIR" \
-    --env-file "/etc/environment" \
     --env "KUMA_DPP=$NAME" \
     --env "DATAPLANE_NAME=$NAME" \
-    --env "CONTROL_PLANE_NAME=control-plane" \
     --network service-mesh \
     --privileged \
     hyper-dataplane-image
