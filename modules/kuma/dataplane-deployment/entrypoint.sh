@@ -1,17 +1,7 @@
 #!/bin/bash
 git config --global --add safe.directory /workspace
 
-echo "Installing dependencies"
-npm install
-npm install --global @moonrepo/cli
-
-echo "Creating directories"
-mkdir -p logs
-
-# Create the path /etc/shared/environment if it does not exist
-mkdir -p /etc/shared/environment
-
-# Wait for CONTROL_PLANE_STATUS to be running with a timeout
+echo "Waiting control plane to be running"
 timeout=300
 elapsed=0
 while [ "$(cat /etc/shared/environment/CONTROL_PLANE_STATUS)" != "running" ]; do
@@ -24,6 +14,13 @@ while [ "$(cat /etc/shared/environment/CONTROL_PLANE_STATUS)" != "running" ]; do
   elapsed=$((elapsed + 5))
 done
 
+echo "Installing dependencies"
+npm install
+npm install --global @moonrepo/cli
+
+echo "Creating directories"
+mkdir -p logs
+
 echo "Connecting to mesh"
 export CONTAINER_IP=$(hostname -i)
 kumactl config control-planes add \
@@ -35,7 +32,6 @@ kumactl config control-planes add \
 echo "Applying policies"
 POLICIES_DIR="./.hyperservice/policies"
 for FILE in $(ls "$POLICIES_DIR"/*.yml | sort); do
-    echo "Applying $FILE"
     echo "$(envsubst < "$FILE")" | kumactl apply -f -
 done
 

@@ -3,6 +3,13 @@ git config --global user.name $GIT_NAME
 git config --global user.email $GIT_EMAIL
 git config --global --add safe.directory /workspace
 
+echo "Setting CONTROL_PLANE_STATUS to initializing"
+flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "initializing" > /etc/shared/environment/CONTROL_PLANE_STATUS'
+
+echo "Hooking CONTROL_PLANE_STATUS to stopped when control plane is about to be done"
+trap 'flock /etc/shared/environment/CONTROL_PLANE_STATUS -c "echo stopped > /etc/shared/environment/CONTROL_PLANE_STATUS"' SIGTERM SIGINT SIGKILL
+
+
 echo "LOCAL_WORKSPACE_FOLDER=$LOCAL_WORKSPACE_FOLDER" >> /etc/environment
 echo "Local workspace folder is $LOCAL_WORKSPACE_FOLDER"
 
@@ -20,20 +27,23 @@ kumactl config control-planes add \
 echo "Applying policies"
 POLICIES_DIR="/workspace/.hyperservice/policies"
 for FILE in $(ls "$POLICIES_DIR"/*.yml | sort); do
-    echo "Applying $FILE"
     echo "$(envsubst < "$FILE")" | kumactl apply -f -
 done
 
 echo "Installing observability"
 kumactl install observability
 
-# Set CONTROL_PLANE_STATUS to initializing
-flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "initializing" > /etc/shared/environment/CONTROL_PLANE_STATUS'
 
-# Set CONTROL_PLANE_STATUS to running when control plane is ready
-if curl -f http://localhost:5681/; then
-  flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "running" > /etc/shared/environment/CONTROL_PLANE_STATUS'
-fi
-
-# Set CONTROL_PLANE_STATUS to stopped when control plane is about to be done by docker
-trap 'flock /etc/shared/environment/CONTROL_PLANE_STATUS -c "echo stopped > /etc/shared/environment/CONTROL_PLANE_STATUS"' SIGTERM SIGINT SIGKILL
+echo "Waiting control plane to be running"
+timeout=300
+elapsed=0
+while ! curl -sf http://localhost:5681/; do
+  if [ $elapsed -ge $timeout ]; then
+    echo "Timeout waiting for control plane to be running."
+    exit 1
+  fi
+  echo "Waiting for control plane to be running..."
+  sleep 5
+  elapsed=$((elapsed + 5))
+done
+flock /etc/shared/environment/CONTROL_PLANE_STATUS -c 'echo "running" > /etc/shared/environment/CONTROL_PLANE_STATUS'

@@ -9,6 +9,7 @@ services:
       - /etc/environment
     volumes:
       - ..:/workspace:delegated
+      - /etc/shared/environment:/etc/shared/environment
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.ssh:/root/.ssh:rw
     privileged: true
@@ -19,11 +20,17 @@ services:
     networks:
       - service-mesh
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5681/"]
-      interval: 10s
-      timeout: 5s
+      test:
+        [
+          "CMD",
+          "bash",
+          "-c",
+          "[[ $(cat /etc/shared/environment/CONTROL_PLANE_STATUS 2>/dev/null) == 'running' ]]",
+        ]
+      interval: 2s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 3s
 
   deployment-platform:
     container_name: deployment-platform
