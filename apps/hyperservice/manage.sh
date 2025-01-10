@@ -4,6 +4,7 @@
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 SERVICE_OPERATIONS_DIR="$SCRIPT_DIR/operations/service"
+MESH_OPERATIONS_DIR="$SCRIPT_DIR/operations/mesh"
 
 source "$SERVICE_OPERATIONS_DIR/start.sh"
 source "$SERVICE_OPERATIONS_DIR/restart.sh"
@@ -14,6 +15,8 @@ source "$SERVICE_OPERATIONS_DIR/logs.sh"
 source "$SERVICE_OPERATIONS_DIR/ls.sh"
 source "$SERVICE_OPERATIONS_DIR/up.sh"
 source "$SERVICE_OPERATIONS_DIR/down.sh"
+source "$MESH_OPERATIONS_DIR/up.sh"
+source "$MESH_OPERATIONS_DIR/down.sh"
 
 # Display usage information
 usage() {
@@ -85,6 +88,22 @@ OPTIONS
               hyperservice --clean down
               Clean all hyperservices in the workspace.
 
+          mesh up
+              hyperservice mesh up
+              Start the service mesh.
+
+          mesh --services up
+              hyperservice mesh --services up
+              Start the service mesh and all hyperservices.
+
+          mesh down
+              hyperservice mesh down
+              Stop the service mesh.
+
+          mesh --services down
+              hyperservice mesh --services down
+              Stop the service mesh and all hyperservices.
+
 USAGE EXAMPLES
     Start a hyperservice:
         hyperservice --workdir apps/service-a service-a start
@@ -119,6 +138,18 @@ USAGE EXAMPLES
     Clean all hyperservices:
         hyperservice --clean down
 
+    Start the service mesh:
+        hyperservice mesh up
+
+    Start the service mesh and all hyperservices:
+        hyperservice mesh --services up
+
+    Stop the service mesh:
+        hyperservice mesh down
+
+    Stop the service mesh and all hyperservices:
+        hyperservice mesh --services down
+
 EOF
   exit 1
 }
@@ -129,12 +160,16 @@ NAME=""
 ACTION=""
 RECREATE=""
 CLEAN=""
+MESH=""
+SERVICES=""
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
     --workdir) WORKDIR="$2"; shift 2 ;;
     --recreate) RECREATE="true"; shift ;;
     --clean) CLEAN="true"; shift ;;
+    mesh) MESH="true"; shift ;;
+    --services) SERVICES="true"; shift ;;
     start|stop|clean|exec|logs|ls|up|down) ACTION="$1"; shift ;;
     *) 
       if [[ -z "$NAME" ]]; then
@@ -149,8 +184,8 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Validate required parameters
-if [[ -z "$NAME" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" ]]; then
-  echo "Error: <name> is required for all actions except 'ls', 'up', and 'down'."
+if [[ -z "$NAME" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" && "$ACTION" != "mesh" ]]; then
+  echo "Error: <name> is required for all actions except 'ls', 'up', 'down', and 'mesh'."
   usage
 fi
 
@@ -175,7 +210,7 @@ if [[ "$NAME" =~ \  ]]; then
 fi
 
 # Ensure LOCAL_WORKSPACE_FOLDER is set as an environment variable
-if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" ]]; then
+if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" && "$ACTION" != "mesh" ]]; then
   echo "Error: LOCAL_WORKSPACE_FOLDER environment variable is not set."
   exit 1
 fi
@@ -213,13 +248,31 @@ case $ACTION in
     service_ls
     ;;
   up)
-    service_up "$RECREATE"
+    if [[ "$MESH" == "true" ]]; then
+      mesh_up
+      if [[ "$SERVICES" == "true" ]]; then
+        service_up "$RECREATE"
+      fi
+    else
+      service_up "$RECREATE"
+    fi
     ;;
   down)
-    if [[ "$CLEAN" == "true" ]]; then
-      service_down_clean
+    if [[ "$MESH" == "true" ]]; then
+      mesh_down
+      if [[ "$SERVICES" == "true" ]]; then
+        if [[ "$CLEAN" == "true" ]]; then
+          service_down_clean
+        else
+          service_down
+        fi
+      fi
     else
-      service_down
+      if [[ "$CLEAN" == "true" ]]; then
+        service_down_clean
+      else
+        service_down
+      fi
     fi
     ;;
   *)
