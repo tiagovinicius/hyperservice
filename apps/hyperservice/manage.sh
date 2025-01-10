@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cd $LOCAL_WORKSPACE_FOLDER
+ls
+
 # Source operation functions
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
@@ -223,51 +226,18 @@ hyperservice_exists() {
   docker ps -a --format "{{.Names}}" | grep -qw "$NAME"
 }
 
-# Handle actions
+if [[ "$MESH" == "true" ]]; then
+# Handle mesh actions
 case $ACTION in
-  start)
-    if [[ "$RECREATE" == "true" ]]; then
-      service_restart "$NAME" "$WORKDIR"
-    else
-      service_start "$NAME" "$WORKDIR"
-    fi
-    ;;
-  stop)
-    service_stop "$NAME"
-    ;;
-  clean)
-    service_clean "$NAME"
-    ;;
-  exec)
-    service_exec "$NAME"
-    ;;
-  logs)
-    service_logs "$NAME"
-    ;;
-  ls)
-    service_ls
-    ;;
   up)
-    if [[ "$MESH" == "true" ]]; then
-      mesh_up
-      if [[ "$SERVICES" == "true" ]]; then
-        service_up "$RECREATE"
-      fi
-    else
+    mesh_up
+    if [[ "$SERVICES" == "true" ]]; then
       service_up "$RECREATE"
     fi
     ;;
   down)
-    if [[ "$MESH" == "true" ]]; then
-      mesh_down
-      if [[ "$SERVICES" == "true" ]]; then
-        if [[ "$CLEAN" == "true" ]]; then
-          service_down_clean
-        else
-          service_down
-        fi
-      fi
-    else
+    mesh_down
+    if [[ "$SERVICES" == "true" ]]; then
       if [[ "$CLEAN" == "true" ]]; then
         service_down_clean
       else
@@ -278,5 +248,46 @@ case $ACTION in
   *)
     echo "Unknown action: $ACTION"
     usage
-    ;;
-esac
+    ;;  
+  esac
+else
+  # Handle service actions
+  case $ACTION in
+    start)
+      if [[ "$RECREATE" == "true" ]]; then
+        service_restart "$NAME" "$WORKDIR"
+      else
+        service_start "$NAME" "$WORKDIR"
+      fi
+      ;;
+    stop)
+      service_stop "$NAME"
+      ;;
+    clean)
+      service_clean "$NAME"
+      ;;
+    exec)
+      service_exec "$NAME"
+      ;;
+    logs)
+      service_logs "$NAME"
+      ;;
+    ls)
+      service_ls
+      ;;
+    up)
+      service_up "$RECREATE"
+      ;;
+    down)
+      if [[ "$CLEAN" == "true" ]]; then
+        service_down_clean
+      else
+        service_down
+      fi
+      ;;
+    *)
+      echo "Unknown action: $ACTION"
+      usage
+      ;;
+  esac
+fi

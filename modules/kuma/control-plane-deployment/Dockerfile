@@ -12,4 +12,6 @@ RUN echo "Setup Kuma to use CLIs" && \
 RUN echo "Setting workspace dir"
 WORKDIR /workspace
 
-CMD ["kuma-cp", "run"]
+COPY /entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

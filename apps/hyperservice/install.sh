@@ -15,7 +15,7 @@ for LINK_PATH in "$HYPERSERVICE_LINK_PATH" "$HYPERSERVICE_SHORTLINK_PATH"; do
   sudo ln -sf "$HYPERSERVICE_TARGET_PATH" "$LINK_PATH"
   sudo chmod +x "$LINK_PATH"
 done
-chmod +x /workspace/apps/hyperservice/manage.sh
+sudo chmod +x /workspace/apps/hyperservice/manage.sh
 export PATH=$PATH:/usr/local/bin
 
 echo "Project installed with success."
