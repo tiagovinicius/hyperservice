@@ -1,1 +1,1 @@
-docker build -t hyper-dataplane-image modules/kuma/dataplane-deployment
+docker build -t hyperservice-dataplane-image modules/kuma/dataplane-deployment

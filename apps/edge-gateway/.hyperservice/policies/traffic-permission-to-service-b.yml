@@ -1,5 +1,5 @@
 type: MeshTrafficPermission
-name: service-b-allow-from-edge-gateway
+name: edge-gateway-allow-to-service-b
 mesh: default
 spec:
   targetRef:

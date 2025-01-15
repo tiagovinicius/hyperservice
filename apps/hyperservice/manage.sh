@@ -5,6 +5,7 @@ SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 SERVICE_OPERATIONS_DIR="$SCRIPT_DIR/operations/service"
 MESH_OPERATIONS_DIR="$SCRIPT_DIR/operations/mesh"
+UTILS_DIR="$SCRIPT_DIR/utils"
 
 source "$SERVICE_OPERATIONS_DIR/start.sh"
 source "$SERVICE_OPERATIONS_DIR/restart.sh"
@@ -17,6 +18,7 @@ source "$SERVICE_OPERATIONS_DIR/up.sh"
 source "$SERVICE_OPERATIONS_DIR/down.sh"
 source "$MESH_OPERATIONS_DIR/up.sh"
 source "$MESH_OPERATIONS_DIR/down.sh"
+source "$UTILS_DIR"/wait_for_docker.sh
 
 # Display usage information
 usage() {
@@ -222,17 +224,19 @@ WORKSPACE_FOLDER="${WORKSPACE_FOLDER%/}"
 
 # Check if the hyperservice exists
 hyperservice_exists() {
-  docker ps -a --format "{{.Names}}" | grep -qw "$NAME"
+  docker ps -a --format "{{.Names}}" | grep -E -qw "^$NAME(-.*|$)"
 }
 
 if [[ "$MESH" == "true" ]]; then
 # Handle mesh actions
 case $ACTION in
   up)
-    mesh_up
+    mesh_up &
+    mesh_up_pid=$!
     if [[ "$SERVICES" == "true" ]]; then
-      service_up "$RECREATE"
+      service_up "$RECREATE" &
     fi
+    wait $mesh_up_pid
     ;;
   down)
     if [[ "$CLEAN" == "true" ]]; then
@@ -240,6 +244,7 @@ case $ACTION in
     else
       service_down
     fi
+    mesh_down
     ;;
   *)
     echo "Unknown action: $ACTION"
@@ -258,7 +263,6 @@ case $ACTION in
     else
       service_down
     fi
-    mesh_down
     ;;
   *)
     echo "Unknown action: $ACTION"

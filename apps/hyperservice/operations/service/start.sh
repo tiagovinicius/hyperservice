@@ -7,27 +7,49 @@ service_start() {
   echo "Starting hyperservice: $name"
 
   if [[ -f "$workdir/.hyperservice/fleet.yml" ]]; then
-    echo "fleet.yml found. Creating multiple containers."
+    echo "fleet.yml found. Creating fleet simulation."
     local units
-    units=$(yq e '.simulator.units' "$workdir/.hyperservice/fleet.yml")
+    units=$(yq -r '.simulator.units' "$workdir/.hyperservice/fleet.yml")
 
     for ((i = 1; i <= units; i++)); do
-      local container_name="${name}-$(uuidgen | cut -c1-8)"
-      echo "Creating and starting container: $container_name"
+      local base_name="${name}-$(uuidgen | cut -c1-8)"
+      local node_name="${base_name}-node"
+      local hyperservice_name="${base_name}"
+      echo "Creating and starting fleet unit simulation: $node_name"
       docker run -d \
-        --name "$container_name" \
+        --name "$node_name" \
+        --volume "/var/run/docker.sock:/var/run/docker.sock" \
         --volume "/workspace:/workspace" \
         --volume "/etc/shared/environment:/etc/shared/environment" \
-        --workdir "/workspace/$workdir" \
-        --env "KUMA_DPP=$container_name" \
-        --env "DATAPLANE_NAME=$container_name" \
+        --env "KUMA_DPP=$hyperservice_name" \
+        --env "DATAPLANE_NAME=$hyperservice_name" \
         --env "WORKSPACE_FOLDER=$WORKSPACE_FOLDER" \
         --network service-mesh \
-        --privileged \
-        docker:latest
+        hyperservice-fleet-simulator-image
 
-      echo "Running docker run inside container: $container_name"
-      docker exec "$container_name" docker run -d --name "inner-$container_name" alpine:latest sleep 3600
+      echo "Accessing fleet unit simulation: $node_name"
+      wait_for_docker $node_name 60
+      if [[ $? -eq 0 ]]; then
+        echo "Fleet unit is ready. Running further commands..."
+        echo "Creating and starting hypeservice: $hyperservice_name"
+        docker exec $node_name \
+        docker run --privileged -d \
+          --name "$hyperservice_name" \
+          --volume "/var/run/docker.sock:/var/run/docker.sock" \
+          --volume "/workspace:/workspace" \
+          --volume "/etc/shared/environment:/etc/shared/environment" \
+          --workdir "/workspace/$workdir" \
+          --env "KUMA_DPP=$hyperservice_name" \
+          --env "DATAPLANE_NAME=$hyperservice_name" \
+          --env "SERVICE_NAME=$NAME" \
+          --env "WORKSPACE_FOLDER=$WORKSPACE_FOLDER" \
+          --network service-mesh \
+          --privileged \
+          hyperservice-dataplane-image
+      else
+        echo "Failed to connect to the fleet unit: $container_name"
+      fi
+
     done
   else
     if hyperservice_exists; then
@@ -42,10 +64,11 @@ service_start() {
         --workdir "/workspace/$WORKDIR" \
         --env "KUMA_DPP=$NAME" \
         --env "DATAPLANE_NAME=$NAME" \
+        --env "SERVICE_NAME=$NAME" \
         --env "WORKSPACE_FOLDER=$WORKSPACE_FOLDER" \
         --network service-mesh \
         --privileged \
-        hyper-dataplane-image
+        hyperservice-dataplane-image
     fi
   fi
 

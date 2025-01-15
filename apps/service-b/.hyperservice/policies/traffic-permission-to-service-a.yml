@@ -1,5 +1,5 @@
 type: MeshTrafficPermission
-name: service-a-allow-from-service-b
+name: $DATAPLANE_NAME-allow-to-service-a
 mesh: default
 spec:
   targetRef:
@@ -10,6 +10,6 @@ spec:
     - targetRef:
         kind: MeshSubset
         tags:
-          kuma.io/service: service-b
+          kuma.io/service: $DATAPLANE_NAME
       default:
         action: Allow
