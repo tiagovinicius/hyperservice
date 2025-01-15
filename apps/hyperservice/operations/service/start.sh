@@ -13,11 +13,12 @@ service_start() {
     echo "Creating and starting hyperservice: $NAME"
     docker run -d \
       --name "$NAME" \
-      --volume "${LOCAL_WORKSPACE_FOLDER}:/workspace" \
+      --volume "/workspace:/workspace" \
       --volume "/etc/shared/environment:/etc/shared/environment" \
       --workdir "/workspace/$WORKDIR" \
       --env "KUMA_DPP=$NAME" \
       --env "DATAPLANE_NAME=$NAME" \
+      --env "WORKSPACE_FOLDER=$WORKSPACE_FOLDER" \
       --network service-mesh \
       --privileged \
       hyper-dataplane-image

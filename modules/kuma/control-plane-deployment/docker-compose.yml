@@ -2,10 +2,10 @@ services:
   control-plane:
     container_name: control-plane
     build:
-      context: ..
-      dockerfile: modules/kuma/control-plane-deployment/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - ..:/workspace:delegated
+      - ${WORKSPACE_FOLDER}:/workspace:delegated
       - /etc/shared/environment:/etc/shared/environment
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.ssh:/root/.ssh:rw
@@ -28,26 +28,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 3s
-
-  deployment-platform:
-    container_name: deployment-platform
-    build:
-      context: ..
-      dockerfile: ./modules/dokku/Dockerfile
-    ports:
-      - "3022:22"
-      - "80:80"
-      - "8443:443"
-    volumes:
-      - "/var/lib/dokku:/mnt/dokku"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    environment:
-      DOKKU_HOSTNAME: dokku.me
-      DOKKU_HOST_ROOT: /var/lib/dokku/home/dokku
-      DOKKU_LIB_HOST_ROOT: /var/lib/dokku/var/lib/dokku
-    restart: unless-stopped
-    networks:
-      - service-mesh
 
 networks:
   service-mesh:

@@ -1,8 +1,5 @@
 #!/bin/bash
 
-cd $LOCAL_WORKSPACE_FOLDER
-ls
-
 # Source operation functions
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
@@ -75,19 +72,19 @@ OPTIONS
               hyperservice ls
               List all hyperservices with specific details.
 
-          up
+          service up
               hyperservice up
               Start all hyperservices in the workspace.
 
-          up --recreate
+          service up --recreate
               hyperservice --recreate up
               Recreate and start all hyperservices in the workspace.
 
-          down
+          service down
               hyperservice down
               Stop all hyperservices in the workspace.
 
-          down --clean
+          service down --clean
               hyperservice --clean down
               Clean all hyperservices in the workspace.
 
@@ -130,16 +127,16 @@ USAGE EXAMPLES
         hyperservice ls
 
     Start all hyperservices:
-        hyperservice up
+        hyperservice service up
 
     Recreate and start all hyperservices:
-        hyperservice --recreate up
+        hyperservice service --recreate up
 
     Stop all hyperservices:
-        hyperservice down
+        hyperservice service down
 
     Clean all hyperservices:
-        hyperservice --clean down
+        hyperservice service --clean down
 
     Start the service mesh:
         hyperservice mesh up
@@ -165,6 +162,7 @@ RECREATE=""
 CLEAN=""
 MESH=""
 SERVICES=""
+SERVICE=""
 
 while [[ "$#" -gt 0 ]]; do
   case $1 in
@@ -172,6 +170,7 @@ while [[ "$#" -gt 0 ]]; do
     --recreate) RECREATE="true"; shift ;;
     --clean) CLEAN="true"; shift ;;
     mesh) MESH="true"; shift ;;
+    service) SERVICE="true"; shift ;;
     --services) SERVICES="true"; shift ;;
     start|stop|clean|exec|logs|ls|up|down) ACTION="$1"; shift ;;
     *) 
@@ -212,14 +211,14 @@ if [[ "$NAME" =~ \  ]]; then
   usage
 fi
 
-# Ensure LOCAL_WORKSPACE_FOLDER is set as an environment variable
-if [[ -z "$LOCAL_WORKSPACE_FOLDER" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" && "$ACTION" != "mesh" ]]; then
-  echo "Error: LOCAL_WORKSPACE_FOLDER environment variable is not set."
+# Ensure WORKSPACE_FOLDER is set as an environment variable
+if [[ -z "$WORKSPACE_FOLDER" && "$ACTION" != "ls" && "$ACTION" != "up" && "$ACTION" != "down" && "$ACTION" != "mesh" ]]; then
+  echo "Error: WORKSPACE_FOLDER environment variable is not set."
   exit 1
 fi
 
-# Normalize LOCAL_WORKSPACE_FOLDER to remove trailing slash
-LOCAL_WORKSPACE_FOLDER="${LOCAL_WORKSPACE_FOLDER%/}"
+# Normalize WORKSPACE_FOLDER to remove trailing slash
+WORKSPACE_FOLDER="${WORKSPACE_FOLDER%/}"
 
 # Check if the hyperservice exists
 hyperservice_exists() {
@@ -236,14 +235,30 @@ case $ACTION in
     fi
     ;;
   down)
-    mesh_down
-    if [[ "$SERVICES" == "true" ]]; then
-      if [[ "$CLEAN" == "true" ]]; then
-        service_down_clean
-      else
-        service_down
-      fi
+    if [[ "$CLEAN" == "true" ]]; then
+      service_down_clean
+    else
+      service_down
     fi
+    ;;
+  *)
+    echo "Unknown action: $ACTION"
+    usage
+    ;;  
+  esac
+elif [[ "$SERVICE" == "true" ]]; then
+# Handle mesh actions
+case $ACTION in
+  up)
+    service_up "$RECREATE"
+    ;;
+  down)
+    if [[ "$CLEAN" == "true" ]]; then
+      service_down_clean
+    else
+      service_down
+    fi
+    mesh_down
     ;;
   *)
     echo "Unknown action: $ACTION"
@@ -274,16 +289,6 @@ else
       ;;
     ls)
       service_ls
-      ;;
-    up)
-      service_up "$RECREATE"
-      ;;
-    down)
-      if [[ "$CLEAN" == "true" ]]; then
-        service_down_clean
-      else
-        service_down
-      fi
       ;;
     *)
       echo "Unknown action: $ACTION"

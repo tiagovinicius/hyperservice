@@ -7,13 +7,15 @@
     "ghcr.io/devcontainers-contrib/features/curl-apt-get:1": {},
     "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
       "packages": "sudo"
-  }
+    }
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
-  // Configure tool-specific properties.
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "containerEnv": {
-    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+    "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
   },
+  // Configure tool-specific properties.
   "customizations": {
     "settings": {
       "terminal.integrated.shell.linux": "/bin/bash"
