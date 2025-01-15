@@ -9,7 +9,6 @@ RUN echo "Setup Kuma to use CLIs" && \
     curl -L https://kuma.io/installer.sh | VERSION=2.9.2 sh - && \
     mv kuma-2.9.2/bin/* /usr/local/bin/
 
-RUN echo "Setting workspace dir"
-WORKDIR /workspace
-
-CMD ["kuma-cp", "run"]
+COPY /entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

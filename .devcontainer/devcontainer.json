@@ -1,12 +1,21 @@
 {
   "name": "Platform as Service + Service Mesh (Dokku, Kuma)",
-  "dockerComposeFile": "docker-compose.yml",
-  "service": "hype-services",
-  "workspaceFolder": "/workspace",
-  // Configure tool-specific properties.
-  "containerEnv": {
-    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  "image": "node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers-contrib/features/curl-apt-get:1": {},
+    "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+      "packages": "sudo"
+    }
   },
+  "runArgs": ["--env-file", ".devcontainer/.env"],
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "containerEnv": {
+    "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
+  },
+  // Configure tool-specific properties.
   "customizations": {
     "settings": {
       "terminal.integrated.shell.linux": "/bin/bash"
@@ -31,10 +40,7 @@
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [22, 80, 443, 5681, 5678, 8000, 8001],
-  // Use 'mounts' to mount the source code into the container.
-  "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated"
-  ],
   // Starts control-plane, set up kmctl in devcontainer
-  "postCreateCommand": "bash modules/kuma/control-plane-deployment/entrypoint.sh && bash modules/kuma/dataplane-deployment/build-image.sh &&  bash apps/hyperservice/install.sh"
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postAttachCommand": "bash"
 }

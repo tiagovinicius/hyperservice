@@ -1,0 +1,35 @@
+services:
+  control-plane:
+    container_name: control-plane
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ${WORKSPACE_FOLDER}:/workspace:delegated
+      - /etc/shared/environment:/etc/shared/environment
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.ssh:/root/.ssh:rw
+    privileged: true
+    ports:
+      - "5681:5681" # Admin REST API
+      - "8080:8080" # Kuma GUI
+      - "5678:5678" # Dataplane communication
+    networks:
+      - service-mesh
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bash",
+          "-c",
+          "[[ $(cat /etc/shared/environment/CONTROL_PLANE_STATUS 2>/dev/null) == 'running' ]]",
+        ]
+      interval: 2s
+      timeout: 10s
+      retries: 5
+      start_period: 3s
+
+networks:
+  service-mesh:
+    name: service-mesh
+    driver: bridge
