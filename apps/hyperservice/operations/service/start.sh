@@ -16,8 +16,7 @@ service_start() {
       local node_name="${base_name}-node"
       local hyperservice_name="${base_name}"
       echo "Creating and starting fleet unit simulation: $node_name"
-      docker run -d \
-        --name "$node_name" \
+      docker_container_run "$node_name" \
         --volume "/var/run/docker.sock:/var/run/docker.sock" \
         --volume "/workspace:/workspace" \
         --volume "/etc/shared/environment:/etc/shared/environment" \
@@ -33,8 +32,7 @@ service_start() {
         echo "Fleet unit is ready. Running further commands..."
         echo "Creating and starting hypeservice: $hyperservice_name"
         docker exec $node_name \
-        docker run --privileged -d \
-          --name "$hyperservice_name" \
+        docker_container_run "$hyperservice_name" \
           --volume "/var/run/docker.sock:/var/run/docker.sock" \
           --volume "/workspace:/workspace" \
           --volume "/etc/shared/environment:/etc/shared/environment" \
@@ -52,13 +50,12 @@ service_start() {
 
     done
   else
-    if hyperservice_exists; then
+    if docker_container_exists "$NAME"; then
       echo "Starting existing hyperservice: $NAME"
-      docker start "$NAME"
+      docker_container_start "$NAME"
     else
       echo "Creating and starting hyperservice: $NAME"
-      docker run -d \
-        --name "$NAME" \
+      docker_container_run "$NAME" \
         --volume "/workspace:/workspace" \
         --volume "/etc/shared/environment:/etc/shared/environment" \
         --workdir "/workspace/$WORKDIR" \

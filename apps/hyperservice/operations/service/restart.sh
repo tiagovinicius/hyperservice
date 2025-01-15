@@ -8,7 +8,7 @@ service_restart() {
 
   if hyperservice_exists; then
     echo "Removing existing hyperservice: $NAME"
-    docker rm -f "$NAME"
+    docker_container_remove "$NAME"
   fi
 
   if [[ -f "$workdir/.hyperservice/fleet.yml" ]]; then
@@ -21,8 +21,7 @@ service_restart() {
       local node_name="${base_name}-node"
       local hyperservice_name="${base_name}"
       echo "Creating and starting fleet unit simulation: $node_name"
-      docker run -d \
-        --name "$node_name" \
+      docker_container_run "$node_name" \
         --volume "/var/run/docker.sock:/var/run/docker.sock" \
         --volume "/workspace:/workspace" \
         --volume "/etc/shared/environment:/etc/shared/environment" \
@@ -38,8 +37,7 @@ service_restart() {
         echo "Fleet unit is ready. Running further commands..."
         echo "Creating and starting hypeservice: $hyperservice_name"
         docker exec $node_name \
-        docker run --privileged -d \
-          --name "$hyperservice_name" \
+        docker_container_run "$hyperservice_name" \
           --volume "/var/run/docker.sock:/var/run/docker.sock" \
           --volume "/workspace:/workspace" \
           --volume "/etc/shared/environment:/etc/shared/environment" \
@@ -58,8 +56,7 @@ service_restart() {
     done
   else
     echo "Creating and starting hyperservice: $NAME"
-    docker run -d \
-      --name "$NAME" \
+    docker_container_run "$NAME" \
       --volume "/workspace:/workspace" \
       --volume "/etc/shared/environment:/etc/shared/environment" \
       --workdir "/workspace/$WORKDIR" \

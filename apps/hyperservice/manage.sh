@@ -19,6 +19,7 @@ source "$SERVICE_OPERATIONS_DIR/down.sh"
 source "$MESH_OPERATIONS_DIR/up.sh"
 source "$MESH_OPERATIONS_DIR/down.sh"
 source "$UTILS_DIR"/wait_for_docker.sh
+source "$UTILS_DIR"/docker_utils.sh
 
 # Display usage information
 usage() {
@@ -224,7 +225,7 @@ WORKSPACE_FOLDER="${WORKSPACE_FOLDER%/}"
 
 # Check if the hyperservice exists
 hyperservice_exists() {
-  docker ps -a --format "{{.Names}}" | grep -E -qw "^$NAME(-.*|$)"
+  docker_container_exists "$NAME"
 }
 
 if [[ "$MESH" == "true" ]]; then
