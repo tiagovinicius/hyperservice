@@ -52,6 +52,6 @@ runuser -u kuma-dp -- \
     --dataplane="$(envsubst < .hyperservice/dataplane.yml)" \
     2>&1 | tee logs/dataplane-logs.txt &
 
-echo "Starting service"
-moon $DATAPLANE_NAME:dev --log trace\
+echo "Starting service $SERVICE_NAME"
+moon $SERVICE_NAME:dev \
   2>&1 | tee logs/app-logs.txt
