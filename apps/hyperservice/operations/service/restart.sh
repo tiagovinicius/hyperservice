@@ -6,7 +6,7 @@ service_restart() {
 
   echo "Restarting hyperservice: $name"
 
-  if hyperservice_exists; then
+  if docker_container_exists; then
     echo "Removing existing hyperservice: $NAME"
     docker_container_remove "$NAME"
   fi

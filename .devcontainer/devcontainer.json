@@ -6,14 +6,15 @@
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers-contrib/features/curl-apt-get:1": {},
     "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-      "packages": "sudo,uuid-runtime,yq"
+      "packages": "sudo,uuid-runtime,yq,fzf"
     }
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "containerEnv": {
-    "WORKSPACE_FOLDER": "${containerWorkspaceFolder}"
+    "WORKSPACE_FOLDER": "${containerWorkspaceFolder}",
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
@@ -32,7 +33,8 @@
         "GitHub.copilot-chat",
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
-        "GitHub.copilot-workspace"
+        "GitHub.copilot-workspace",
+        "mads-hartmann.bash-ide-vscode"
       ],
       "settings": {
         "files.autoSave": "afterDelay",

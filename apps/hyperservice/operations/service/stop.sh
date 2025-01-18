@@ -5,7 +5,7 @@ service_stop() {
 
   echo "Stopping hyperservice: $name"
 
-  if hyperservice_exists; then
+  if docker_container_exists; then
     CONTAINERS=$(docker ps -q --filter "name=^$NAME(-.*|$)")
     echo "$CONTAINERS" | while read -r container_id; do
       echo "Stopping container: $container_id"

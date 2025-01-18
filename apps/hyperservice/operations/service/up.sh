@@ -12,9 +12,9 @@ service_up() {
 
     if [[ -f "$workdir/.hyperservice/dataplane.yml" ]]; then
       if [[ "$recreate" == "true" ]]; then
-        hyperservice --workdir "$workdir" --recreate "$name" start
+        service_restart "$name" "$workdir" &
       else
-        hyperservice --workdir "$workdir" "$name" start
+        service_start "$name" "$workdir" &
       fi
     fi
   done

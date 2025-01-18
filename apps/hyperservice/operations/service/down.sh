@@ -27,6 +27,7 @@ service_down_clean() {
     workdir=$(echo "$project" | jq -r '.source')
 
     if [[ -f "$workdir/.hyperservice/dataplane.yml" ]]; then
+      docker_container_stop "$name"
       docker_container_remove "$name"
     fi
   done

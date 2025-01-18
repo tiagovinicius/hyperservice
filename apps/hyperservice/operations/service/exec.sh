@@ -6,7 +6,7 @@ service_exec() {
   echo "Executing hyperservice: $name"
 
   # Check if the hyperservice exists
-  if ! hyperservice_exists "$name"; then
+  if ! docker_container_exists "$name"; then
     echo "Hyperservice $name does not exist."
     return
   fi
