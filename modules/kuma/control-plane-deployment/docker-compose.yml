@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ${WORKSPACE_FOLDER}:/workspace:delegated
+      - ${LOCAL_WORKSPACE_FOLDER}:/workspace:delegated
       - /etc/shared/environment:/etc/shared/environment
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.ssh:/root/.ssh:rw
