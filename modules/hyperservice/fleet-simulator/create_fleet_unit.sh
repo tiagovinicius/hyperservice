@@ -22,8 +22,8 @@ create_fleet_unit() {
   docker exec "$node_name" echo "Container $node_name is ready for docker exec" || echo "Debug: docker exec failed for $node_name"
   if [[ $? -eq 0 ]]; then
     echo "Fleet unit is ready. Starting hyperservice: $base_name"
-    docker cp /workspace/apps/hyperservice/utils/service_utils.sh "$node_name":/
-    docker cp /workspace/apps/hyperservice/utils/docker_utils.sh "$node_name":/
+    docker cp /workspace/modules/hyperservice/actions/utils/service_utils.sh "$node_name":/
+    docker cp /workspace/modules/hyperservice/actions/utils/docker_utils.sh "$node_name":/
     docker exec \
       "$node_name" bash -c "source /service_utils.sh && source /docker_utils.sh && run_service \"$service_name\" \"$workdir\" hyperservice-dataplane-image \"$base_name\""
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 rules=(
-  "mesh --help|Displays help information for mesh operations."
-  "service --help|Displays help information for service operations."
+  "mesh --help|Displays help information for mesh actions."
+  "service --help|Displays help information for service actions."
   "--help|Displays default help information."
   "mesh up|'mesh up' must be used to start the service mesh."
   "mesh --services up|'mesh --services up' must be used to start the service mesh and all services."
