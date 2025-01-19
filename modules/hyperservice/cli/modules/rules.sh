@@ -1,8 +1,8 @@
 #!/bin/bash
 
 rules=(
-  "mesh --help|Displays help information for mesh operations."
-  "service --help|Displays help information for service operations."
+  "mesh --help|Displays help information for mesh actions."
+  "service --help|Displays help information for service actions."
   "--help|Displays default help information."
   "mesh up|'mesh up' must be used to start the service mesh."
   "mesh --services up|'mesh --services up' must be used to start the service mesh and all services."
@@ -10,6 +10,8 @@ rules=(
   "mesh --clean down|'mesh down' must be used to stop the service mesh and all services."
   "--workdir=\$WORKDIR \$NAME start|'start' action requires --workdir and <name> for service."
   "--workdir=\$WORKDIR --recreate \$NAME start|'start' action requires --workdir and <name> for service."
+  "--workdir=\$WORKDIR --node=\$NODE_NAME --recreate \$NAME start|'start' action requires --workdir and <name> for service."
+  "--workdir=\$WORKDIR --node=\$NODE_NAME \$NAME start|'start' action requires --workdir and <name> for service."
   "\$NAME stop|'up' action requires <name> for service."
   "\$NAME clean|'clean' action requires <name> for service."
   "\$NAME exec|'exec' action requires <name> for service."

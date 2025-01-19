@@ -1,0 +1,1 @@
+docker build -t hyperservice-dataplane-image modules/hyperservice/mesh/dataplane

@@ -8,9 +8,9 @@ service_dispatch() {
   case $action in
     start)
       if [[ "$RECREATE" == "true" ]]; then
-        service_restart "$NAME" "$WORKDIR"
+        service_restart "$NAME" "$WORKDIR" "$NODE_NAME"
       else
-        service_start "$NAME" "$WORKDIR"
+        service_start "$NAME" "$WORKDIR" "$NODE_NAME"
       fi
       ;;
     stop)

@@ -1,1 +1,0 @@
-docker build -t hyperservice-dataplane-image modules/kuma/dataplane-deployment
