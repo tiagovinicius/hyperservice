@@ -114,6 +114,7 @@ parse_arguments() {
   RECREATE=$(get_param_value "--recreate" "boolean" "${PARAMS[@]}")
   CLEAN=$(get_param_value "--clean" "boolean" "${PARAMS[@]}")
   HELP=$(get_param_value "--help" "boolean" "${PARAMS[@]}")
+  NODE_NAME=$(get_param_value "--node" "value" "${PARAMS[@]}")
 }
 
 

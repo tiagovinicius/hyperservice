@@ -10,14 +10,13 @@ run_service() {
   echo "Running Docker container: $node_name"
   docker_container_run "$node_name" \
     --volume "/var/run/docker.sock:/var/run/docker.sock" \
-    --volume "$LOCAL_WORKSPACE_FOLDER:/workspace" \
+    --volume "$HOST_WORKSPACE_FOLDER:/workspace" \
     --volume "/etc/shared/environment:/etc/shared/environment" \
     --workdir "/workspace/$workdir" \
     --env "KUMA_DPP=$node_name" \
     --env "DATAPLANE_NAME=$node_name" \
     --env "SERVICE_NAME=$service_name" \
-    --env "WORKSPACE_FOLDER=$WORKSPACE_FOLDER" \
-    --env "LOCAL_WORKSPACE_FOLDER=$LOCAL_WORKSPACE_FOLDER" \
+    --env "HOST_WORKSPACE_FOLDER=$HOST_WORKSPACE_FOLDER" \
     --network service-mesh \
     --privileged \
     "$image" \

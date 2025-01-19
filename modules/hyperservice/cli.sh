@@ -1,4 +1,20 @@
 #!/bin/bash
+# Set WORKSPACE_PATH to the current script's execution directory
+export WORKSPACE_PATH=$(pwd)
+export HOST_WORKSPACE_FOLDER="${HOST_WORKSPACE_FOLDER:-$WORKSPACE_FOLDER}"
+
+# Define the required file paths
+HYPERSERVICE_POLICY=".hyperservice/policies/mesh.yml"
+MOON_WORKSPACE=".moon/workspace.yml"
+
+# Check if the required files exist in the current directory
+if [[ ! -f "$WORKSPACE_PATH/$HYPERSERVICE_POLICY" || ! -f "$WORKSPACE_PATH/$MOON_WORKSPACE" ]]; then
+    echo "Error: The current path ($WORKSPACE_PATH) is not a valid hyperservice workspace."
+    exit 1
+fi
+
+# Confirm successful validation
+echo "The current path ($WORKSPACE_PATH) is a valid hyperservice workspace."
 
 # Source operation functions
 SCRIPT_PATH=$(readlink -f "$0")

@@ -2,6 +2,7 @@
 service_start() {
   local service_name="$1"
   local workdir="$2"
+  local node_name="$3"
 
   echo "Starting hyperservice: $service_name"
 
@@ -9,10 +10,12 @@ service_start() {
   local units
   units=$(yq -r '.simulator.units // 0' "$workdir/.hyperservice/fleet.yml" 2>/dev/null || echo 0)
 
-  # Create fleet units if applicable
-  for ((i = 1; i <= units; i++)); do
-    create_fleet_unit "$service_name" "$workdir"
-  done
+  if [[ -z "$node_name" ]]; then
+    # Create fleet units if applicable
+    for ((i = 1; i <= units; i++)); do
+      create_fleet_unit "$service_name" "$workdir"
+    done
+  fi
 
   # Start the main hyperservice if no fleet units were created
   if [[ $units -eq 0 ]]; then
@@ -21,7 +24,7 @@ service_start() {
     else
       echo "Creating and starting new hyperservice: $service_name"
     fi
-      run_service "$service_name" "$workdir" hyperservice-dataplane-image
+    run_service "$service_name" "$workdir" hyperservice-dataplane-image "$node_name"
   fi
 
   echo "Hyperservice $service_name started successfully."

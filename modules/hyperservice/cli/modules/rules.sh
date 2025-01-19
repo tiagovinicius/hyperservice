@@ -10,6 +10,8 @@ rules=(
   "mesh --clean down|'mesh down' must be used to stop the service mesh and all services."
   "--workdir=\$WORKDIR \$NAME start|'start' action requires --workdir and <name> for service."
   "--workdir=\$WORKDIR --recreate \$NAME start|'start' action requires --workdir and <name> for service."
+  "--workdir=\$WORKDIR --node=\$NODE_NAME --recreate \$NAME start|'start' action requires --workdir and <name> for service."
+  "--workdir=\$WORKDIR --node=\$NODE_NAME \$NAME start|'start' action requires --workdir and <name> for service."
   "\$NAME stop|'up' action requires <name> for service."
   "\$NAME clean|'clean' action requires <name> for service."
   "\$NAME exec|'exec' action requires <name> for service."

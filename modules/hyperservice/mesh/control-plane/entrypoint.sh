@@ -7,11 +7,6 @@ flock /etc/shared/environment/CONTROL_PLANE_STATUS \
 echo "Hooking CONTROL_PLANE_STATUS to stopped when control plane is about to be done"
 trap 'flock /etc/shared/environment/CONTROL_PLANE_STATUS -c "echo stopped > /etc/shared/environment/CONTROL_PLANE_STATUS"' SIGTERM SIGINT SIGKILL
 
-echo "Setting WORKSPACE_FOLDER"
-flock /etc/shared/environment/WORKSPACE_FOLDER \
-  -c "echo $WORKSPACE_FOLDER > /etc/shared/environment/WORKSPACE_FOLDER"
-echo "Local workspace folder is $WORKSPACE_FOLDER"
-
 echo "Starting control plane"
 kuma-cp run 2>&1 | tee cp-logs.txt &
 CONTROL_PLANE_PID=$!
