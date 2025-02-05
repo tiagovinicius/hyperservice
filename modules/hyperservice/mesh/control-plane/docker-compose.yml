@@ -31,5 +31,4 @@ services:
 
 networks:
   service-mesh:
-    name: service-mesh
-    driver: bridge
+    external: true

@@ -24,13 +24,13 @@ run_service() {
   shift 4
   local additional_args=("$@")
 
-  
   workdir=$(resolve_workdir "$service_name" "$workdir")
   if [[ $? -ne 0 ]]; then
     echo "$workdir"
     return 1
   fi
 
+  echo "XXXXXXXXXXXXXXXXXXXXXXXX"
   echo "Running Docker container: $node_name"
   docker_container_run "$node_name" \
     --volume "/var/run/docker.sock:/var/run/docker.sock" \

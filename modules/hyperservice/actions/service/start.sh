@@ -10,12 +10,12 @@ service_start() {
   local units
   units=$(yq -r '.simulator.units // 0' "$workdir/.hyperservice/fleet.yml" 2>/dev/null || echo 0)
 
-  if [[ -z "$node_name" ]]; then
-    # Create fleet units if applicable
-    for ((i = 1; i <= units; i++)); do
-      create_fleet_unit "$service_name" "$workdir"
-    done
-  fi
+  # if [[ -z "$node_name" ]]; then
+  #   # Create fleet units if applicable
+  #   for ((i = 1; i <= units; i++)); do
+  #     create_fleet_unit "$service_name" "$workdir"
+  #   done
+  # fi
 
   # Start the main hyperservice if no fleet units were created
   if [[ $units -eq 0 ]]; then

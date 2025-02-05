@@ -2,16 +2,19 @@
 git config --global --add safe.directory /workspace
 
 echo "Waiting control plane to be running"
-timeout=300
 elapsed=0
+sleep_interval=1
 while [ "$(cat /etc/shared/environment/CONTROL_PLANE_STATUS)" != "running" ]; do
-  if [ $elapsed -ge $timeout ]; then
-    echo "Timeout waiting for control plane to be running."
-    exit 1
-  fi
   echo "Waiting for control plane to be running..."
-  sleep 5
-  elapsed=$((elapsed + 5))
+  sleep $sleep_interval
+  elapsed=$((elapsed + sleep_interval))
+
+  if [ $sleep_interval -lt 60 ]; then
+    sleep_interval=$((sleep_interval * 2))
+    if [ $sleep_interval -gt 60 ]; then
+      sleep_interval=60
+    fi
+  fi
 done
 
 echo "Installing dependencies"
