@@ -13,9 +13,6 @@ if [[ ! -f "$WORKSPACE_PATH/$HYPERSERVICE_POLICY" || ! -f "$WORKSPACE_PATH/$MOON
     exit 1
 fi
 
-# Confirm successful validation
-echo "The current path ($WORKSPACE_PATH) is a valid hyperservice workspace."
-
 # Source operation functions
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
