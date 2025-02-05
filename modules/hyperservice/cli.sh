@@ -57,7 +57,7 @@ if [[ -z "$ENTITY" && -z "$ACTION" && -z "$NAME" && -z "${PARAMS[*]}" ]]; then
 fi
 
 # Validate input
-validate_input validate_workdir_rule
+validate_input
 
 # Dispatch the action
 dispatch_action

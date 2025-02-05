@@ -12,6 +12,10 @@ rules=(
   "--workdir=\$WORKDIR --recreate \$NAME start|'start' action requires --workdir and <name> for service."
   "--workdir=\$WORKDIR --node=\$NODE_NAME --recreate \$NAME start|'start' action requires --workdir and <name> for service."
   "--workdir=\$WORKDIR --node=\$NODE_NAME \$NAME start|'start' action requires --workdir and <name> for service."
+  "\$NAME start|'start' action requires --workdir and <name> for service."
+  "--recreate \$NAME start|'start' action requires --workdir and <name> for service."
+  "--node=\$NODE_NAME --recreate \$NAME start|'start' action requires --workdir and <name> for service."
+  "--node=\$NODE_NAME \$NAME start|'start' action requires --workdir and <name> for service."
   "\$NAME stop|'up' action requires <name> for service."
   "\$NAME clean|'clean' action requires <name> for service."
   "\$NAME exec|'exec' action requires <name> for service."
@@ -22,10 +26,3 @@ rules=(
   "service down|'service down' must be used to stop all hyperservices in the workspace."
   "service --clean down|'service down' must be used to stop and remove all hyperservices in the workspace."
 )
-
-validate_workdir_rule() {
-  if [[ -z "$WORKDIR" && ( "$ACTION" == "start" || "$ACTION" == "restart" ) ]]; then
-    echo "Error: --workdir is required for 'start' and 'restart' actions." >&2
-    exit 1
-  fi
-}
