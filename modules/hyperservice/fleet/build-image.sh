@@ -1,0 +1,1 @@
+docker build -t hyperservice-fleet-simulator-image modules/hyperservice/fleet

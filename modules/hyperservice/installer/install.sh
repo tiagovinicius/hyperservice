@@ -5,23 +5,23 @@ set -e  # Exit immediately if a command exits with a non-zero status
 echo "Starting Hyperservice setup..."
 
 # Step 1: Install dependencies using an absolute path
-SCRIPT_DIR="$(realpath "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/..")"
+HYPERSERVICE_REAL_BIN_PATH="$(realpath "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/..")"
 echo "Running dependency installation..."
-bash "$SCRIPT_DIR/installer/install-dependencies.sh"
+bash "$HYPERSERVICE_REAL_BIN_PATH/installer/install-dependencies.sh"
 
 # Step 2: Set up symbolic links
 echo "Setting up symbolic links for Hyperservice..."
 
-HYPERSERVICE_LINK_PATH="/usr/local/bin/hyperservice"
-HYPERSERVICE_LINK_BIN_PATH="/usr/local/bin/hyperservice-bin"
-HYPERSERVICE_SHORTLINK_PATH="/usr/local/bin/hy"
+HYPERSERVICE_PATH="/usr/local/bin/hyperservice"
+HYPERSERVICE_BIN_PATH="/usr/local/bin/hyperservice-bin"
+HYPERSERVICE_SHORT_PATH="/usr/local/bin/hy"
 
-# Set the base path to WORKSPACE_PATH if set, or to an empty string otherwise
-WORKSPACE_BASE_PATH="${WORKSPACE_PATH:+$WORKSPACE_PATH/}"
+# Set the base path to HYPERSERVICE_WORKSPACE_PATH if set, or to an empty string otherwise
+WORKSPACE_BASE_PATH="${HYPERSERVICE_WORKSPACE_PATH:+$HYPERSERVICE_WORKSPACE_PATH/}"
 
 if [ -n "$HYPERSERVICE_DEV_PATH" ]; then
   echo "HYPERSERVICE_DEV_PATH is set to $HYPERSERVICE_DEV_PATH."
-  HYPERSERVICE_TARGET_PATH="$(realpath "${WORKSPACE_BASE_PATH}${HYPERSERVICE_DEV_PATH}/cli.sh")"
+  HYPERSERVICE_TARGET_PATH="$(realpath "${WORKSPACE_BASE_PATH}${HYPERSERVICE_DEV_PATH}/cli_dev.sh")"
 
   # Validate the target file exists
   if [ ! -f "$HYPERSERVICE_TARGET_PATH" ]; then
@@ -29,27 +29,22 @@ if [ -n "$HYPERSERVICE_DEV_PATH" ]; then
     exit 1
   fi
 
-  echo "Creating or updating symbolic link for $HYPERSERVICE_LINK_PATH..."
-  sudo rm -f "$HYPERSERVICE_LINK_PATH"
-  sudo ln -sf "$HYPERSERVICE_TARGET_PATH" "$HYPERSERVICE_LINK_PATH"
-  sudo chmod +x "$HYPERSERVICE_LINK_PATH"
+  echo "Creating or updating symbolic link for $HYPERSERVICE_PATH..."
+  rm -f "$HYPERSERVICE_PATH"
+  ln -sf "$HYPERSERVICE_TARGET_PATH" "$HYPERSERVICE_PATH"
+  chmod +x "$HYPERSERVICE_PATH"
 else
   echo "HYPERSERVICE_DEV_PATH is not set. Using default installation."
-  echo "Creating or updating symbolic link for $HYPERSERVICE_LINK_PATH..."
-  sudo rm -f "$HYPERSERVICE_LINK_PATH"
-  sudo ln -sf "$SCRIPT_DIR/cli.sh" "$HYPERSERVICE_LINK_PATH"
-  sudo chmod +x "$HYPERSERVICE_LINK_PATH"
+  echo "Creating or updating symbolic link for $HYPERSERVICE_PATH..."
+  rm -f "$HYPERSERVICE_PATH"
+  ln -sf "$HYPERSERVICE_BIN_PATH/cli.sh" "$HYPERSERVICE_PATH"
+  chmod +x "$HYPERSERVICE_PATH"
 fi
 
-echo "Creating or updating symbolic link for $HYPERSERVICE_SHORTLINK_PATH..."
-sudo rm -f "$HYPERSERVICE_SHORTLINK_PATH"
-sudo ln -sf "$(realpath "$HYPERSERVICE_LINK_PATH")" "$HYPERSERVICE_SHORTLINK_PATH"
-sudo chmod +x "$HYPERSERVICE_SHORTLINK_PATH"
-
-REAL_SCRIPT_DIR="$(realpath "$SCRIPT_DIR")"
-echo "Creating symbolic link to SCRIPT_DIR at $HYPERSERVICE_LINK_BIN_PATH..."
-sudo rm -rf "$HYPERSERVICE_LINK_BIN_PATH"
-sudo ln -sf "$SCRIPT_DIR" "$HYPERSERVICE_LINK_BIN_PATH"
+echo "Creating or updating symbolic link for $HYPERSERVICE_SHORT_PATH..."
+rm -f "$HYPERSERVICE_SHORT_PATH"
+ln -sf "$(realpath "$HYPERSERVICE_PATH")" "$HYPERSERVICE_SHORT_PATH"
+chmod +x "$HYPERSERVICE_SHORT_PATH"
 
 add_to_shell_profile() {
   local profile=$1

@@ -1,50 +1,50 @@
 #!/bin/bash
 
 # Get the directory where the script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HYPERSERVICE_REAL_BIN_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Caminho de instalação no usuário local
-HYPERSERVICE_LINK_PATH="/usr/local/bin/hyperservice"
+HYPERSERVICE_PATH="/usr/local/bin/hyperservice-bin"
 
 # URL do repositório como .zip
-REPO_URL="https://github.com/tiagovinicius/hyperservice/archive/refs/heads/main.zip"
+repo_url="https://github.com/tiagovinicius/hyperservice/archive/refs/heads/main.zip"
 
 # Criar diretório temporário para o download
-TEMP_DIR=$(mktemp -d)
+temp_dir=$(mktemp -d)
 
 echo "Downloading Hyperservice CLI from GitHub..."
 
 # Baixar o repositório como .zip
-curl -L "$REPO_URL" -o "$TEMP_DIR/hyperservice.zip"
+curl -L "$repo_url" -o "$temp_dir/hyperservice.zip"
 
 # Extrair o conteúdo do .zip
-unzip -q "$TEMP_DIR/hyperservice.zip" -d "$TEMP_DIR"
+unzip -q "$temp_dir/hyperservice.zip" -d "$temp_dir"
 
 # Remover instalação anterior, se existir
-if [ -d "$HYPERSERVICE_LINK_PATH" ]; then
-    echo "Removing existing installation at $HYPERSERVICE_LINK_PATH..."
-    rm -rf "$HYPERSERVICE_LINK_PATH"
+if [ -d "$HYPERSERVICE_PATH" ]; then
+    echo "Removing existing installation at $HYPERSERVICE_PATH..."
+    rm -rf "$HYPERSERVICE_PATH"
 fi
 
 # Mover os arquivos extraídos para o caminho local
-echo "Installing Hyperservice CLI to $HYPERSERVICE_LINK_PATH..."
-mkdir -p "$HYPERSERVICE_LINK_PATH"
-mv "$TEMP_DIR/hyperservice-main/modules/hyperservice/"* "$HYPERSERVICE_LINK_PATH"
+echo "Installing Hyperservice CLI to $HYPERSERVICE_PATH..."
+mkdir -p "$HYPERSERVICE_PATH"
+mv "$temp_dir/hyperservice-main/modules/hyperservice/"* "$HYPERSERVICE_PATH"
 
 # Dar permissão de execução ao diretório e seus scripts
-chmod -R +x "$HYPERSERVICE_LINK_PATH"
+chmod -R +x "$HYPERSERVICE_PATH"
 
 # Limpar o diretório temporário
-rm -rf "$TEMP_DIR"
+rm -rf "$temp_dir"
 
-echo "Hyperservice CLI installed successfully at $HYPERSERVICE_LINK_PATH."
+echo "Hyperservice CLI installed successfully at $HYPERSERVICE_PATH."
 
 # Verificar se o arquivo install.sh existe no diretório e executá-lo
-INSTALL_SCRIPT="$HYPERSERVICE_LINK_PATH/install.sh"
-if [ -f "$INSTALL_SCRIPT" ]; then
+install_script="$HYPERSERVICE_PATH/install.sh"
+if [ -f "$install_script" ]; then
     echo "Running install.sh..."
-    bash "$INSTALL_SCRIPT"
+    bash "$install_script"
 else
-    echo "Error: install.sh not found in $HYPERSERVICE_LINK_PATH."
+    echo "Error: install.sh not found in $HYPERSERVICE_PATH."
     exit 1
 fi

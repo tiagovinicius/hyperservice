@@ -16,7 +16,7 @@ create_fleet_unit() {
   if [[ $? -eq 0 ]]; then
     echo "Fleet unit is ready. Starting hyperservice: $base_name"
     docker exec "$node_name" \
-      bash -c "cd $WORKSPACE_PATH && bash modules/hyperservice/install.sh && hyperservice --workdir=\"$workdir\" --node=\"$base_name\" \"$service_name\" start"
+      bash -c "cd $HYPERSERVICE_WORKSPACE_PATH && bash modules/hyperservice/install.sh && hyperservice --workdir=\"$workdir\" --node=\"$base_name\" \"$service_name\" start"
 
   else
     echo "Failed to connect to fleet unit: $node_name"

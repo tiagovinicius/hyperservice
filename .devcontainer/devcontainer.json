@@ -13,7 +13,7 @@
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "containerEnv": {
-    "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+    "HYPERSERVICE_DEV_HOST_WORKSPACE_PATH": "${localWorkspaceFolder}",
     "WORKSPACE_BASE_PATH": "${containerWorkspaceFolder}",
     "HYPERSERVICE_DEV_PATH": "modules/hyperservice"
   },

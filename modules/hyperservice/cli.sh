@@ -1,15 +1,18 @@
 #!/bin/bash
-# Set WORKSPACE_PATH to the current script's execution directory
-export WORKSPACE_PATH=$(pwd)
-export HOST_WORKSPACE_FOLDER="${HOST_WORKSPACE_FOLDER:-$WORKSPACE_FOLDER}"
+# Set HYPERSERVICE_WORKSPACE_PATH to the current script's execution directory
+export HYPERSERVICE_WORKSPACE_PATH=$(pwd)
+export HYPERSERVICE_DEV_HOST_WORKSPACE_PATH="${HYPERSERVICE_DEV_HOST_WORKSPACE_PATH:-$HYPERSERVICE_WORKSPACE_PATH}"
+export HYPERSERVICE_BIN_PATH="/usr/local/bin/hyperservice-bin"
+export HYPERSERVICE_REAL_BIN_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export HYPERSERVICE_APPS_PATH="/etc/hyperservice"
 
 # Define the required file paths
 HYPERSERVICE_POLICY=".hyperservice/policies/mesh.yml"
 MOON_WORKSPACE=".moon/workspace.yml"
 
 # Check if the required files exist in the current directory
-if [[ ! -f "$WORKSPACE_PATH/$HYPERSERVICE_POLICY" || ! -f "$WORKSPACE_PATH/$MOON_WORKSPACE" ]]; then
-    echo "Error: The current path ($WORKSPACE_PATH) is not a valid hyperservice workspace."
+if [[ ! -f "$HYPERSERVICE_WORKSPACE_PATH/$HYPERSERVICE_POLICY" || ! -f "$HYPERSERVICE_WORKSPACE_PATH/$MOON_WORKSPACE" ]]; then
+    echo "Error: The current path ($HYPERSERVICE_WORKSPACE_PATH) is not a valid hyperservice workspace."
     exit 1
 fi
 
@@ -20,7 +23,7 @@ SERVICE_ACTIONS_DIR="$SCRIPT_DIR/actions/service"
 MESH_ACTIONS_DIR="$SCRIPT_DIR/actions/mesh"
 UTILS_DIR="$SCRIPT_DIR/actions/utils"
 CLI_DIR="$SCRIPT_DIR/cli"
-FLEET_SIMULATOR_DIR="$SCRIPT_DIR/fleet-simulator"
+FLEET_SIMULATOR_DIR="$SCRIPT_DIR/fleet"
 
 source "$SERVICE_ACTIONS_DIR/start.sh"
 source "$SERVICE_ACTIONS_DIR/restart.sh"
@@ -45,7 +48,8 @@ source "$CLI_DIR/usage/mesh.sh"
 source "$CLI_DIR/usage/interactive.sh"
 source "$CLI_DIR/actions/mesh.sh"
 source "$CLI_DIR/actions/service.sh"
-source "$FLEET_SIMULATOR_DIR/create_fleet_unit.sh"
+source "$FLEET_SIMULATOR_DIR/create-fleet-unit.sh"
+source "$FLEET_SIMULATOR_DIR/deploy-fleet-unit.sh"
 
 # Parse arguments
 parse_arguments "$@"
