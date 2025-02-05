@@ -6,7 +6,7 @@
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers-contrib/features/curl-apt-get:1": {},
     "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-      "packages": "sudo,uuid-runtime,yq,fzf"
+      "packages": "sudo,uuid-runtime,yq,fzf,sshpass"
     }
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],

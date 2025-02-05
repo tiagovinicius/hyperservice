@@ -24,6 +24,7 @@ dependencies=(
     "install_dependency apt_installer uuid-runtime uuidgen 'echo uuidgen available'"
     "install_dependency apt_installer yq yq 'yq --version'"
     "install_dependency apt_installer fzf fzf 'fzf --version'"
+    "install_dependency apt_installer sshpass sshpass 'sshpass --version'"
     "install_dependency kuma_installer 'Kuma' kuma 'kuma-dp --version'"
     "install_dependency node_installer 'Node.js' node 'node -v'"
     "install_dependency npm_installer '@moonrepo/cli' moon 'moon --version'"
