@@ -38,11 +38,6 @@ apt_installer() {
     sudo apt-get install -y "$1"
 }
 
-node_installer() {
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt-get install -y nodejs
-}
-
 npm_installer() {
     npm install -g "$1"
 }
