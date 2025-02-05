@@ -9,6 +9,9 @@ RUN echo "Setup Kuma to use CLIs" && \
     curl -L https://kuma.io/installer.sh | VERSION=2.9.2 sh - && \
     mv kuma-2.9.2/bin/* /usr/local/bin/
 
+EXPOSE 80
+
 COPY /entrypoint.sh /entrypoint.sh
+COPY /ready.js /ready.js
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

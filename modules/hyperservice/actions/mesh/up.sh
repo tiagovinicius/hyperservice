@@ -3,6 +3,14 @@ mesh_up() {
     # Execute build-image.sh script
     bash modules/hyperservice/mesh/dataplane/build-image.sh
     bash modules/hyperservice/fleet/build-image.sh
-    docker network create service-mesh
+
+    if [ -z "$(docker network ls --filter name=^service-mesh$ --format '{{.Name}}')" ]; then
+        echo "Network 'service-mesh' not found. Creating the network..."
+        docker network create service-mesh
+        echo "Network 'service-mesh' created successfully."
+        else
+        echo "The network 'service-mesh' already exists."
+    fi
+
     docker-compose -f modules/hyperservice/mesh/control-plane/docker-compose.yml up -d
 } 

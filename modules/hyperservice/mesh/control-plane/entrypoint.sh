@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+node "$SCRIPT_DIR/ready.js"
+
 echo "Setting CONTROL_PLANE_STATUS to initializing"
 flock /etc/shared/environment/CONTROL_PLANE_STATUS \
   -c "echo "initializing" > /etc/shared/environment/CONTROL_PLANE_STATUS"

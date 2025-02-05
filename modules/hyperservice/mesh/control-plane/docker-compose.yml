@@ -14,6 +14,7 @@ services:
       - "5681:5681" # Admin REST API
       - "8080:8080" # Kuma GUI
       - "5678:5678" # Dataplane communication
+      - "80:80"
     networks:
       - service-mesh
     healthcheck:
