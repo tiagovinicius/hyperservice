@@ -12,6 +12,5 @@ RUN echo "Setup Kuma to use CLIs" && \
 EXPOSE 80
 
 COPY /entrypoint.sh /entrypoint.sh
-COPY /ready.js /ready.js
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

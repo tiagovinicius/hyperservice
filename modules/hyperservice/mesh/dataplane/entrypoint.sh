@@ -1,10 +1,27 @@
 #!/bin/bash
 git config --global --add safe.directory /workspace
 
+export CONTAINER_IP=$(hostname -i)
+
 echo "Waiting control plane to be running"
 elapsed=0
 sleep_interval=1
-while [ "$(cat /etc/shared/environment/CONTROL_PLANE_STATUS)" != "running" ]; do
+check_kuma_status() {
+  echo "Accessing control plane..."
+  CONTROL_PLANE_IP=$(cat /etc/hyperservice/shared/environment/CONTROL_PLANE_IP 2>/dev/null || true)
+  CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN 2>/dev/null || true)
+  status_output=$(kumactl config control-planes add \
+    --name=default \
+    --address=http://$CONTROL_PLANE_IP:5681 \
+    --auth-type=tokens \
+    --auth-conf token=${CONTROL_PLANE_ADMIN_USER_TOKEN} 2>&1)
+  if echo "$status_output" | grep -q "could not connect" || echo "$status_output" | grep -q "Error"; then
+    return 1 
+  fi
+
+  return 0
+}
+while ! check_kuma_status; do
   echo "Waiting for control plane to be running..."
   sleep $sleep_interval
   elapsed=$((elapsed + sleep_interval))
@@ -23,16 +40,6 @@ npm install --global @moonrepo/cli
 
 echo "Creating directories"
 mkdir -p logs
-
-echo "Connecting to mesh"
-export CONTAINER_IP=$(hostname -i)
-CONTROL_PLANE_IP=$(cat /etc/shared/environment/CONTROL_PLANE_IP)
-CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat /etc/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN)
-kumactl config control-planes add \
-  --name=default \
-  --address=http://$CONTROL_PLANE_IP:5681 \
-  --auth-type=tokens \
-  --auth-conf token=${CONTROL_PLANE_ADMIN_USER_TOKEN}
 
 echo "Applying policies"
 POLICIES_DIR=".hyperservice/policies"

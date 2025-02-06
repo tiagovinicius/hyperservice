@@ -28,7 +28,7 @@ run_service() {
   docker_container_run "$node_name" \
     --volume "/var/run/docker.sock:/var/run/docker.sock" \
     --volume "$HYPERSERVICE_DEV_HOST_WORKSPACE_PATH:/workspace" \
-    --volume "/etc/shared/environment:/etc/shared/environment" \
+    --volume "/etc/hyperservice/shared/environment:/etc/hyperservice/shared/environment" \
     --workdir "/workspace/$workdir" \
     --env "KUMA_DPP=$node_name" \
     --env "DATAPLANE_NAME=$node_name" \
@@ -38,4 +38,38 @@ run_service() {
     --privileged \
     "$image" \
     "${additional_args[@]}" &
+}
+
+wait_for_control_plane() {
+  echo "Waiting control plane to be running"
+  elapsed=0
+  sleep_interval=1
+  check_kuma_status() {
+    echo "Accessing control plane..."
+    CONTROL_PLANE_IP=$(cat /etc/hyperservice/shared/environment/CONTROL_PLANE_IP 2>/dev/null || true)
+    CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN 2>/dev/null || true)
+    status_output=$(kumactl config control-planes add \
+      --name=default \
+      --address=http://$CONTROL_PLANE_IP:5681 \
+      --auth-type=tokens \
+      --auth-conf token=${CONTROL_PLANE_ADMIN_USER_TOKEN})
+    if echo "$status_output" | grep -q "could not connect" || echo "$status_output" | grep -q "Error"; then
+      return 1 
+    fi
+
+    return 0
+  }
+  while ! check_kuma_status; do
+    echo "Waiting for control plane to be running..."
+    sleep $sleep_interval
+    elapsed=$((elapsed + sleep_interval))
+
+    if [ $sleep_interval -lt 60 ]; then
+      sleep_interval=$((sleep_interval * 2))
+      if [ $sleep_interval -gt 60 ]; then
+        sleep_interval=60
+      fi
+    fi
+  done
+  echo "Control plane is running"
 }

@@ -4,11 +4,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 node "$SCRIPT_DIR/ready.js"
 
 echo "Setting CONTROL_PLANE_STATUS to initializing"
-flock /etc/shared/environment/CONTROL_PLANE_STATUS \
-  -c "echo "initializing" > /etc/shared/environment/CONTROL_PLANE_STATUS"
+flock /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS \
+  -c "echo "initializing" > /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS"
 
 echo "Hooking CONTROL_PLANE_STATUS to stopped when control plane is about to be done"
-trap 'flock /etc/shared/environment/CONTROL_PLANE_STATUS -c "echo stopped > /etc/shared/environment/CONTROL_PLANE_STATUS"' SIGTERM SIGINT SIGKILL
+trap 'flock /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS -c "echo stopped > /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS"' SIGTERM SIGINT SIGKILL
 
 echo "Starting control plane"
 kuma-cp run 2>&1 | tee cp-logs.txt &
@@ -31,11 +31,11 @@ done
 
 echo "Setting up control plane CLI"
 export CONTROL_PLANE_IP=$(hostname -i)
-flock /etc/shared/environment/CONTROL_PLANE_IP \
-  -c "echo $CONTROL_PLANE_IP > /etc/shared/environment/CONTROL_PLANE_IP"
+flock /etc/hyperservice/shared/environment/CONTROL_PLANE_IP \
+  -c "echo $CONTROL_PLANE_IP > /etc/hyperservice/shared/environment/CONTROL_PLANE_IP"
 CONTROL_PLANE_ADMIN_USER_TOKEN=$(curl http://localhost:5681/global-secrets/admin-user-token | jq -r .data | base64 -d)
-flock /etc/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN \
-  -c "echo $CONTROL_PLANE_ADMIN_USER_TOKEN > /etc/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN"
+flock /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN \
+  -c "echo $CONTROL_PLANE_ADMIN_USER_TOKEN > /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN"
 kumactl config control-planes add \
  --name default \
  --address http://localhost:5681 \
@@ -52,7 +52,7 @@ echo "Installing observability"
 kumactl install observability > /dev/null
 
 echo "Setting CONTROL_PLANE_STATUS to running"
-flock /etc/shared/environment/CONTROL_PLANE_STATUS \
-  -c "echo "running" > /etc/shared/environment/CONTROL_PLANE_STATUS"
+flock /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS \
+  -c "echo "running" > /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS"
 
 wait $CONTROL_PLANE_PID
