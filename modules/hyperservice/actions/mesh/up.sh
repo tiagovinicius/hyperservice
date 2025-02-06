@@ -1,7 +1,6 @@
 #!/bin/bash
 mesh_up() {
     # Execute build-image.sh script
-    bash modules/hyperservice/mesh/dataplane/build-image.sh
     bash modules/hyperservice/fleet/build-image.sh
 
     if [ -z "$(docker network ls --filter name=^service-mesh$ --format '{{.Name}}')" ]; then

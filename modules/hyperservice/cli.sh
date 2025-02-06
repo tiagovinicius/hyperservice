@@ -1,18 +1,19 @@
 #!/bin/bash
-# Set HYPERSERVICE_WORKSPACE_PATH to the current script's execution directory
-export HYPERSERVICE_WORKSPACE_PATH=$(pwd)
-export HYPERSERVICE_DEV_HOST_WORKSPACE_PATH="${HYPERSERVICE_DEV_HOST_WORKSPACE_PATH:-$HYPERSERVICE_WORKSPACE_PATH}"
+# Set HYPERSERVICE_CURRENT_WORKSPACE_PATH to the current script's execution directory
+export HYPERSERVICE_CURRENT_WORKSPACE_PATH=$(pwd)
+export HYPERSERVICE_DEFAULT_WORKSPACE_PATH="/etc/hyperservice"
+export HYPERSERVICE_WORKSPACE_PATH="${HYPERSERVICE_DEV_HOST_WORKSPACE_PATH:-$HYPERSERVICE_DEFAULT_WORKSPACE_PATH}"
 export HYPERSERVICE_BIN_PATH="/usr/local/bin/hyperservice-bin"
-export HYPERSERVICE_REAL_BIN_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export HYPERSERVICE_APPS_PATH="/etc/hyperservice"
+export HYPERSERVICE_REAL_BIN_PATH="$HYPERSERVICE_DEV_HOST_WORKSPACE_PATH$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export HYPERSERVICE_SHARED_ENVIRONMENT="/etc/hyperservice/shared/environment"
 
 # Define the required file paths
 HYPERSERVICE_POLICY=".hyperservice/policies/mesh.yml"
 MOON_WORKSPACE=".moon/workspace.yml"
 
 # Check if the required files exist in the current directory
-if [[ ! -f "$HYPERSERVICE_WORKSPACE_PATH/$HYPERSERVICE_POLICY" || ! -f "$HYPERSERVICE_WORKSPACE_PATH/$MOON_WORKSPACE" ]]; then
-    echo "Error: The current path ($HYPERSERVICE_WORKSPACE_PATH) is not a valid hyperservice workspace."
+if [[ ! -f "$HYPERSERVICE_CURRENT_WORKSPACE_PATH/$HYPERSERVICE_POLICY" || ! -f "$HYPERSERVICE_CURRENT_WORKSPACE_PATH/$MOON_WORKSPACE" ]]; then
+    echo "Error: The current path ($HYPERSERVICE_CURRENT_WORKSPACE_PATH) is not a valid hyperservice workspace."
     exit 1
 fi
 
@@ -21,6 +22,7 @@ SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 SERVICE_ACTIONS_DIR="$SCRIPT_DIR/actions/service"
 MESH_ACTIONS_DIR="$SCRIPT_DIR/actions/mesh"
+MESH_DP_ACTIONS_DIR="$SCRIPT_DIR/actions/mesh-dp"
 UTILS_DIR="$SCRIPT_DIR/actions/utils"
 CLI_DIR="$SCRIPT_DIR/cli"
 FLEET_SIMULATOR_DIR="$SCRIPT_DIR/fleet"
@@ -36,6 +38,7 @@ source "$SERVICE_ACTIONS_DIR/up.sh"
 source "$SERVICE_ACTIONS_DIR/down.sh"
 source "$MESH_ACTIONS_DIR/up.sh"
 source "$MESH_ACTIONS_DIR/down.sh"
+source "$MESH_DP_ACTIONS_DIR/deploy.sh"
 source "$UTILS_DIR"/service_utils.sh
 source "$UTILS_DIR"/docker_utils.sh
 source "$CLI_DIR/modules/helpers.sh"
@@ -47,6 +50,7 @@ source "$CLI_DIR/usage/service.sh"
 source "$CLI_DIR/usage/mesh.sh"
 source "$CLI_DIR/usage/interactive.sh"
 source "$CLI_DIR/actions/mesh.sh"
+source "$CLI_DIR/actions/mesh_dp.sh"
 source "$CLI_DIR/actions/service.sh"
 source "$FLEET_SIMULATOR_DIR/create-fleet-unit.sh"
 source "$FLEET_SIMULATOR_DIR/deploy-fleet-unit.sh"

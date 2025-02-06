@@ -2,13 +2,17 @@ FROM node:22
 
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
-    curl gettext-base wget jq coreutils \
-    sudo nano iptables iptables-persistent \
-    nftables
+    bash build-essential coreutils curl docker \
+    docker-compose docker.io fzf gettext gettext-base \
+    iptables iptables-persistent jq nano needrestart \
+    nftables sshpass sudo tar unzip uuid uuid-runtime wget yq
+
 
 RUN echo "Setup Kuma to use CLIs" && \
     curl -L https://kuma.io/installer.sh | VERSION=2.9.2 sh - && \
     mv kuma-2.9.2/bin/* /usr/local/bin/
+
+RUN npm install --global @moonrepo/cli
 
 RUN sudo ln -sf /usr/bin/bash /usr/bin/sh
 

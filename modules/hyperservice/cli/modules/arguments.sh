@@ -68,7 +68,7 @@ parse_arguments() {
   PARAMS=()
 
   # 1) Check if first token is 'mesh' or 'service'
-  if [[ "${args[0]}" == "mesh" || "${args[0]}" == "service" ]]; then
+  if [[ "${args[0]}" == "mesh" || "${args[0]}" == "mesh-dp" || "${args[0]}" == "service" ]]; then
     ENTITY="${args[0]}"
     debug_echo "Parsed ENTITY='$ENTITY'"
     args=("${args[@]:1}")

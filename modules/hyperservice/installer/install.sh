@@ -16,12 +16,9 @@ HYPERSERVICE_PATH="/usr/local/bin/hyperservice"
 HYPERSERVICE_BIN_PATH="/usr/local/bin/hyperservice-bin"
 HYPERSERVICE_SHORT_PATH="/usr/local/bin/hy"
 
-# Set the base path to HYPERSERVICE_WORKSPACE_PATH if set, or to an empty string otherwise
-WORKSPACE_BASE_PATH="${HYPERSERVICE_WORKSPACE_PATH:+$HYPERSERVICE_WORKSPACE_PATH/}"
-
 if [ -n "$HYPERSERVICE_DEV_PATH" ]; then
   echo "HYPERSERVICE_DEV_PATH is set to $HYPERSERVICE_DEV_PATH."
-  HYPERSERVICE_TARGET_PATH="$(realpath "${WORKSPACE_BASE_PATH}${HYPERSERVICE_DEV_PATH}/cli_dev.sh")"
+  HYPERSERVICE_TARGET_PATH="$(realpath "${HYPERSERVICE_CURRENT_WORKSPACE_PATH}${HYPERSERVICE_DEV_PATH}/cli_dev.sh")"
 
   # Validate the target file exists
   if [ ! -f "$HYPERSERVICE_TARGET_PATH" ]; then

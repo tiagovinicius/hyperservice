@@ -1,8 +1,5 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-node "$SCRIPT_DIR/ready.js"
-
 echo "Setting CONTROL_PLANE_STATUS to initializing"
 flock /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS \
   -c "echo "initializing" > /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS"
@@ -18,7 +15,7 @@ echo "Control plane started with PID: $CONTROL_PLANE_PID"
 echo "Waiting for control plane to be running"
 timeout=300
 elapsed=0
-while ! curl -sf http://localhost:5681/ > /dev/null 2>&1; do
+while ! curl -sf http://localhost:5681/ >/dev/null 2>&1; do
   if [ $elapsed -ge $timeout ]; then
     echo "Timeout waiting for control plane to be running."
     kill $CONTROL_PLANE_PID
@@ -37,19 +34,19 @@ CONTROL_PLANE_ADMIN_USER_TOKEN=$(curl http://localhost:5681/global-secrets/admin
 flock /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN \
   -c "echo $CONTROL_PLANE_ADMIN_USER_TOKEN > /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN"
 kumactl config control-planes add \
- --name default \
- --address http://localhost:5681 \
- --skip-verify
+  --name default \
+  --address http://localhost:5681 \
+  --skip-verify
 
 echo "Applying policies"
 POLICIES_DIR="/workspace/.hyperservice/policies"
 for FILE in $(ls "$POLICIES_DIR"/*.yml | sort); do
-    echo "Applying file $FILE"
-    echo "$(envsubst < "$FILE")" | kumactl apply -f -
+  echo "Applying file $FILE"
+  echo "$(envsubst <"$FILE")" | kumactl apply -f -
 done
 
 echo "Installing observability"
-kumactl install observability > /dev/null
+kumactl install observability >/dev/null
 
 echo "Setting CONTROL_PLANE_STATUS to running"
 flock /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS \

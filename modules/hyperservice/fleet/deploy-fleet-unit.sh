@@ -23,18 +23,18 @@ deploy_fleet_unit() {
   fi
   tar -czf - -C "$HYPERSERVICE_BIN_PATH" . | $ssh_cmd "mkdir -p $HYPERSERVICE_BIN_PATH && tar --overwrite -xzf - -C $HYPERSERVICE_BIN_PATH"
 
-  $ssh_cmd "mkdir -p $HYPERSERVICE_APPS_PATH"
+  $ssh_cmd "mkdir -p $HYPERSERVICE_WORKSPACE_PATH"
 
   for dir in "$workdir" ".moon" ".hyperservice"; do
     if [ -d "$dir" ]; then
-      remote_subdir="$HYPERSERVICE_APPS_PATH/$dir"
-      tar -czf - -C "$HYPERSERVICE_WORKSPACE_PATH/$dir" . | $ssh_cmd "mkdir -p $remote_subdir && tar -xzf - -C $remote_subdir"
+      remote_subdir="$HYPERSERVICE_WORKSPACE_PATH/$dir"
+      tar -czf - -C "$HYPERSERVICE_CURRENT_WORKSPACE_PATH/$dir" . | $ssh_cmd "mkdir -p $remote_subdir && tar -xzf - -C $remote_subdir"
     fi
   done
 
   $ssh_cmd "bash $HYPERSERVICE_BIN_PATH/installer/install.sh"
 
   base_name="${service_name}-$(uuidgen | cut -c1-8)"
-  start_cmd="cd $HYPERSERVICE_APPS_PATH/ && hyperservice --workdir=\"$HYPERSERVICE_APPS_PATH/$workdir\" --node=\"$base_name\" \"$service_name\" start"
+  start_cmd="cd $HYPERSERVICE_WORKSPACE_PATH/ && hyperservice --workdir=\"$HYPERSERVICE_WORKSPACE_PATH/$workdir\" --node=\"$base_name\" \"$service_name\" start"
   $ssh_cmd "$start_cmd"
 }
