@@ -4,13 +4,14 @@ service_dispatch() {
   local action="$1"
   local name="$2"
   local workdir="$3"
+  local service_only="$4"
 
   case $action in
     start)
       if [[ "$RECREATE" == "true" ]]; then
         service_restart "$NAME" "$WORKDIR" "$NODE_NAME"
       else
-        service_start "$NAME" "$WORKDIR" "$NODE_NAME"
+        service_start "$NAME" "$WORKDIR" "$SERVICE_ONLY" "$NODE_NAME"
       fi
       ;;
     stop)

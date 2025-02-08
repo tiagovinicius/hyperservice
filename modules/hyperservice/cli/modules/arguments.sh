@@ -115,6 +115,7 @@ parse_arguments() {
   CLEAN=$(get_param_value "--clean" "boolean" "${PARAMS[@]}")
   HELP=$(get_param_value "--help" "boolean" "${PARAMS[@]}")
   NODE_NAME=$(get_param_value "--node" "value" "${PARAMS[@]}")
+  SERVICE_ONLY=$(get_param_value "--service-only" "boolean" "${PARAMS[@]}")
 }
 
 

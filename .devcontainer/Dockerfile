@@ -16,7 +16,5 @@ RUN npm install --global @moonrepo/cli
 
 RUN sudo ln -sf /usr/bin/bash /usr/bin/sh
 
-COPY /entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["bash", "true"]
  

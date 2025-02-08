@@ -7,7 +7,6 @@ deploy_fleet_unit() {
   workdir=$2
   host=$3
   port=$4
-  port=$4
   username=$5
   key_file=$6
 
@@ -35,6 +34,20 @@ deploy_fleet_unit() {
   $ssh_cmd "bash $HYPERSERVICE_BIN_PATH/installer/install.sh"
 
   base_name="${service_name}-$(uuidgen | cut -c1-8)"
-  start_cmd="cd $HYPERSERVICE_WORKSPACE_PATH/ && hyperservice --workdir=\"$HYPERSERVICE_WORKSPACE_PATH/$workdir\" --node=\"$base_name\" \"$service_name\" start"
-  $ssh_cmd "$start_cmd"
+  CONTROL_PLANE_IP=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_IP 2>/dev/null || true)
+  CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_ADMIN_USER_TOKEN 2>/dev/null || true)
+
+  # Remote configuration commands
+  commands=(
+    "sudo mkdir -p /etc/hyperservice/shared/environment/ && sudo chmod -R 777 /etc/hyperservice/shared/environment/"
+    "echo \"$CONTROL_PLANE_IP\" > /etc/hyperservice/shared/environment/CONTROL_PLANE_IP"
+    "echo \"$CONTROL_PLANE_ADMIN_USER_TOKEN\" > /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN"
+    "cd $HYPERSERVICE_WORKSPACE_PATH/ && hyperservice mesh-dp deploy"
+    "cd $HYPERSERVICE_WORKSPACE_PATH/ && hyperservice --workdir=\"$HYPERSERVICE_WORKSPACE_PATH/$workdir\" --node=\"$base_name\" \"$service_name\" --service-only start"
+  )
+
+  # Execute remote commands
+  for cmd in "${commands[@]}"; do
+    $ssh_cmd "$cmd"
+  done
 }

@@ -39,7 +39,6 @@ run_service() {
     --env "SERVICE_NAME=$service_name" \
     --env "HYPERSERVICE_BIN_PATH=$HYPERSERVICE_BIN_PATH" \
     --env "HYPERSERVICE_APP_PATH=$workdir" \
-    --network service-mesh \
     --privileged \
     "$image" \
     "${additional_args[@]}" &

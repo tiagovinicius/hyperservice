@@ -4,5 +4,5 @@ units:
   - host: 172.17.0.3
     port: 22
     username: root
-    key-file: ~/.ssh/fleet-unit-x-host-key
+    key-file: /etc/hyperservice/shared/ssh/fleet-unit-x-host-key
   

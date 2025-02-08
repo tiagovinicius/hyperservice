@@ -1,0 +1,1 @@
+docker build -t hyperservice-control-plane-image modules/hyperservice/mesh/control-plane

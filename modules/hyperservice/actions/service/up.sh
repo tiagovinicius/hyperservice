@@ -7,6 +7,7 @@ service_up() {
   echo "$json_output" | jq -c '.projects[]' | while read -r project; do
     local name
     local workdir
+    local service_only=0
     name=$(echo "$project" | jq -r '.id')
     workdir=$(echo "$project" | jq -r '.source')
 
@@ -14,7 +15,7 @@ service_up() {
       if [[ "$recreate" == "true" ]]; then
         service_restart "$name" "$workdir" &
       else
-        service_start "$name" "$workdir" &
+        service_start "$name" "$workdir" "$service_only" &
       fi
     fi
   done

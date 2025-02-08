@@ -5,8 +5,6 @@ mesh_dp_deploy() {
         exit 1
     }
 
-    git config --global safe.directory '*'
-
     export CONTAINER_IP=$(hostname -i)
 
     echo "Waiting control plane to be running"

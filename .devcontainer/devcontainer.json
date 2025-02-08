@@ -1,19 +1,20 @@
 {
   "name": "Platform as Service + Service Mesh (Dokku, Kuma)",
-  "image": "node:22",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers-contrib/features/curl-apt-get:1": {},
-    "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-      "packages": "bash,build-essential,coreutils,curl,fzf,gettext,gettext-base,git,iptables,iptables-persistent,jq,nano,needrestart,nftables,sshpass,sudo,tar,unzip,uuid,uuid-runtime,wget,yq"
-    }
+    "ghcr.io/devcontainers/features/git:1": {}
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,bind-propagation=shared",
   "workspaceFolder": "/workspace",
   "mounts": [
     "source=/usr/local/bin/hyperservice-bin,target=/usr/local/bin/hyperservice-bin,type=bind",
+    "source=/etc/hyperservice/shared/environment,target=/etc/hyperservice/shared/environment,type=bind",
+    "source=/etc/hyperservice/shared/ssh,target=/etc/hyperservice/shared/ssh,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "containerEnv": {
@@ -45,7 +46,7 @@
     }
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [22, 80, 443, 5681, 5678, 8000, 8001],
+  "forwardPorts": [22, 80, 443, 2222, 5681, 5678, 8000, 8001],
   // Starts control-plane, set up kmctl in devcontainer
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": "bash"

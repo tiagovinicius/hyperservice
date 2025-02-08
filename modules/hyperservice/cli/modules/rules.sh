@@ -9,6 +9,7 @@ rules=(
   "mesh down|'mesh down' must be used to stop the service mesh and all services."
   "mesh --clean down|'mesh down' must be used to stop the service mesh and all services."
   "mesh-dp deploy|'mesh-dp deploy' must be used to deploy the service mesh dataplane in a container."
+  "mesh-dp --service-only deploy|'mesh-dp deploy' must be used to deploy the service mesh dataplane in a container."
   "--workdir=\$WORKDIR \$NAME start|'start' action requires --workdir and <name> for service."
   "--workdir=\$WORKDIR --recreate \$NAME start|'start' action requires --workdir and <name> for service."
   "--workdir=\$WORKDIR --node=\$NODE_NAME --recreate \$NAME start|'start' action requires --workdir and <name> for service."
