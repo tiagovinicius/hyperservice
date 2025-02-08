@@ -3,9 +3,9 @@ FROM node:22
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
     bash build-essential coreutils curl \
-    fzf gettext gettext-base iproute2 rsync \
+    fzf iproute2 rsync \
     iptables iptables-persistent jq nano needrestart \
-    nftables sshpass sudo tar unzip uuid uuid-runtime wget yq
+    nftables sudo tar unzip uuid uuid-runtime wget yq
 
 
 RUN echo "Setup Kuma to use CLIs" && \

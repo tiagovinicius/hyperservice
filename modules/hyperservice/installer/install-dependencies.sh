@@ -22,8 +22,13 @@ install_dependency() {
     local post_install_command=$4  # Optional command to check version after install
 
     if check_dependency "$dependency"; then
-        echo "$package is already installed: $($post_install_command)"
+        echo -e "Package is already installed: $package"
     else
+        if [ "$HYPERSERVICE_OFFLINE_INSTALL" = true ]; then
+            echo "Package is not installed: $package"
+            echo "HYPERSERVICE_OFFLINE_INSTALL is set to true. All packages must be installed to proceed."
+            exit 1
+        fi
         echo "Installing $package..."
         $installer_function "$package"
         echo "$package installed successfully."
