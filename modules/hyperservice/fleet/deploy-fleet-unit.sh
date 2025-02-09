@@ -27,7 +27,7 @@ deploy_fleet_unit() {
   for dir in "$workdir" ".moon" ".hyperservice"; do
     if [ -d "$dir" ]; then
       remote_subdir="$HYPERSERVICE_WORKSPACE_PATH/$dir"
-      tar -czf - -C "$HYPERSERVICE_CURRENT_WORKSPACE_PATH" "$dir" | $ssh_cmd "mkdir -p $remote_subdir && tar -xzf - -C $remote_subdir"
+      tar -czf - -C "$HYPERSERVICE_CURRENT_WORKSPACE_PATH/$dir" . | $ssh_cmd "mkdir -p $remote_subdir && tar -xzf - -C $remote_subdir"
     fi
   done
 

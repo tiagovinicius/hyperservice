@@ -5,7 +5,7 @@ ENV HYPERSERVICE_OFFLINE_INSTALL=false
 RUN apt-get update && \
     apt-get install -y openssh-server sudo \
     bash build-essential coreutils curl \
-    fzf iproute2 rsync \
+    fzf iproute2 nmap \
     iptables iptables-persistent jq nano needrestart \
     nftables sudo tar unzip uuid uuid-runtime wget yq
 
