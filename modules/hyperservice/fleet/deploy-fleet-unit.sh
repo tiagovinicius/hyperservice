@@ -27,23 +27,21 @@ deploy_fleet_unit() {
   for dir in "$workdir" ".moon" ".hyperservice"; do
     if [ -d "$dir" ]; then
       remote_subdir="$HYPERSERVICE_WORKSPACE_PATH/$dir"
-      tar -czf - -C "$HYPERSERVICE_CURRENT_WORKSPACE_PATH/$dir" . | $ssh_cmd "mkdir -p $remote_subdir && tar -xzf - -C $remote_subdir"
+      tar -czf - -C "$HYPERSERVICE_CURRENT_WORKSPACE_PATH" "$dir" | $ssh_cmd "mkdir -p $remote_subdir && tar -xzf - -C $remote_subdir"
     fi
   done
 
   $ssh_cmd "bash $HYPERSERVICE_BIN_PATH/installer/install.sh"
 
-  base_name="${service_name}-$(uuidgen | cut -c1-8)"
+  node_name="${service_name}-$(uuidgen | cut -c1-8)"
   CONTROL_PLANE_IP=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_IP 2>/dev/null || true)
   CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_ADMIN_USER_TOKEN 2>/dev/null || true)
-
   # Remote configuration commands
   commands=(
     "sudo mkdir -p /etc/hyperservice/shared/environment/ && sudo chmod -R 777 /etc/hyperservice/shared/environment/"
     "echo \"$CONTROL_PLANE_IP\" > /etc/hyperservice/shared/environment/CONTROL_PLANE_IP"
     "echo \"$CONTROL_PLANE_ADMIN_USER_TOKEN\" > /etc/hyperservice/shared/environment/CONTROL_PLANE_ADMIN_USER_TOKEN"
-    "cd $HYPERSERVICE_WORKSPACE_PATH/ && hyperservice mesh-dp deploy"
-    "cd $HYPERSERVICE_WORKSPACE_PATH/ && hyperservice --workdir=\"$HYPERSERVICE_WORKSPACE_PATH/$workdir\" --node=\"$base_name\" \"$service_name\" --service-only start"
+    "cd $HYPERSERVICE_WORKSPACE_PATH/ && HYPERSERVICE_APP_PATH=\"$workdir\" DATAPLANE_NAME=\"$node_name\" SERVICE_NAME=\"$service_name\" KUMA_DPP=\"$node_name\" hyperservice mesh-dp deploy"
   )
 
   # Execute remote commands

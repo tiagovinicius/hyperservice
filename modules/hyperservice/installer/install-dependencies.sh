@@ -3,10 +3,13 @@
 # Load dependencies from external file
 source "$(dirname "$0")/dependencies.sh"
 
-echo "Installing required dependencies using an array of functions..."
+echo "Installing required dependencies..."
 
-# Update package lists once
-sudo apt-get update -y
+if [ -z "${HYPERSERVICE_OFFLINE_INSTALL}" ] || [ "$HYPERSERVICE_OFFLINE_INSTALL" = false ]; then
+    # Update package lists once
+    sudo apt-get update -y
+fi
+
 
 # Function to check if a dependency is installed
 check_dependency() {

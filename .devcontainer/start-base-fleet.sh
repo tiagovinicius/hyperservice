@@ -33,4 +33,4 @@ docker run -d \
     $FLEET_UNIT_X_IMAGE_NAME
 
 FLEET_UNIT_X_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $FLEET_UNIT_X_NAME)
-echo "Container started. Connect via: ssh -i $FLEET_UNIT_X_SSH_FILE $FLEET_UNIT_X_SSH_USERNAME@$FLEET_UNIT_X_IP -p $FLEET_UNIT_X_SSH_PORT"
+echo "Container started. Connect via: ssh -i $FLEET_UNIT_X_SSH_FILE $FLEET_UNIT_X_SSH_USERNAME@$FLEET_UNIT_X_IP -p 22"

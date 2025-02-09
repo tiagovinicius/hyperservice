@@ -1,8 +1,21 @@
-FROM ubuntu:latest
+FROM node:22
+
+ENV HYPERSERVICE_OFFLINE_INSTALL=false
 
 RUN apt-get update && \
-    apt-get install -y openssh-server sudo && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y openssh-server sudo \
+    bash build-essential coreutils curl \
+    fzf iproute2 rsync \
+    iptables iptables-persistent jq nano needrestart \
+    nftables sudo tar unzip uuid uuid-runtime wget yq
+
+RUN echo "Setup Kuma to use CLIs" && \
+    curl -L https://kuma.io/installer.sh | VERSION=2.9.2 sh - && \
+    mv kuma-2.9.2/bin/* /usr/local/bin/
+
+RUN npm install --global @moonrepo/cli
+
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /var/run/sshd
 

@@ -17,6 +17,7 @@ mesh_dp_deploy() {
         CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_ADMIN_USER_TOKEN 2>/dev/null || true)
         temp_file=$(mktemp)
         kumactl config control-planes add \
+            --overwrite \
             --name=default \
             --address=http://$CONTROL_PLANE_IP:5681 \
             --auth-type=tokens \
@@ -42,10 +43,11 @@ mesh_dp_deploy() {
         echo "Setting up dataplane"
         kumactl generate dataplane-token --tag kuma.io/service=$DATAPLANE_NAME --valid-for=720h >/.token
         useradd -u 5678 -U kuma-dp
-        kumactl install transparent-proxy \
-            --kuma-dp-user kuma-dp \
-            --redirect-dns \
-            --exclude-inbound-ports 22
+        # kumactl install transparent-proxy \
+        #     --kuma-dp-user kuma-dp \
+        #     --redirect-dns \
+        #     --exclude-inbound-ports 22
+        
         runuser -u kuma-dp -- \
             kuma-dp run \
             --cp-address https://$CONTROL_PLANE_IP:5678 \
@@ -67,7 +69,7 @@ mesh_dp_deploy() {
             fi
         fi
     done
-
+echo "XXXXXXXXXX $HYPERSERVICE_APP_PATH"
     echo "Creating directories"
     mkdir -p logs
 

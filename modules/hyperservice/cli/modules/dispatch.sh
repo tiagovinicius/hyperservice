@@ -19,7 +19,7 @@ dispatch_action() {
     if [[ "$ENTITY" == "mesh" ]]; then
       mesh_dispatch "$ACTION" "$SERVICES"
     elif [[ "$ENTITY" == "mesh-dp" ]]; then
-      mesh_dp_dispatch "$ACTION" "$NAME" "$WORKDIR"
+      mesh_dp_dispatch "$ACTION"
     elif [[ "$ENTITY" == "service" ]]; then
       service_dispatch "$ACTION" "$NAME" "$WORKDIR"
     else
