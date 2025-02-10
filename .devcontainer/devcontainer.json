@@ -13,6 +13,7 @@
   "workspaceFolder": "/workspace",
   "mounts": [
     "source=/usr/local/bin/hyperservice-bin,target=/usr/local/bin/hyperservice-bin,type=bind",
+    "source=/usr/local/bin/hyperservice-bin/common-services/observability/config,target=/usr/local/bin/hyperservice-bin/common-services/observability/config,type=bind",
     "source=/etc/hyperservice/shared/environment,target=/etc/hyperservice/shared/environment,type=bind",
     "source=/etc/hyperservice/shared/ssh,target=/etc/hyperservice/shared/ssh,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
@@ -46,7 +47,7 @@
     }
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [22, 80, 443, 2222, 5681, 5678, 8000, 8001],
+  "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5678, 9090],
   // Starts control-plane, set up kmctl in devcontainer
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": "bash"

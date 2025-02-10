@@ -34,3 +34,28 @@ docker run -d \
 
 FLEET_UNIT_X_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $FLEET_UNIT_X_NAME)
 echo "Container started. Connect via: ssh -i $FLEET_UNIT_X_SSH_FILE $FLEET_UNIT_X_SSH_USERNAME@$FLEET_UNIT_X_IP -p 22"
+
+if [ "$(docker ps -q -f name=grafana)" ]; then
+    echo "The container grafana is running. Stopping and removing it..."
+    docker stop grafana
+    docker rm grafana
+elif [ "$(docker ps -aq -f name=grafana)" ]; then
+    echo "The container grafana exists but is not running. Removing it..."
+    docker rm grafana
+fi
+docker run -d --name grafana -p 3000:3000 grafana/grafana:8.5.2
+
+if [ "$(docker ps -q -f name=prometheus)" ]; then
+    echo "The container prometheus is running. Stopping and removing it..."
+    docker stop prometheus
+    docker rm prometheus
+elif [ "$(docker ps -aq -f name=prometheus)" ]; then
+    echo "The container prometheus exists but is not running. Removing it..."
+    docker rm prometheus
+fi
+docker run -d \
+    --name prometheus \
+    -p 9090:9090 \
+    -v /usr/local/bin/hyperservice-bin/common-services/observability/config:/etc/prometheus \
+    prom/prometheus
+    

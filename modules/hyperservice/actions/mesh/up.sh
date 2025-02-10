@@ -27,6 +27,7 @@ mesh_up() {
     -p 5681:5681 \
     -p 8080:8080 \
     -p 5678:5678 \
+    -p 5680:5680 \
     --health-cmd "bash -c '[[ \$(cat /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS 2>/dev/null) == \"running\" ]]'" \
     --health-interval=2s \
     --health-timeout=10s \
