@@ -18,21 +18,24 @@ mesh_up() {
     fi
 
     docker run -d --name control-plane \
-    --privileged \
-    -v ${HYPERSERVICE_DEV_HOST_WORKSPACE_PATH}:/workspace:delegated \
-    -v /etc/hyperservice/shared/environment:/etc/hyperservice/shared/environment \
-    -v /etc/hyperservice/shared/ssh:/etc/hyperservice/shared/ssh \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v ~/.ssh:/root/.ssh:rw \
-    -p 5681:5681 \
-    -p 8080:8080 \
-    -p 5678:5678 \
-    -p 5680:5680 \
-    --health-cmd "bash -c '[[ \$(cat /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS 2>/dev/null) == \"running\" ]]'" \
-    --health-interval=2s \
-    --health-timeout=10s \
-    --health-retries=5 \
-    --health-start-period=3s \
-   hyperservice-control-plane-image
+        --privileged \
+        -v ${HYPERSERVICE_DEV_HOST_WORKSPACE_PATH}:/workspace:delegated \
+        -v /etc/hyperservice/shared/environment:/etc/hyperservice/shared/environment \
+        -v /etc/hyperservice/shared/ssh:/etc/hyperservice/shared/ssh \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v ~/.ssh:/root/.ssh:rw \
+        -p 5681:5681 \
+        -p 8080:8080 \
+        -p 5678:5678 \
+        -p 5680:5680 \
+        --health-cmd "bash -c '[[ \$(cat /etc/hyperservice/shared/environment/CONTROL_PLANE_STATUS 2>/dev/null) == \"running\" ]]'" \
+        --health-interval=2s \
+        --health-timeout=10s \
+        --health-retries=5 \
+        --health-start-period=3s \
+        --network service-mesh \
+        --ip 192.168.1.100 \
+    hyperservice-control-plane-image
    
-} 
+    socat TCP-LISTEN:5681,fork TCP:192.168.1.100:5681 &
+}

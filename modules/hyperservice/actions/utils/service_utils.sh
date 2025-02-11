@@ -39,6 +39,7 @@ run_service() {
     --env "SERVICE_NAME=$service_name" \
     --env "HYPERSERVICE_BIN_PATH=$HYPERSERVICE_BIN_PATH" \
     --env "HYPERSERVICE_APP_PATH=$workdir" \
+    --network service-mesh \
     --privileged \
     "$image" \
     "${additional_args[@]}" &
@@ -52,7 +53,7 @@ wait_for_control_plane() {
     echo "Accessing control plane..."
     CONTROL_PLANE_IP=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_IP 2>/dev/null || true)
     CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_ADMIN_USER_TOKEN 2>/dev/null || true)
-    echo "XXXXXXXXXXXXXXXXXX $HYPERSERVICE_SHARED_ENVIRONMENT $CONTROL_PLANE_IP $CONTROL_PLANE_IP"
+    
     temp_file=$(mktemp)
     kumactl config control-planes add \
       --name=default \

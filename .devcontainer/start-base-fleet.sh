@@ -30,6 +30,8 @@ docker run -d \
     --name $FLEET_UNIT_X_NAME \
     -e PUBLIC_KEY="$(cat $FLEET_UNIT_X_SSH_FILE.pub)" \
     --privileged \
+    --network service-mesh \
+    --ip 192.168.1.102 \
     $FLEET_UNIT_X_IMAGE_NAME
 
 FLEET_UNIT_X_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $FLEET_UNIT_X_NAME)
@@ -43,7 +45,12 @@ elif [ "$(docker ps -aq -f name=grafana)" ]; then
     echo "The container grafana exists but is not running. Removing it..."
     docker rm grafana
 fi
-docker run -d --name grafana -p 3000:3000 grafana/grafana:8.5.2
+docker run -d \
+    --name grafana \
+    -p 3000:3000 \
+    --network service-mesh \
+    --ip 192.168.1.103 \
+    grafana/grafana:8.5.2
 
 if [ "$(docker ps -q -f name=prometheus)" ]; then
     echo "The container prometheus is running. Stopping and removing it..."
@@ -57,5 +64,7 @@ docker run -d \
     --name prometheus \
     -p 9090:9090 \
     -v /usr/local/bin/hyperservice-bin/common-services/observability/config:/etc/prometheus \
+    --network service-mesh \
+    --ip 192.168.1.104 \
     prom/prometheus
     

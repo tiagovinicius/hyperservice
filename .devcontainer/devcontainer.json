@@ -6,7 +6,10 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
+      "packages": "socat"
+    }
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,bind-propagation=shared",
@@ -22,14 +25,11 @@
     "HYPERSERVICE_DEV_HOST_WORKSPACE_PATH": "${localWorkspaceFolder}",
     "HYPERSERVICE_DEV_PATH": "modules/hyperservice"
   },
-  // Configure tool-specific properties.
   "customizations": {
     "settings": {
       "terminal.integrated.shell.linux": "/bin/bash"
     },
-    // Configure properties specific to VS Code.
     "vscode": {
-      // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
         "dbaeumer.vscode-eslint",
         "GitHub.copilot",
@@ -46,9 +46,7 @@
       }
     }
   },
-  // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5678, 9090],
-  // Starts control-plane, set up kmctl in devcontainer
+  "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5676, 5678, 9090],
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": "bash"
 }

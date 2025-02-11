@@ -20,6 +20,8 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir /var/run/sshd
 
 RUN echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config \
+    && echo 'Port 22' >> /etc/ssh/sshd_config \
+    && echo 'ListenAddress 0.0.0.0' >> /etc/ssh/sshd_config \
     && echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config \
     && echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config \
     && echo 'AuthorizedKeysFile %h/.ssh/authorized_keys' >> /etc/ssh/sshd_config
