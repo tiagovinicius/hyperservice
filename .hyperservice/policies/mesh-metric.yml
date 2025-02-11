@@ -10,8 +10,13 @@ spec:
       profiles:
         appendProfiles:
           - name: Basic
+    applications:
+      - path: "/metrics/prometheus" # application metrics endpoint path
+        port: 3000
     backends:
       - type: Prometheus
         prometheus:
-          port: 5670
+          port: 5676
           path: "/metrics"
+          tls:
+            mode: "Disabled"

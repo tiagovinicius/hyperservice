@@ -71,6 +71,7 @@ mesh_up() {
         "control-plane:192.168.1.100:5680"
         "control-plane:192.168.1.100:5681"
         "control-plane:192.168.1.100:5676"
+        "control-plane:192.168.1.100:5678"
         "prometheus:192.168.1.104:9090"
     )
 
