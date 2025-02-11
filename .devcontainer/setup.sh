@@ -6,3 +6,4 @@ bash modules/hyperservice/installer/install.sh
 bash .devcontainer/start-network.sh
 bash modules/hyperservice/fleet/simulate-remote/build-image.sh
 bash .devcontainer/start-base-fleet.sh
+hy mesh up
