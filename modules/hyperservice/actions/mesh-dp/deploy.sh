@@ -43,10 +43,11 @@ mesh_dp_deploy() {
         echo "Setting up dataplane"
         kumactl generate dataplane-token --tag kuma.io/service=$DATAPLANE_NAME --valid-for=720h >/.token
         useradd -u 5678 -U kuma-dp
-        # kumactl install transparent-proxy \
-        #     --kuma-dp-user kuma-dp \
-        #     --redirect-dns \
-        #     --exclude-inbound-ports 22
+        kumactl install transparent-proxy \
+            --kuma-dp-user kuma-dp \
+            --redirect-dns \
+            --exclude-inbound-ports 22 \
+            --exclude-outbound-ports 5681
         
         runuser -u kuma-dp -- \
             kuma-dp run \
