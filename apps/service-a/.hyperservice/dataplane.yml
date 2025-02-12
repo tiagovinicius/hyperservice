@@ -4,7 +4,7 @@ name: service-a
 networking:
   address: $CONTAINER_IP
   inbound:
-    - port: 3001
+    - port: 3000
       tags:
         kuma.io/service: service-a
   transparentProxying:

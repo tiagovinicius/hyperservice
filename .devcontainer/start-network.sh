@@ -4,13 +4,26 @@
 if [ -n "$(docker network ls --filter name=^service-mesh$ --format '{{.Name}}')" ]; then
     echo "Network 'service-mesh' found. Recreating the network..."
 
-    # Listar todos os containers conectados à rede e parar cada um deles
+    # Obtém a lista de containers conectados à rede 'service-mesh'
     containers=$(docker network inspect service-mesh --format '{{range .Containers}}{{.Name}} {{end}}')
+
+    # Obtém o hostname do DevContainer
+    host_container_id=$(hostname)
+    host_container_name=$(docker ps --format '{{.ID}} {{.Names}}' | grep "^$host_container_id " | awk '{print $2}')
+
     if [ -n "$containers" ]; then
-        echo "Stopping containers connected to 'service-mesh': $containers"
+        echo "Stopping containers connected to 'service-mesh' (except host container: $host_container_name):"
+        
         for container in $containers; do
-            docker stop "$container"
+            if [ "$container" != "$host_container_name" ]; then
+                echo "Stopping $container..."
+                docker stop "$container"
+            else
+                echo "Skipping host container: $container"
+            fi
         done
+    else
+        echo "No containers found in the 'service-mesh' network."
     fi
 
     # Remover a rede
