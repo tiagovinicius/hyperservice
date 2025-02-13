@@ -3,7 +3,7 @@ FROM node:22
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
     bash build-essential coreutils curl \
-    fzf iproute2 nmap \
+    fzf iproute2 nmap collectd \
     iptables iptables-persistent jq nano needrestart \
     nftables sudo tar unzip uuid uuid-runtime wget yq
 

@@ -11,8 +11,8 @@ spec:
         appendProfiles:
           - name: Basic
     applications:
-      - path: "/metrics/prometheus" # application metrics endpoint path
-        port: 3000
+      - path: "/" # application metrics endpoint path
+        port: 9103
     backends:
       - type: Prometheus
         prometheus:
