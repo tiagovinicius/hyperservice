@@ -145,9 +145,9 @@ mesh_up() {
         sleep 5
     done
 
-    wait_shared_enviroment
+    wait_shared_enviroment &
 
     echo "🚀 Forwarding Kuma Control Plane por 5681..."
-    nohup kubectl port-forward -n kuma-system svc/kuma-control-plane 5681:5681  > port-forward.log 2>&1 &
+    nohup kubectl port-forward -n kuma-system svc/kuma-control-plane 5681:5681
 
 }
