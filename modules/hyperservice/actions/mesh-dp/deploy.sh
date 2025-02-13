@@ -70,9 +70,13 @@ mesh_dp_deploy() {
             fi
         fi
     done
-echo "XXXXXXXXXX $HYPERSERVICE_APP_PATH"
+
     echo "Creating directories"
     mkdir -p logs
+
+    echo "Setting up environment metrics collect"
+    sudo /etc/init.d/collectd stop
+    sudo collectd -C $HYPERSERVICE_BIN_PATH/common-services/observability/config/collectd.conf
 
     echo "Starting service $SERVICE_NAME"
     # moon $SERVICE_NAME:dev \

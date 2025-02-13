@@ -32,6 +32,7 @@ dependencies=(
     "install_dependency apt_installer nftables nft 'nft --version'"
     "install_dependency apt_installer iproute2 ip 'ip -V'"
     "install_dependency apt_installer nmap nmap 'nmap --version | head -n 1'"
+    "install_dependency apt_installer collectd collectd 'collectd -h | tail -n +21 | head -n 1'"
     "install_dependency kuma_installer kuma kuma-dp 'kuma-dp version'"
     "install_dependency node_installer 'Node.js' node 'node -v'"
     "install_dependency npm_installer '@moonrepo/cli' moon 'moon --version'"
