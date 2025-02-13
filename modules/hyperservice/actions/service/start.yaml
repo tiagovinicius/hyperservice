@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-a
+  namespace: kuma-system
+  labels:
+    app: service-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-a
+  template:
+    metadata:
+      labels:
+        app: service-a
+    spec:
+      containers:
+      - name: service-a
+        image: "hyperservice-dataplane-image"
+        securityContext:
+          privileged: true
+        env:
+          - name: KUMA_DPP
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: DATAPLANE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: SERVICE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: hyperservice-config
+                key: SERVICE_NAME
+          - name: HYPERSERVICE_BIN_PATH
+            valueFrom:
+              configMapKeyRef:
+                name: hyperservice-config
+                key: HYPERSERVICE_BIN_PATH
+          - name: HYPERSERVICE_APP_PATH
+            valueFrom:
+              configMapKeyRef:
+                name: hyperservice-config
+                key: HYPERSERVICE_APP_PATH
+        volumeMounts:
+          - name: docker-sock
+            mountPath: /var/run/docker.sock
+          - name: hyperservice-bin
+            mountPath: /usr/local/bin/hyperservice-bin
+          - name: hyperservice-workspace
+            mountPath: /home/hexagon/projects/hyperservice
+          - name: hyperservice-shared-env
+            mountPath: /etc/hyperservice/shared/environment
+      volumes:
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+        - name: hyperservice-bin
+          hostPath:
+            path: /usr/local/bin/hyperservice-bin
+            type: Directory
+        - name: hyperservice-workspace
+          hostPath:
+            path: /home/hexagon/projects/hyperservice
+            type: Directory
+        - name: hyperservice-shared-env
+          hostPath:
+            path: /etc/hyperservice/shared/environment
+            type: Directory

@@ -1,40 +1,49 @@
 #!/bin/bash
+set -e
 
-# Verificar se a rede existe
-if [ -n "$(docker network ls --filter name=^service-mesh$ --format '{{.Name}}')" ]; then
-    echo "Network 'service-mesh' found. Recreating the network..."
+# Check if the network exists
+if [ -n "$(docker network ls --filter name=^hy-bridge$ --format '{{.Name}}')" ]; then
+    echo "🔍 Network 'hy-bridge' found. Recreating the network..."
 
-    # Obtém a lista de containers conectados à rede 'service-mesh'
-    containers=$(docker network inspect service-mesh --format '{{range .Containers}}{{.Name}} {{end}}')
-
-    # Obtém o hostname do DevContainer
+    # Get the hostname of the DevContainer
     host_container_id=$(hostname)
     host_container_name=$(docker ps --format '{{.ID}} {{.Names}}' | grep "^$host_container_id " | awk '{print $2}')
-
-    if [ -n "$containers" ]; then
-        echo "Stopping containers connected to 'service-mesh' (except host container: $host_container_name):"
-        
-        for container in $containers; do
-            if [ "$container" != "$host_container_name" ]; then
-                echo "Stopping $container..."
-                docker stop "$container"
-            else
-                echo "Skipping host container: $container"
-            fi
-        done
+    if docker network inspect hy-bridge | grep -q "$host_container_name"; then
+        echo "⏳ Disconnecting DevContainer ($host_container_name) from 'hy-bridge'..."
+        docker network disconnect hy-bridge "$host_container_name"
     else
-        echo "No containers found in the 'service-mesh' network."
+        echo "⚠️ DevContainer ($host_container_name) is not connected to 'hy-bridge'. Skipping disconnect."
     fi
 
-    # Remover a rede
-    docker network rm service-mesh
-    echo "Network 'service-mesh' removed."
+    # Get the list of containers connected to the 'hy-bridge' network
+    containers=$(docker network inspect hy-bridge --format '{{range .Containers}}{{.Name}} {{end}}')
+
+    if [ -n "$containers" ]; then
+        echo "⏳ Stopping containers connected to 'hy-bridge':"
+        
+        for container in $containers; do
+            echo "⏳ Stopping $container..."
+            docker stop "$container"
+        done
+    else
+        echo "✅ No containers found in the 'hy-bridge' network."
+    fi
+
+    # Remove the network
+    echo "⏳ Removing network 'hy-bridge'..."
+    docker network rm hy-bridge
+    echo "✅🧹 Network 'hy-bridge' removed."
 fi
 
-# Criar a nova rede
-docker network create --subnet=192.168.1.0/24 service-mesh
-echo "Network 'service-mesh' created successfully."
+# Create the new network
+echo "⏳ Creating new network 'hy-bridge'..."
+docker network create \
+    --subnet=192.168.1.0/24 \
+    --gateway=192.168.1.1 \
+    hy-bridge
+echo "✅🌐 Network 'hy-bridge' created successfully."
 
-# Conectar o DevContainer à rede
-docker network connect service-mesh $(hostname)
-echo "DevContainer connected to 'service-mesh'."
+# Connect the DevContainer to the network
+echo "⏳ Connecting DevContainer ($host_container_name) to 'hy-bridge'..."
+docker network connect hy-bridge $(hostname)
+echo "✅🔌 DevContainer connected to 'hy-bridge'."

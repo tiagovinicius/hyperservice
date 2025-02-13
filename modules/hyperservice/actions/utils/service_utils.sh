@@ -28,58 +28,27 @@ run_service() {
 
   bash modules/hyperservice/mesh/dataplane/build-image.sh
 
-  docker_container_run "$node_name" \
-    --volume "/var/run/docker.sock:/var/run/docker.sock" \
-    --volume "$HYPERSERVICE_BIN_PATH:$HYPERSERVICE_BIN_PATH" \
-    --volume "$HYPERSERVICE_WORKSPACE_PATH:$HYPERSERVICE_WORKSPACE_PATH" \
-    --volume "$HYPERSERVICE_SHARED_ENVIRONMENT:$HYPERSERVICE_SHARED_ENVIRONMENT" \
-    --workdir "$HYPERSERVICE_WORKSPACE_PATH" \
-    --env "KUMA_DPP=$node_name" \
-    --env "DATAPLANE_NAME=$node_name" \
-    --env "SERVICE_NAME=$service_name" \
-    --env "HYPERSERVICE_BIN_PATH=$HYPERSERVICE_BIN_PATH" \
-    --env "HYPERSERVICE_APP_PATH=$workdir" \
-    --network service-mesh \
-    --privileged \
-    "$image" \
-    "${additional_args[@]}" &
+  HYPERSERVICE_IMAGE="$image" \
+  SERVICE_NAME="$service_name" \
+  HYPERSERVICE_BIN_PATH="$HYPERSERVICE_BIN_PATH" \
+  HYPERSERVICE_WORKSPACE_PATH="$HYPERSERVICE_WORKSPACE_PATH" \
+  HYPERSERVICE_SHARED_ENVIRONMENT="$HYPERSERVICE_SHARED_ENVIRONMENT" \
+  HYPERSERVICE_APP_PATH="$workdir" \
+  HYPERSERVICE_DATAPLANE_NAME="$node_name" \
+  K8S_NODE_NAME="$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')" \
+  envsubst <"$HYPERSERVICE_BIN_PATH/actions/service/start.yaml" | kubectl apply -f -
+  kubectl rollout restart deployment "$node_name" -n kuma-system
 }
 
 wait_for_control_plane() {
-  echo "Waiting control plane to be running"
-  elapsed=0
-  sleep_interval=1
-  check_kuma_status() {
-    echo "Accessing control plane..."
-    CONTROL_PLANE_IP=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_IP 2>/dev/null || true)
-    CONTROL_PLANE_ADMIN_USER_TOKEN=$(cat $HYPERSERVICE_SHARED_ENVIRONMENT/CONTROL_PLANE_ADMIN_USER_TOKEN 2>/dev/null || true)
-    
-    temp_file=$(mktemp)
-    kumactl config control-planes add \
-      --name=default \
-      --address=http://$CONTROL_PLANE_IP:5681 \
-      --auth-type=tokens \
-      --auth-conf token=${CONTROL_PLANE_ADMIN_USER_TOKEN} 2>&1 >"$temp_file"
-    [ $? -ne 0 ] || grep -Eq "could not connect" "$temp_file" && {
-      echo "Error executing kumactl"
-      cat "$temp_file"
-      rm "$temp_file"
-      return 1
-    }
-    echo "Kumactl executed successfully"
-    rm "$temp_file"
-  }
-  while ! check_kuma_status; do
-    echo "Waiting for control plane to be running..."
-    sleep $sleep_interval
-    elapsed=$((elapsed + sleep_interval))
-
-    if [ $sleep_interval -lt 60 ]; then
-      sleep_interval=$((sleep_interval * 2))
-      if [ $sleep_interval -gt 60 ]; then
-        sleep_interval=60
+  echo "⏳ Waiting for Kuma Control Plane to be ready..."
+  while true; do
+      STATUS=$(kubectl get pod -n kuma-system -l app=kuma-control-plane -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NotFound")
+      if [[ "$STATUS" == "Running" ]]; then
+          echo "✅ Kuma Control Plane is ready!"
+          break
       fi
-    fi
+      echo "🔄 Kuma Control Plane is not ready (status: $STATUS), retrying in 5s..."
+      sleep 5
   done
-  echo "Control plane is running"
 }
