@@ -5,6 +5,22 @@ service_start() {
   local service_only="$3"
   local node_name="$4"
 
+  # Get the Deployment name that matches the label
+  local deployment=$(kubectl get deployments -n "$HYPERSERVICE_NAMESPACE" -l "app=$service_name" -o jsonpath="{.items[*].metadata.name}")
+
+  # Continue only if a deployment is found
+  if [ -n "$deployment" ]; then
+      echo "🔄 Recreating hyperservice: $service_name"
+
+      # Delete the deployment
+      echo "🗑️ Deleting hyperservice..."
+      kubectl delete deployment "$deployment" -n "$HYPERSERVICE_NAMESPACE"
+
+      echo "✅ hyperservice '$service_name' successfully deleted!"
+  else
+      echo "⚠️ No hyperservice found with name $service_name in namespace $HYPERSERVICE_NAMESPACE"
+  fi
+
   echo "Starting hyperservice: $service_name"
 
   workdir=$(resolve_workdir "$service_name" "$workdir")
@@ -32,15 +48,9 @@ service_start() {
   fi
 
   # Start the main hyperservice if no fleet units were created
-if [[ "$service_only" == "true" || "$service_only" == "1" || ($simulation_units_count -eq 0 && remote_units_count -eq 0) ]]; then
-  if docker_container_exists "$service_name"; then
-    echo "Starting existing hyperservice: $service_name"
-  else
-    echo "Creating and starting new hyperservice: $service_name"
+  if [[ "$service_only" == "true" || "$service_only" == "1" || ($simulation_units_count -eq 0 && remote_units_count -eq 0) ]]; then
+    run_service "$service_name" "$workdir" hyperservice-dataplane-image "$node_name"
   fi
-  run_service "$service_name" "$workdir" hyperservice-dataplane-image "$node_name"
-fi
-
 
   echo "Hyperservice $service_name started successfully."
 }
