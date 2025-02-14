@@ -137,6 +137,9 @@ echo "HYPERSERVICE_WORKSPACE_PATH=$HYPERSERVICE_WORKSPACE_PATH"
         echo "⚠️ A policies directory does not exist: $POLICIES_DIR"
     fi
 
+    echo "🔄 Enabling observability..."
+    kumactl install observability | kubectl apply -f -
+
     echo "🔄 Building base images..."
     bash modules/hyperservice/mesh/dataplane/build-image.sh
 

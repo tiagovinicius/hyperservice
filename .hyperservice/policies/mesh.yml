@@ -1,7 +1,7 @@
 apiVersion: kuma.io/v1alpha1
 kind: Mesh
 metadata:
-  name: hyperservice
+  name: default
 spec:
   meshServices:
     mode: Exclusive
