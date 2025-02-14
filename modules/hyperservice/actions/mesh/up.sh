@@ -45,6 +45,14 @@ mesh_up() {
         -p 3000:3000 \
         --network service-mesh \
         --ip 192.168.1.103 \
+        -e "GF_PLUGINS_PREINSTALL=kumahq-kuma-datasource" \
+        -e "GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=kumahq-kuma-datasource" \
+        --user "$(id -u)" \
+        --volume "/var/lib/grafana:/var/lib/grafana" \
+        --health-cmd="wget --spider --quiet http://192.168.1.103:3000/api/health || exit 1" \
+        --health-interval=30s \
+        --health-timeout=5s \
+        --health-retries=100 \
         grafana/grafana:8.5.2
 
     if [ "$(docker ps -q -f name=prometheus)" ]; then
@@ -61,7 +69,7 @@ mesh_up() {
         --health-cmd="wget --spider --quiet http://192.168.1.104:9090/-/healthy || exit 1" \
         --health-interval=30s \
         --health-timeout=5s \
-        --health-retries=3 \
+        --health-retries=100 \
         -v /usr/local/bin/hyperservice-bin/common-services/observability/config:/etc/prometheus \
         --network service-mesh \
         --ip 192.168.1.104 \
@@ -73,6 +81,7 @@ mesh_up() {
         "control-plane:192.168.1.100:5676"
         "control-plane:192.168.1.100:5678"
         "prometheus:192.168.1.104:9090"
+        "grafana:192.168.1.103:3000"
     )
 
     for service in "${services[@]}"; do
