@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Function to check if a Docker container exists
 docker_container_exists() {
   local container_name="$1"

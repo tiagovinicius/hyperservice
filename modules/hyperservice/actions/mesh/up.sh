@@ -38,31 +38,18 @@ mesh_up() {
         exit 1
     fi
 
-    # Remove old clusters to avoid conflicts
-    EXISTING_CLUSTERS=$(k3d cluster list -o json | jq -r '.[].name')
-    if [ -n "$EXISTING_CLUSTERS" ]; then
-        echo "⚠️ Found existing clusters: $EXISTING_CLUSTERS"
-        for CLUSTER in $EXISTING_CLUSTERS; do
-            echo "🛑 Deleting cluster '$CLUSTER'..."
-            k3d cluster delete "$CLUSTER"
-        done
-        echo "✅ All existing clusters removed!"
-    fi
+    local devcontainer_ip=$(hostname -i)
 
-echo "HYPERSERVICE_BIN_PATH=$HYPERSERVICE_BIN_PATH"
-echo "HYPERSERVICE_WORKSPACE_PATH=$HYPERSERVICE_WORKSPACE_PATH"
-    # Create K3d cluster inside the "hy-bridge" network
-    echo "⏳ Creating K3s cluster 'hy-cluster'..."
-    k3d cluster create hy-cluster \
-    --servers 1 \
-    --api-port 6443 \
-    --network hy-bridge \
-    --volume "$HYPERSERVICE_BIN_PATH:$HYPERSERVICE_BIN_PATH" \
-    --volume "$HYPERSERVICE_WORKSPACE_PATH:$HYPERSERVICE_WORKSPACE_PATH" \
-    --volume /var/run/docker.sock:/var/run/docker.sock
+    # Realiza login no Docker Registry
+    docker_login "$DOCKER_USERNAME" "$DOCKER_PASSWORD"
+    
+    create_k3d_cluster "$HYPERSERVICE_CLUSTER" "$devcontainer_ip"
+
+    # Removendo o arquivo temporário após o uso
+    rm -f "$containerd_config_file"
 
     # Get the server IP inside the "hy-bridge" network
-    SERVER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' k3d-hy-cluster-server-0)
+    SERVER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' k3d-$HYPERSERVICE_CLUSTER-server-0)
     echo "🌍 K3s Server IP: $SERVER_IP"
 
     # Update kubeconfig to use the correct IP
@@ -85,6 +72,11 @@ echo "HYPERSERVICE_WORKSPACE_PATH=$HYPERSERVICE_WORKSPACE_PATH"
         exit 1
     }
 
+    k3d node create hyperservice-fleet-unit-server --cluster "$HYPERSERVICE_CLUSTER"
+
+    block_dockerhub "$HYPERSERVICE_CLUSTER"
+    # import_images "$HYPERSERVICE_CLUSTER"
+
     echo "📦 Adding Helm repository for Kuma..."
     helm repo add kuma https://kumahq.github.io/charts
     helm repo update
@@ -94,14 +86,13 @@ echo "HYPERSERVICE_WORKSPACE_PATH=$HYPERSERVICE_WORKSPACE_PATH"
     echo "⚙️ Creating 'kuma-system' namespace..."
     kubectl create namespace kuma-system
 
-
     echo "⚙️ Creating '$HYPERSERVICE_NAMESPACE' namespace..."
     kubectl create namespace $HYPERSERVICE_NAMESPACE
     kubectl label namespace $HYPERSERVICE_NAMESPACE kuma.io/sidecar-injection=enabled
-
+    
     echo "🔄 Installing Kuma in namespace 'kuma-system'..."
     helm install --namespace kuma-system kuma kuma/kuma
- 
+
 
     wait_for_control_plane_liveness
 
@@ -115,30 +106,55 @@ echo "HYPERSERVICE_WORKSPACE_PATH=$HYPERSERVICE_WORKSPACE_PATH"
 
     echo "✅ Kuma Control Plane successfully installed!"
 
-    echo "Applying policies..."
+    echo "🔄 Enabling observability..."
+
+    kumactl install observability | kubectl apply -f -
+
+    setup_grafana_persistence
+
+    # Wait for services to be alive
+    wait_for_observability_liveness
+
+    # Forwarding ports
+    echo "🚀 Forwarding Prometheus (9090) and Grafana (3000)..."
+    # Verificar e matar processos nas portas 9090 e 3000, se necessário
+    kill_port_process 9090
+    kill_port_process 3000
+    nohup kubectl port-forward -n mesh-observability svc/prometheus-server 9090:80 &
+    nohup kubectl port-forward -n mesh-observability svc/persistent-grafana 3000:80 &
+
+    # Wait for services to be ready
+    wait_for_observability_readiness
+
+    echo "✅ Observability is ready!"
+
+        echo "Applying policies..."
     # Define the POLICIES_DIR path
     POLICIES_DIR="$HYPERSERVICE_CURRENT_WORKSPACE_PATH/.hyperservice/policies"
 
-    # Check if the directory exists before listing files
-    if [ -d "$POLICIES_DIR" ]; then
-        # Get all .yml files in the directory
-        YAML_FILES=$(find "$POLICIES_DIR" -maxdepth 1 -type f -name "*.yml" | sort)
+    # Get all YAML files in the directory
+    YAML_FILES=$(find "$POLICIES_DIR" -maxdepth 1 -type f -name "*.yml" | sort)
 
-        # Check if there are YAML files before iterating
-        if [ -n "$YAML_FILES" ]; then
-            for FILE in $YAML_FILES; do
-                echo "📄 Applying file: $FILE"
-                echo "$(envsubst <"$FILE")" | kubectl apply -f -
-            done
-        else
-            echo "⚠️ No policy files found in $POLICIES_DIR"
-        fi
-    else
-        echo "⚠️ A policies directory does not exist: $POLICIES_DIR"
+    # Ensure there is at least one policy file
+    if [ -z "$YAML_FILES" ]; then
+        echo "⚠️ No policy files found in $POLICIES_DIR"
+        exit 1
     fi
 
-    echo "🔄 Enabling observability..."
-    kumactl install observability | kubectl apply -f -
+    # Apply the mesh.yml policy first if it exists
+    MESH_POLICY="$POLICIES_DIR/mesh.yml"
+    if [ -f "$MESH_POLICY" ]; then
+        echo "🚀 Applying mesh policy: $MESH_POLICY"
+        echo "$(envsubst <"$MESH_POLICY")" | kubectl apply -f -
+    fi
+
+    # Apply remaining policies, excluding mesh.yml
+    for FILE in $YAML_FILES; do
+        if [ "$FILE" != "$MESH_POLICY" ]; then
+            echo "📄 Applying policy: $FILE"
+            echo "$(envsubst <"$FILE")" | kubectl apply -f -
+        fi
+    done
 
     echo "🔄 Building base images..."
     bash modules/hyperservice/mesh/dataplane/build-image.sh

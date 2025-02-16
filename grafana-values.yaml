@@ -1,0 +1,32 @@
+persistence:
+  enabled: false
+  existingClaim: ""
+
+grafana.ini:
+  paths:
+    data: /var/lib/grafana/persistence
+    logs: /var/log/grafana
+    provisioning: /etc/grafana/provisioning
+    plugins: /var/lib/grafana/persistence/plugins
+
+extraVolumes:
+  - name: grafana-storage
+    hostPath:
+      path: /var/lib/grafana/persistence
+      type: DirectoryOrCreate
+  - name: logs-grafana
+    hostPath:
+      path: /var/log/grafana
+      type: DirectoryOrCreate
+  - name: provisioning-grafana
+    hostPath:
+      path: /etc/grafana/provisioning
+      type: DirectoryOrCreate
+
+extraVolumeMounts:
+  - name: grafana-storage
+    mountPath: /var/lib/grafana/persistence
+  - name: logs-grafana
+    mountPath: /var/log/grafana
+  - name: provisioning-grafana
+    mountPath: /etc/grafana/provisioning

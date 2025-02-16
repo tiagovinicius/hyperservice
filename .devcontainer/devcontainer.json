@@ -16,6 +16,8 @@
     "source=/usr/local/bin/hyperservice-bin,target=/usr/local/bin/hyperservice-bin,type=bind",
     "source=/etc/hyperservice/shared/environment,target=/etc/hyperservice/shared/environment,type=bind",
     "source=/etc/hyperservice/shared/ssh,target=/etc/hyperservice/shared/ssh,type=bind",
+    "source=/etc/hyperservice/data/grafana,target=/etc/hyperservice/data/grafana,type=bind",
+    "source=/etc/hyperservice/log/grafana,target=/etc/hyperservice/log/grafana,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "containerEnv": {

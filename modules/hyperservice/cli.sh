@@ -6,7 +6,10 @@ export HYPERSERVICE_WORKSPACE_PATH="${HYPERSERVICE_DEV_HOST_WORKSPACE_PATH:-$HYP
 export HYPERSERVICE_BIN_PATH="/usr/local/bin/hyperservice-bin"
 export HYPERSERVICE_REAL_BIN_PATH="$HYPERSERVICE_DEV_HOST_WORKSPACE_PATH$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export HYPERSERVICE_SHARED_ENVIRONMENT="/etc/hyperservice/shared/environment"
+export HYPERSERVICE_SHARED_CONFIG="/etc/hyperservice/shared/config"
+mkdir -p $HYPERSERVICE_SHARED_CONFIG
 export HYPERSERVICE_NAMESPACE="hyperservice"
+export HYPERSERVICE_CLUSTER="hyperservice-cluster"
 
 # Define the required file paths
 HYPERSERVICE_POLICY=".hyperservice/policies/mesh.yml"
