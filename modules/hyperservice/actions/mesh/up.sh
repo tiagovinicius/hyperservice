@@ -72,8 +72,6 @@ mesh_up() {
         exit 1
     }
 
-    k3d node create hyperservice-fleet-unit-server --cluster "$HYPERSERVICE_CLUSTER"
-
     block_dockerhub "$HYPERSERVICE_CLUSTER"
     # import_images "$HYPERSERVICE_CLUSTER"
 
@@ -98,7 +96,6 @@ mesh_up() {
 
     echo "🚀 Forwarding Kuma Control Plane por 5681..."
     nohup kubectl port-forward -n kuma-system svc/kuma-control-plane 5681:5681 &
-
 
     wait_for_control_plane_readiness
 

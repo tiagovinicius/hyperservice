@@ -130,26 +130,22 @@ wait_for_observability_readiness() {
 
 # 🚀 Function to configure persistent storage for Kuma's Grafana using the default Grafana path
 setup_grafana_persistence() {
-  # Definir variáveis principais
+# Definir variáveis principais
 RELEASE_NAME="persistent-grafana"
 NAMESPACE="mesh-observability"
 NODE_NAME="k3d-hyperservice-cluster-server-0"
 VALUES_FILE="grafana-values.yaml"
 
-# Caminhos dos volumes no server-0
-DATA_PATH="/var/lib/grafana/persistence"
+# Caminho do volume no server-0 e no pod
+DATA_PATH="/var/lib/grafana"  # Volume path for both devcontainer (server-0) and pod
 LOGS_PATH="/var/log/grafana"
 PROVISIONING_PATH="/etc/grafana/provisioning"
 
 echo "🔄 Verificando se o Grafana já está instalado..."
 
 # Remover o release se ele existir
-if helm list -n $NAMESPACE | grep -q $RELEASE_NAME; then
-  echo "🛑 Removendo instalação existente do Grafana..."
-  helm uninstall $RELEASE_NAME -n $NAMESPACE --no-hooks
-  echo "⌛ Aguardando a remoção completa dos recursos..."
-  sleep 5
-fi
+kubectl delete deployment persistent-grafana -n $NAMESPACE --ignore-not-found
+kubectl delete service persistent-grafana -n $NAMESPACE --ignore-not-found
 
 echo "🧹 Limpando possíveis resíduos do Grafana..."
 kubectl delete all -n $NAMESPACE -l app.kubernetes.io/name=grafana --ignore-not-found
@@ -161,45 +157,108 @@ echo "📂 Criando diretórios no nó do K3d e corrigindo permissões..."
 docker exec $NODE_NAME mkdir -p $DATA_PATH $LOGS_PATH $PROVISIONING_PATH
 docker exec $NODE_NAME chmod -R 777 $DATA_PATH $LOGS_PATH $PROVISIONING_PATH
 
-echo "⚙️ Criando arquivo de configuração do Helm ($VALUES_FILE)..."
-cat <<EOF > $VALUES_FILE
-persistence:
-  enabled: false
-  existingClaim: ""
-
-grafana.ini:
-  paths:
-    data: /var/lib/grafana/persistence
-    logs: $LOGS_PATH
-    provisioning: $PROVISIONING_PATH
-    plugins: /var/lib/grafana/persistence/plugins
-
-extraVolumes:
-  - name: grafana-storage
-    hostPath:
-      path: $DATA_PATH
-      type: DirectoryOrCreate
-  - name: logs-grafana
-    hostPath:
-      path: $LOGS_PATH
-      type: DirectoryOrCreate
-  - name: provisioning-grafana
-    hostPath:
-      path: $PROVISIONING_PATH
-      type: DirectoryOrCreate
-
-extraVolumeMounts:
-  - name: grafana-storage
-    mountPath: /var/lib/grafana/persistence
-  - name: logs-grafana
-    mountPath: $LOGS_PATH
-  - name: provisioning-grafana
-    mountPath: $PROVISIONING_PATH
+# Criando o Manifesto do Service e Deployment para o Grafana com o volume do server-0 para persistência
+echo "⚙️ Criando Manifesto do Grafana (Service e Deployment)..."
+cat <<EOF > grafana-manifest.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: persistent-grafana
+  namespace: $NAMESPACE
+  labels:
+    app.kubernetes.io/instance: persistent-grafana
+    app.kubernetes.io/name: grafana
+    kuma.io/mesh: default
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 80
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app.kubernetes.io/instance: persistent-grafana
+    app.kubernetes.io/name: grafana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: persistent-grafana
+  namespace: $NAMESPACE
+  labels:
+    app.kubernetes.io/instance: persistent-grafana
+    app.kubernetes.io/name: grafana
+    kuma.io/mesh: default
+  annotations:
+    kuma.io/sidecar-injection: enabled
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: persistent-grafana
+      app.kubernetes.io/name: grafana
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: persistent-grafana
+        app.kubernetes.io/name: grafana
+        kuma.io/mesh: default
+        kuma.io/sidecar-injection: enabled
+    spec:
+      initContainers:
+      - name: init-create-grafana-dir
+        image: busybox
+        command: ["sh", "-c", "mkdir -p /var/lib/grafana"]
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana   # Mount volume to /var/lib/grafana
+      containers:
+      - name: grafana
+        image: grafana/grafana:8.5.2
+        ports:
+        - containerPort: 3000
+          name: grafana
+        - containerPort: 9094
+          name: gossip-tcp
+          protocol: TCP
+        - containerPort: 9094
+          name: gossip-udp
+          protocol: UDP
+        - containerPort: 6060
+          name: profiling
+          protocol: TCP
+        env:
+        - name: GF_PATHS_DATA
+          value: /var/lib/grafana   # Ensures Grafana uses /var/lib/grafana for data
+        volumeMounts:
+        - name: grafana-storage
+          mountPath: /var/lib/grafana   # Mount persistence directory at /var/lib/grafana
+        - name: logs-grafana
+          mountPath: /var/log/grafana
+        - name: provisioning-grafana
+          mountPath: /etc/grafana/provisioning
+      volumes:
+      - name: grafana-storage
+        hostPath:
+          path: $DATA_PATH
+          type: DirectoryOrCreate
+      - name: logs-grafana
+        hostPath:
+          path: $LOGS_PATH
+          type: DirectoryOrCreate
+      - name: provisioning-grafana
+        hostPath:
+          path: $PROVISIONING_PATH
+          type: DirectoryOrCreate
 EOF
 
-echo "🚀 Instalando o Grafana usando Helm..."
-helm install "$RELEASE_NAME" grafana/grafana -n "$NAMESPACE" -f "$VALUES_FILE"
+# Aplicando o Manifesto do Grafana
+echo "🚀 Aplicando Manifesto do Grafana..."
+kubectl apply -f grafana-manifest.yaml -n $NAMESPACE
 
+# Triggering a rolling update to apply the label and restart pods
+echo "🔄 Triggering a rolling update for the deployment..."
+kubectl rollout restart deployment persistent-grafana -n mesh-observability
 }
 
 # ---------------------------
@@ -229,7 +288,7 @@ create_k3d_cluster() {
     --volume "$HYPERSERVICE_WORKSPACE_PATH:$HYPERSERVICE_WORKSPACE_PATH" \
     --volume "$HYPERSERVICE_SHARED_CONFIG:$HYPERSERVICE_SHARED_CONFIG" \
     --volume /var/run/docker.sock:/var/run/docker.sock \
-    --volume /etc/hyperservice/data/grafana/data:/var/lib/grafana/persistence \
+    --volume /etc/hyperservice/data/grafana/data:/var/lib/grafana \
     --volume /etc/hyperservice/data/grafana/provisioning:/etc/grafana/provisioning \
     --volume /etc/hyperservice/log/grafana:/var/log/grafana
 

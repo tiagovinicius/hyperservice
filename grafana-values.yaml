@@ -30,3 +30,14 @@ extraVolumeMounts:
     mountPath: /var/log/grafana
   - name: provisioning-grafana
     mountPath: /etc/grafana/provisioning
+
+# Labels for Kuma mesh integration
+service:
+  labels:
+    kuma.io/mesh: default
+
+deployment:
+  labels:
+    kuma.io/mesh: default
+  annotations:
+    kuma.io/sidecar-injection: enabled

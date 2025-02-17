@@ -83,7 +83,7 @@ spec:
             path: "${HYPERSERVICE_WORKSPACE_PATH}"
             type: Directory
       nodeSelector:
-        "kubernetes.io/hostname": "k3d-hyperservice-fleet-unit-server-0"
+        "kubernetes.io/hostname": "k3d-hyperservice-cluster-server-0"
 ---
 apiVersion: v1
 kind: Service
