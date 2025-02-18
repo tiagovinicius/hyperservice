@@ -30,7 +30,8 @@
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
         "GitHub.copilot-workspace",
-        "mads-hartmann.bash-ide-vscode"
+        "mads-hartmann.bash-ide-vscode",
+        "github.vscode-github-actions"
       ],
       "settings": {
         "files.autoSave": "afterDelay",
