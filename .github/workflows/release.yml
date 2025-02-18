@@ -12,6 +12,10 @@ jobs:
   ci:
     name: 'CI'
     runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: read
+      repository-projects: write
     steps:
       - uses: 'actions/checkout@v4'
         with:
@@ -19,12 +23,12 @@ jobs:
       - uses: 'moonrepo/setup-toolchain@v0'
       - name: Build and version
         run: 'moon ci :version :build'
-      - name: Generate release tag
-        id: bump
-        uses: anothrNick/github-tag-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: false
+      - name: Create Git Tag
+        run: |
+          VERSION="v$(date +%Y%m%d%H%M%S)"  # You can customize this format as needed
+          echo "Creating tag: $VERSION"
+          git tag $VERSION
+          git push origin $VERSION  # Push the tag to the remote
       - name: Generate GitHub Release
         uses: softprops/action-gh-release@v2
         with:
