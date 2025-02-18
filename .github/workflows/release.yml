@@ -27,4 +27,4 @@ jobs:
             ./hyperservice-control-app/bin/*
             ./hyperservice-cli/bin/*
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
