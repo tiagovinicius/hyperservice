@@ -23,7 +23,8 @@ tasks:
       echo "$NEW_FULL_VERSION" > version.txt
 
       go build -ldflags "-X main.version=$NEW_FULL_VERSION"
-  tag: |
+  tag: 
+    script: |
       LOCK_FILE="/tmp/git_lock"
       # Wait until the lock file is removed (i.e., no other process is running Git operations)
       while [ -e "$LOCK_FILE" ]; do
