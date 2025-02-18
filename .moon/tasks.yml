@@ -21,7 +21,7 @@ tasks:
 
       # Update version.txt with the new version
       echo "$NEW_FULL_VERSION" > version.txt
-
+      ls -la
       go build -ldflags "-X main.version=$NEW_FULL_VERSION"
   tag: 
     script: |
