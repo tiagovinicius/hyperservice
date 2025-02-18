@@ -3,13 +3,17 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"hyperservice-device-app/system"  // Import the system package
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello from hyperservice-device-app!")
-}
-
 func main() {
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	http.HandleFunc("/system/update", system.UpdateBinaryHandler)
+	http.HandleFunc("/system/version", system.GetVersionHandler)
+
+	// Start the server
+	fmt.Println("Starting server on :8080...")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Println("Error starting the server:", err)
+	}
 }

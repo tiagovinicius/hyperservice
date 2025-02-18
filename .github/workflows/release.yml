@@ -29,8 +29,9 @@ jobs:
       # Create bin directory before building
       - name: Build and version
         run: |
-          moon ci :build 
           moon ci :version
+          moon ci :build 
+          moon ci :tag
       - name: Create Git Tag
         id: create_tag
         run: |
