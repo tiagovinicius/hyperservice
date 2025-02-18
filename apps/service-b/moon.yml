@@ -1,7 +1,0 @@
-stack: "backend"
-type: "application"
-tasks:
-  dev:
-    command: "npm run dev"
-    options:
-      persistent: true

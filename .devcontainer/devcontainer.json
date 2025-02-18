@@ -1,15 +1,9 @@
 {
-  "name": "Platform as Service + Service Mesh (Dokku, Kuma)",
-  "build": {
-    "context": "..",
-    "dockerfile": "Dockerfile"
-  },
+  "name": "Platform as Service + Service Mesh (Dokku, Kuma, Go)",
+  "image": "golang:1.24",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
-      "packages": "socat"
-    }
+    "ghcr.io/devcontainers/features/git:1": {}
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "mounts": [
@@ -25,6 +19,7 @@
     },
     "vscode": {
       "extensions": [
+        "golang.go",
         "dbaeumer.vscode-eslint",
         "GitHub.copilot",
         "GitHub.copilot-chat",

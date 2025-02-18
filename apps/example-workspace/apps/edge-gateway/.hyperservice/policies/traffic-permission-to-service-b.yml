@@ -1,0 +1,15 @@
+type: MeshTrafficPermission
+name: edge-gateway-allow-to-service-b
+mesh: default
+spec:
+  targetRef:
+    kind: MeshSubset
+    tags:
+      kuma.io/service: service-b
+  from:
+    - targetRef:
+        kind: MeshSubset
+        tags:
+          kuma.io/service: edge-gateway
+      default:
+        action: Allow

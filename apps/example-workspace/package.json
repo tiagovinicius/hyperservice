@@ -1,0 +1,7 @@
+{
+  "name": "hyperservice",
+  "version": "0.1.0",
+  "devDependencies": {
+    "tsconfig-moon": "^1.3.0"
+  }
+}

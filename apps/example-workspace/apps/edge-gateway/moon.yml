@@ -1,0 +1,5 @@
+tasks:
+  dev:
+    command: 'bash -c "sleep infinity"'
+    options:
+      persistent: true

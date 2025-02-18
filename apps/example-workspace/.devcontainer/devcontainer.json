@@ -1,0 +1,46 @@
+{
+  "name": "Platform as Service + Service Mesh (Dokku, Kuma)",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
+      "packages": "socat"
+    }
+  },
+  "runArgs": ["--env-file", ".devcontainer/.env"],
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "containerEnv": {
+    "HYPERSERVICE_DEV_HOST_WORKSPACE_PATH": "${localWorkspaceFolder}",
+    "HYPERSERVICE_DEV_PATH": "modules/hyperservice"
+  },
+  "customizations": {
+    "settings": {
+      "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot-workspace",
+        "mads-hartmann.bash-ide-vscode"
+      ],
+      "settings": {
+        "files.autoSave": "afterDelay",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  },
+  "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5676, 5678, 9090],
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postAttachCommand": "bash"
+}
