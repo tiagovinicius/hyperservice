@@ -15,6 +15,12 @@ echo "Setting up symbolic links for Hyperservice..."
 HYPERSERVICE_PATH="/usr/local/bin/hyperservice"
 HYPERSERVICE_BIN_PATH="/usr/local/bin/hyperservice-bin"
 HYPERSERVICE_SHORT_PATH="/usr/local/bin/hy"
+HYPERSERVICE_SHARED_ENVIROMENT=/etc/hyperservice/shared/environment
+HYPERSERVICE_SHARED_SSH=/etc/hyperservice/shared/ssh
+
+mkdir -p $HYPERSERVICE_BIN_PATH
+mkdir -p $HYPERSERVICE_SHARED_ENVIROMENT
+mkdir -p $HYPERSERVICE_SHARED_SSH
 
 if [ -n "$HYPERSERVICE_DEV_PATH" ]; then
   echo "HYPERSERVICE_DEV_PATH is set to $HYPERSERVICE_DEV_PATH."
