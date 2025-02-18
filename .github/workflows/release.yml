@@ -7,16 +7,13 @@ on:
   pull_request:
     branches:
       - main
-permissions:
-  contents: write
+
 jobs:
   ci:
     name: 'CI'
     runs-on: 'ubuntu-latest'
     permissions:
-      id-token: write
-      contents: read
-      repository-projects: write
+      contents: write
     steps:
       - uses: 'actions/checkout@v4'
         with:
