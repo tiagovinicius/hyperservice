@@ -7,6 +7,7 @@
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "mounts": [
+    "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "containerEnv": {
@@ -35,7 +36,7 @@
       }
     }
   },
-  "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5676, 5678, 9090],
+  // "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5676, 5678, 9090],
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": "bash"
 }
