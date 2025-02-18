@@ -3,6 +3,8 @@ set -e
 git config --global user.name $GIT_NAME
 git config --global user.email $GIT_EMAIL
 git config --global safe.directory '*'
+eval $(ssh-agent -s)
+ssh-add ~/.ssh/id_rsa
 
 go install github.com/air-verse/air@latest
 
