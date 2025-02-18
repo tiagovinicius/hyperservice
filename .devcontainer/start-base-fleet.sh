@@ -30,7 +30,7 @@ docker run -d \
     --name $FLEET_UNIT_REMOTE_NAME \
     -e PUBLIC_KEY="$(cat $FLEET_UNIT_REMOTE_SSH_FILE.pub)" \
     --privileged \
-    --network service-mesh \
+    --network hy-bridge \
     --ip 192.168.1.102 \
     $FLEET_UNIT_REMOTE_IMAGE_NAME
 

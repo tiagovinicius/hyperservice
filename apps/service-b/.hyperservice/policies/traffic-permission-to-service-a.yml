@@ -1,15 +1,17 @@
-type: MeshTrafficPermission
-name: $DATAPLANE_NAME-allow-to-service-a
-mesh: default
+apiVersion: kuma.io/v1alpha1
+kind: MeshTrafficPermission
+metadata:
+  name: allow-service-a-to-service-b
+  namespace: hyperservice  # Ajuste conforme necessário
 spec:
   targetRef:
     kind: MeshSubset
     tags:
-      kuma.io/service: service-a
+      kuma.io/service: service-a_hyperservice_svc_3000  # Serviço de destino
   from:
     - targetRef:
         kind: MeshSubset
         tags:
-          kuma.io/service: $DATAPLANE_NAME
+          kuma.io/service: service-b_hyperservice_svc_3000  # Serviço que pode acessar
       default:
-        action: Allow
+        action: Allow  # Permite o tráfego entre os serviços

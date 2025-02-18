@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hyperservice-config
+  namespace: "${HYPERSERVICE_NAMESPACE}"
+data:
+  SERVICE_NAME: "${SERVICE_NAME}"
+  HYPERSERVICE_BIN_PATH: "${HYPERSERVICE_BIN_PATH}"
+  HYPERSERVICE_APP_PATH: "${HYPERSERVICE_APP_PATH}"
+  HYPERSERVICE_DATAPLANE_NAME: "${HYPERSERVICE_DATAPLANE_NAME}"
+  HYPERSERVICE_WORKSPACE_PATH: "${HYPERSERVICE_WORKSPACE_PATH}"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "${HYPERSERVICE_DATAPLANE_NAME}"
+  namespace: "${HYPERSERVICE_NAMESPACE}"
+  labels:
+    app: "${HYPERSERVICE_DATAPLANE_NAME}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "${HYPERSERVICE_DATAPLANE_NAME}"
+  template:
+    metadata:
+      labels:
+        app: "${HYPERSERVICE_DATAPLANE_NAME}"
+    spec:
+      containers:
+        - name: "${HYPERSERVICE_DATAPLANE_NAME}"
+          image: "${HYPERSERVICE_IMAGE}"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: KUMA_DPP
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: DATAPLANE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SERVICE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperservice-config
+                  key: SERVICE_NAME
+            - name: HYPERSERVICE_BIN_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperservice-config
+                  key: HYPERSERVICE_BIN_PATH
+            - name: HYPERSERVICE_APP_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperservice-config
+                  key: HYPERSERVICE_APP_PATH
+            - name: HYPERSERVICE_WORKSPACE_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperservice-config
+                  key: HYPERSERVICE_WORKSPACE_PATH
+          volumeMounts:
+            - name: docker-sock
+              mountPath: /var/run/docker.sock
+            - name: hyperservice-bin
+              mountPath: "${HYPERSERVICE_BIN_PATH}"
+            - name: hyperservice-workspace
+              mountPath: "${HYPERSERVICE_WORKSPACE_PATH}"
+      volumes:
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+        - name: hyperservice-bin
+          hostPath:
+            path: "${HYPERSERVICE_BIN_PATH}"
+            type: Directory
+        - name: hyperservice-workspace
+          hostPath:
+            path: "${HYPERSERVICE_WORKSPACE_PATH}"
+            type: Directory
+      nodeSelector:
+        "kubernetes.io/hostname": "k3d-hyperservice-cluster-server-0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "${HYPERSERVICE_DATAPLANE_NAME}" # Nome dinâmico baseado na variável
+  namespace: "${HYPERSERVICE_NAMESPACE}"
+  labels:
+    app: "${HYPERSERVICE_DATAPLANE_NAME}"
+spec:
+  selector:
+    app: "${HYPERSERVICE_DATAPLANE_NAME}"
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: NodePort

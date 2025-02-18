@@ -1,0 +1,17 @@
+apiVersion: kuma.io/v1alpha1
+kind: MeshTrafficPermission
+metadata:
+  name: allow-grafana-to-prometheus
+  namespace: mesh-observability
+spec:
+  targetRef:
+    kind: MeshSubset
+    tags:
+      kuma.io/service: prometheus_mesh-observability_svc_80
+  from:
+    - targetRef:
+        kind: MeshSubset
+        tags:
+          kuma.io/service: grafana_mesh-observability_svc_80
+      default:
+        action: Allow

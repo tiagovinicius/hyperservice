@@ -12,13 +12,7 @@
     }
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,bind-propagation=shared",
-  "workspaceFolder": "/workspace",
   "mounts": [
-    "source=/usr/local/bin/hyperservice-bin,target=/usr/local/bin/hyperservice-bin,type=bind",
-    "source=/etc/hyperservice/shared/environment,target=/etc/hyperservice/shared/environment,type=bind",
-    "source=/etc/hyperservice/shared/ssh,target=/etc/hyperservice/shared/ssh,type=bind",
-    "source=/var/lib/grafana,target=/var/lib/grafana,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "containerEnv": {
