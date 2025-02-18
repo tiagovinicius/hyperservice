@@ -24,6 +24,8 @@ jobs:
           VERSION="v$(date +%Y%m%d%H%M%S)"  # Create a version tag based on timestamp
           git tag $VERSION
           git push origin $VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate GitHub Release
         uses: softprops/action-gh-release@v1
         with:
