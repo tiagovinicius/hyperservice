@@ -11,7 +11,7 @@ var rootCmd = &cobra.Command{
 	Use:   "hyperservice-cli",
 	Short: "Hyperservice CLI - A simple command line tool",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hello from hyperservice-cli!")
+		fmt.Println("Hello from hyperservice-cli!!!")
 	},
 }
 
