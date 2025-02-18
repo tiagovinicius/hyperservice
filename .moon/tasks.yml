@@ -37,7 +37,6 @@ tasks:
       git push
 
       # Rename the binary to include the version
-      ls -la
       mv ./bin/main "./bin/$BASE_NAME-$NEW_VERSION"
 
       # Remove lock file to indicate completion

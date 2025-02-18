@@ -29,9 +29,13 @@ jobs:
           mkdir -p apps/hyperservice-device-app/bin
           mkdir -p apps/hyperservice-control-app/bin
           mkdir -p apps/hyperservice-cli/bin
-          ls -la
       - name: Build and version
-        run: 'moon :build :version'
+        run: |
+          moon ci :build 
+          ls -la apps/hyperservice-device-app/bin
+          ls -la apps/hyperservice-control-app/bin
+          ls -la apps/hyperservice-cli/bin
+          moon ci :version
       - name: Create Git Tag
         id: create_tag
         run: |
@@ -44,9 +48,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./hyperservice-device-app/bin/*
-            ./hyperservice-control-app/bin/*
-            ./hyperservice-cli/bin/*
+            apps/hyperservice-device-app/bin/*
+            apps/hyperservice-control-app/bin/*
+            apps/hyperservice-cli/bin/*
           tag_name: ${{ steps.create_tag.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
