@@ -23,10 +23,12 @@ jobs:
         run: 'moon ci :version :build'
       - name: Create Git Tag
         run: |
-          VERSION="v$(date +%Y%m%d%H%M%S)"  # You can customize this format as needed
+          VERSION="v$(date +%Y%m%d%H%M%S)"
           echo "Creating tag: $VERSION"
           git tag $VERSION
-          git push origin $VERSION  # Push the tag to the remote
+          git push origin $VERSION 
+      - name: Verify Tag
+        run: git fetch --tags
       - name: Generate GitHub Release
         uses: softprops/action-gh-release@v2
         with:
