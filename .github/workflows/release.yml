@@ -19,6 +19,12 @@ jobs:
       - uses: 'moonrepo/setup-toolchain@v0'
       - name: Build and version
         run: 'moon ci :version :build'
+      - name: Generate release tag
+        id: bump
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
       - name: Generate GitHub Release
         uses: softprops/action-gh-release@v2
         with:
