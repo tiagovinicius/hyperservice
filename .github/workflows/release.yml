@@ -23,6 +23,13 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
+      # Create bin directory before building
+      - name: Create bin directory
+        run: |
+          mkdir -p apps/hyperservice-device-app/bin
+          mkdir -p apps/hyperservice-control-app/bin
+          mkdir -p apps/hyperservice-cli/bin
+          ls -la
       - name: Build and version
         run: 'moon :build :version'
       - name: Create Git Tag
