@@ -5,6 +5,9 @@ git config --global user.email $GIT_EMAIL
 git config --global safe.directory '*'
 eval $(ssh-agent -s)
 ssh-add ~/.ssh/id_rsa
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_rsa
+chmod 600 ~/.ssh/config
 
 go install github.com/air-verse/air@latest
 
