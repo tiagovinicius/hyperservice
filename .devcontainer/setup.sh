@@ -3,6 +3,7 @@ set -e
 git config --global user.name $GIT_NAME
 git config --global user.email $GIT_EMAIL
 git config --global safe.directory '*'
+git config --global core.editor "nano"
 eval $(ssh-agent -s)
 ssh-add ~/.ssh/id_rsa
 chown -R root:root ~/.ssh

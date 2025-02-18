@@ -3,7 +3,10 @@
   "image": "golang:1.24",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+      "packages": "curl,nano"
+    }
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "mounts": [
