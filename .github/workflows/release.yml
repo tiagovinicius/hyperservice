@@ -19,22 +19,17 @@ jobs:
         with:
           fetch-depth: 0
       - uses: 'moonrepo/setup-toolchain@v0'
+      - name: Clean up git lock file
+        run: |
+          rm -f .git/index.lock
       - name: Set Git User
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
       # Create bin directory before building
-      - name: Create bin directory
-        run: |
-          mkdir -p apps/hyperservice-device-app/bin
-          mkdir -p apps/hyperservice-control-app/bin
-          mkdir -p apps/hyperservice-cli/bin
       - name: Build and version
         run: |
           moon ci :build 
-          ls -la apps/hyperservice-device-app/bin
-          ls -la apps/hyperservice-control-app/bin
-          ls -la apps/hyperservice-cli/bin
           moon ci :version
       - name: Create Git Tag
         id: create_tag
