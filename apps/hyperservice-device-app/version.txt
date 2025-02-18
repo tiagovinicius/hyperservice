@@ -1,1 +1,1 @@
-hyperservice-device-app-0.0.4
+hyperservice-device-app-0.0.5
