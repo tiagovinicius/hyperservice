@@ -1,1 +1,1 @@
-hyperservice-control-app-0.0.0.2
+hyperservice-control-app-0.0.0.3
