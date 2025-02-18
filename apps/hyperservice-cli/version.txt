@@ -1,1 +1,1 @@
-hyperservice-cli-0.0.2
+hyperservice-cli-0.0.3
