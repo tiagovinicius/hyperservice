@@ -13,8 +13,6 @@
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "mounts": [
-    "source=/etc/hyperservice/data/grafana,target=/etc/hyperservice/data/grafana,type=bind",
-    "source=/etc/hyperservice/log/grafana,target=/etc/hyperservice/log/grafana,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "containerEnv": {

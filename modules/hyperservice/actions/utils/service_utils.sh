@@ -288,10 +288,8 @@ create_k3d_cluster() {
     --volume "$HYPERSERVICE_BIN_PATH:$HYPERSERVICE_BIN_PATH" \
     --volume "$HYPERSERVICE_WORKSPACE_PATH:$HYPERSERVICE_WORKSPACE_PATH" \
     --volume "$HYPERSERVICE_SHARED_CONFIG:$HYPERSERVICE_SHARED_CONFIG" \
-    --volume /var/run/docker.sock:/var/run/docker.sock \
-    --volume /etc/hyperservice/data/grafana/data:/var/lib/grafana \
-    --volume /etc/hyperservice/data/grafana/provisioning:/etc/grafana/provisioning \
-    --volume /etc/hyperservice/log/grafana:/var/log/grafana
+    --volume "$HYPERSERVICE_GRAFANA_DATA_VOLUME:/var/lib/grafana" \
+    --volume /var/run/docker.sock:/var/run/docker.sock
 
     echo "✅ Cluster k3d '${cluster_name}' criado com sucesso!"
 }
