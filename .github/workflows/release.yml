@@ -22,13 +22,13 @@ jobs:
       - name: Build and version
         run: 'moon ci :version :build'
       - name: Create Git Tag
+        id: create_tag
         run: |
           VERSION="v$(date +%Y%m%d%H%M%S)"
           echo "Creating tag: $VERSION"
           git tag $VERSION
           git push origin $VERSION 
-      - name: Verify Tag
-        run: git fetch --tags
+          echo "::set-output name=tag::$VERSION"
       - name: Generate GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -36,5 +36,6 @@ jobs:
             ./hyperservice-device-app/bin/*
             ./hyperservice-control-app/bin/*
             ./hyperservice-cli/bin/*
+          tag_name: ${{ steps.create_tag.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
