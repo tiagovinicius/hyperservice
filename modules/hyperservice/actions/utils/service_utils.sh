@@ -100,7 +100,7 @@ wait_for_observability_liveness() {
     done
 
     echo "⏳ Waiting for Observability services to have active endpoints..."
-    for svc in prometheus-server persistent-grafana; do
+    for svc in prometheus grafana; do
         until kubectl get endpoints -n mesh-observability "$svc" -o jsonpath="{.subsets}" 2>/dev/null | grep -q "addresses"; do
             echo "🔄 Service $svc does not have active endpoints yet. Retrying in 5s..."
             sleep 5
@@ -129,9 +129,9 @@ wait_for_observability_readiness() {
 }
 
 # 🚀 Function to configure persistent storage for Kuma's Grafana using the default Grafana path
-setup_grafana_persistence() {
+setup_grafana() {
 # Definir variáveis principais
-RELEASE_NAME="persistent-grafana"
+RELEASE_NAME="grafana"
 NAMESPACE="mesh-observability"
 NODE_NAME="k3d-hyperservice-cluster-server-0"
 VALUES_FILE="grafana-values.yaml"
@@ -144,8 +144,8 @@ PROVISIONING_PATH="/etc/grafana/provisioning"
 echo "🔄 Verificando se o Grafana já está instalado..."
 
 # Remover o release se ele existir
-kubectl delete deployment persistent-grafana -n $NAMESPACE --ignore-not-found
-kubectl delete service persistent-grafana -n $NAMESPACE --ignore-not-found
+kubectl delete deployment grafana -n $NAMESPACE --ignore-not-found
+kubectl delete service grafana -n $NAMESPACE --ignore-not-found
 
 echo "🧹 Limpando possíveis resíduos do Grafana..."
 kubectl delete all -n $NAMESPACE -l app.kubernetes.io/name=grafana --ignore-not-found
@@ -163,10 +163,10 @@ cat <<EOF > grafana-manifest.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: persistent-grafana
+  name: grafana
   namespace: $NAMESPACE
   labels:
-    app.kubernetes.io/instance: persistent-grafana
+    app.kubernetes.io/instance: grafana
     app.kubernetes.io/name: grafana
     kuma.io/mesh: default
 spec:
@@ -177,16 +177,16 @@ spec:
       protocol: TCP
       targetPort: 3000
   selector:
-    app.kubernetes.io/instance: persistent-grafana
+    app.kubernetes.io/instance: grafana
     app.kubernetes.io/name: grafana
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: persistent-grafana
+  name: grafana
   namespace: $NAMESPACE
   labels:
-    app.kubernetes.io/instance: persistent-grafana
+    app.kubernetes.io/instance: grafana
     app.kubernetes.io/name: grafana
     kuma.io/mesh: default
   annotations:
@@ -195,12 +195,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/instance: persistent-grafana
+      app.kubernetes.io/instance: grafana
       app.kubernetes.io/name: grafana
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: persistent-grafana
+        app.kubernetes.io/instance: grafana
         app.kubernetes.io/name: grafana
         kuma.io/mesh: default
         kuma.io/sidecar-injection: enabled
@@ -258,8 +258,9 @@ kubectl apply -f grafana-manifest.yaml -n $NAMESPACE
 
 # Triggering a rolling update to apply the label and restart pods
 echo "🔄 Triggering a rolling update for the deployment..."
-kubectl rollout restart deployment persistent-grafana -n mesh-observability
+kubectl rollout restart deployment grafana -n mesh-observability
 }
+
 
 # ---------------------------
 # 🎯 Criando o cluster k3d e conectando ao Registry
@@ -324,11 +325,29 @@ restart_k3d_cluster() {
 # ✅ It checks if the image is already present in the cluster before importing.
 import_images() {
     local cluster_name="$1"
+    local images_cache_file="$HYPERSERVICE_CURRENT_WORKSPACE_PATH/.hyperservice/images-cache.yml"
 
     # Verify if the cluster exists
     if ! k3d cluster list | grep -q "$cluster_name"; then
         echo "❌ Cluster $cluster_name not found! Please check with 'k3d cluster list'."
         exit 1
+    fi
+
+    # Verify if the images cache YAML file exists
+    if [[ ! -f "$images_cache_file" ]]; then
+        echo "❌ $images_cache_file not found! Please check the path."
+        exit 0
+    fi
+
+    # Check if the images cache YAML file exists, but don't exit if it doesn't
+    if [[ ! -f "$images_cache_file" ]]; then
+        echo "⚠️ $images_cache_file not found! Continuing without the images cache file."
+        images_list=""
+    else
+        # Extract image list from YAML file if it exists
+        local image_list_from_yaml
+        image_list_from_yaml=$(yq -r '.images // [] | .[]' "$images_cache_file" 2>/dev/null | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        images_list="$image_list_from_yaml"
     fi
 
     echo "🔍 Listing all local Docker images..."
@@ -343,10 +362,27 @@ import_images() {
     fi
 
     echo "🚀 Checking and importing images into k3d cluster: $cluster_name..."
-    
-    for image in $images; do
-      echo "📦 Importing $image..."
-      k3d image import "$image"  --cluster "$cluster_name"
+
+    # If there's no image list from YAML, we import all local images
+    if [[ -z "$images_list" ]]; then
+        echo "⚠️ No image list found from YAML. Importing all local images."
+        image_list_from_yaml="$images"
+    else
+        # Loop through all images in the YAML file and check if they exist locally
+        for image in $images_list; do
+            if echo "$images" | grep -q "$image"; then
+                echo "📦 $image already in local cache..."
+            else
+                echo "🔄 Downloading $image from the registry..."
+                docker pull "$image"
+            fi
+        done
+    fi
+
+    # Import the images into the k3d cluster
+    for image in $image_list_from_yaml; do
+        echo "📦 Importing $image into cluster $cluster_name..."
+        k3d image import "$image" --cluster "$cluster_name"
     done
 
     echo "🎉 All necessary images have been imported successfully!"

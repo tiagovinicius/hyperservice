@@ -7,11 +7,11 @@ spec:
   targetRef:
     kind: MeshSubset
     tags:
-      kuma.io/service: prometheus-server_mesh-observability_svc_80
+      kuma.io/service: prometheus_mesh-observability_svc_80
   from:
     - targetRef:
         kind: MeshSubset
         tags:
-          kuma.io/service: persistent-grafana_mesh-observability_svc_80
+          kuma.io/service: grafana_mesh-observability_svc_80
       default:
         action: Allow

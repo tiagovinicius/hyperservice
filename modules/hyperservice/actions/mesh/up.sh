@@ -72,8 +72,8 @@ mesh_up() {
         exit 1
     }
 
-    block_dockerhub "$HYPERSERVICE_CLUSTER"
-    # import_images "$HYPERSERVICE_CLUSTER"
+    # block_dockerhub "$HYPERSERVICE_CLUSTER"
+    import_images "$HYPERSERVICE_CLUSTER"
 
     echo "📦 Adding Helm repository for Kuma..."
     helm repo add kuma https://kumahq.github.io/charts
@@ -91,7 +91,6 @@ mesh_up() {
     echo "🔄 Installing Kuma in namespace 'kuma-system'..."
     helm install --namespace kuma-system kuma kuma/kuma
 
-
     wait_for_control_plane_liveness
 
     echo "🚀 Forwarding Kuma Control Plane por 5681..."
@@ -104,10 +103,7 @@ mesh_up() {
     echo "✅ Kuma Control Plane successfully installed!"
 
     echo "🔄 Enabling observability..."
-
-    kumactl install observability | kubectl apply -f -
-
-    setup_grafana_persistence
+    kubectl apply -f /workspaces/hyperservice/modules/hyperservice/common-services/observability/config/observability-manifest.yaml -n mesh-observability
 
     # Wait for services to be alive
     wait_for_observability_liveness
@@ -117,8 +113,8 @@ mesh_up() {
     # Verificar e matar processos nas portas 9090 e 3000, se necessário
     kill_port_process 9090
     kill_port_process 3000
-    nohup kubectl port-forward -n mesh-observability svc/prometheus-server 9090:80 &
-    nohup kubectl port-forward -n mesh-observability svc/persistent-grafana 3000:80 &
+    nohup kubectl port-forward -n mesh-observability svc/prometheus 9090:80 &
+    nohup kubectl port-forward -n mesh-observability svc/grafana 3000:80 &
 
     # Wait for services to be ready
     wait_for_observability_readiness
