@@ -19,15 +19,8 @@ jobs:
       - uses: 'moonrepo/setup-toolchain@v0'
       - name: Build and version
         run: 'moon ci :version :build'
-      - name: Create Git Tag
-        run: |
-          VERSION="v$(date +%Y%m%d%H%M%S)"  # Create a version tag based on timestamp
-          git tag $VERSION
-          git push origin $VERSION
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Generate GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./hyperservice-device-app/bin/*
