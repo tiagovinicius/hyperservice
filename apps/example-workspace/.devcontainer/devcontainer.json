@@ -1,16 +1,18 @@
 {
-  "name": "Platform as Service + Service Mesh (Dokku, Kuma, Go)",
-  "image": "golang:1.24",
+  "name": "Platform as Service + Service Mesh (Dokku, Kuma)",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
-      "packages": "curl,nano"
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1": {
+      "packages": "socat"
     }
   },
   "runArgs": ["--env-file", ".devcontainer/.env"],
   "mounts": [
-    "source=${env:HOME}/.ssh,target=/root/.ssh,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "containerEnv": {
@@ -23,7 +25,6 @@
     },
     "vscode": {
       "extensions": [
-        "golang.go",
         "dbaeumer.vscode-eslint",
         "GitHub.copilot",
         "GitHub.copilot-chat",
@@ -39,7 +40,7 @@
       }
     }
   },
-  // "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5676, 5678, 9090],
+  "forwardPorts": [22, 80, 443, 3000, 5680, 5681, 5676, 5678, 9090],
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": "bash"
 }

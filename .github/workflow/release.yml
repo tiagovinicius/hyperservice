@@ -1,0 +1,30 @@
+name: Build, Auto Versioning and Release Creation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: 'CI'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: 'actions/checkout@v4'
+        with:
+          fetch-depth: 0
+      - uses: 'moonrepo/setup-toolchain@v0'
+      - name: Build and version
+        run: 'moon ci :version :build'
+      - name: Generate GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./hyperservice-device-app/bin/*
+            ./hyperservice-control-app/bin/*
+            ./hyperservice-cli/bin/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
