@@ -3,4 +3,4 @@ type: "application"
 language: "go"
 tasks:
   build:
-    command: "go build -o ./bin/main ./cmd"
+    command: "go build -o ./bin/main ./cmd/server"

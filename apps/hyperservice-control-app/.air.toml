@@ -1,4 +1,4 @@
-# .air.toml - para o hyperservice-control-app (DDD)
+# .air.toml - para o hyperservice-server-app (DDD)
 root = "."
 tmp_dir = "tmp"
 

@@ -1,4 +1,4 @@
-module hyperservice-control-app
+module hyperservice-server-app
 
 go 1.24.0
 
