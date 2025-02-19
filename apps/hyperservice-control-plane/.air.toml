@@ -1,0 +1,19 @@
+# .air.toml - para o hyperservice-control-plane (DDD)
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ."
+  bin = "tmp/main"
+  include = [
+    "cmd",       # Diretório com o código principal
+    "internal"   # Diretório onde estão as camadas do domínio e outras implementações
+  ]
+  exclude = [
+    "tmp",
+    "assets",
+    "node_modules"
+  ]
+
+[log]
+  time = true

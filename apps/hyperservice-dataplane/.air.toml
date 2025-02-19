@@ -1,0 +1,18 @@
+# .air.toml - para o hyperservice-dataplane
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ."
+  bin = "tmp/main"
+  include = [
+    "cmd"   # A estrutura simples possui o código principal no diretório cmd
+  ]
+  exclude = [
+    "tmp",
+    "assets",
+    "node_modules"
+  ]
+
+[log]
+  time = true
