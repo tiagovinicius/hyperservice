@@ -29,9 +29,9 @@ jobs:
       # Create bin directory before building
       - name: Build and version
         run: |
-          moon ci :version
-          moon ci :build 
-          moon ci :tag
+          moon ci :version  # Update the version only apps with touched files
+          moon :build  # Build all apps
+          moon :tag # Tag all apps
       - name: Create Git Tag
         id: create_tag
         run: |
