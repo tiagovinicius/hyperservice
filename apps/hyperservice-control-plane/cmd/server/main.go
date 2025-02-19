@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"hyperservice-control-plane/internal/system/handler"
+	meshHandler "hyperservice-control-plane/internal/mesh/handler"
+	systemHandler "hyperservice-control-plane/internal/system/handler"
 	"log"
 	"net/http"
 )
@@ -12,7 +13,8 @@ func main() {
 	log.Println("INFO: Starting server on port 8080...")
 
 	// Setup routing
-	http.HandleFunc("/system/version", handler.GetVersionHandler)
+	http.HandleFunc("/system/version", systemHandler.GetVersionHandler)
+	http.HandleFunc("/mesh/up", meshHandler.PostMeshUpHandler)
 
 	fmt.Println("Server is running on port 3002...")
 	if err := http.ListenAndServe(":3002", nil); err != nil {

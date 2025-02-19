@@ -3,11 +3,11 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  cmd = "go build -o ./tmp/main ."
+  cmd = "go build -o ./tmp/main ./cmd/server"
   bin = "tmp/main"
   include = [
-    "cmd",       # Diretório com o código principal
-    "internal"   # Diretório onde estão as camadas do domínio e outras implementações
+    "cmd",  
+    "internal" 
   ]
   exclude = [
     "tmp",
@@ -17,3 +17,4 @@ tmp_dir = "tmp"
 
 [log]
   time = true
+  log_level = "debug"
