@@ -154,7 +154,6 @@ func CreateApplicationsNamespace(clusterName string, namespace string) error {
 		return err
 	}
 
-	// Step 3: Create application-specific namespace
 	fmt.Printf("⚙️ Creating '%s' namespace...\n", clusterName)
 	if err := infrastructure.CreateKubernetesNamespace(clientset, namespace); err != nil {
 		return err

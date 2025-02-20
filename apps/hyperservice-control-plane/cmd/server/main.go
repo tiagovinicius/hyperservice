@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	meshHandler "hyperservice-control-plane/internal/mesh/handler"
+	observabilityHandler "hyperservice-control-plane/internal/observability/handler"
 	systemHandler "hyperservice-control-plane/internal/system/handler"
 	"log"
 	"net/http"
@@ -10,11 +11,12 @@ import (
 
 func main() {
 	// Log that the server is starting
-	log.Println("INFO: Starting server on port 8080...")
+	log.Println("INFO: Starting server on port 3002...")
 
 	// Setup routing
 	http.HandleFunc("/system/version", systemHandler.GetVersionHandler)
 	http.HandleFunc("/mesh/up", meshHandler.PostMeshUpHandler)
+	http.HandleFunc("/observability/up", observabilityHandler.PostObservabilityUpHandler)
 
 	fmt.Println("Server is running on port 3002...")
 	if err := http.ListenAndServe(":3002", nil); err != nil {

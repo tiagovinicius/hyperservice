@@ -1,14 +1,15 @@
 package infrastructure
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"hyperservice-control-plane/utils"
-	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
+	"sort"
+	"strings"
 
 	dockerClient "github.com/docker/docker/client"
 	corev1 "k8s.io/api/core/v1"
@@ -25,6 +26,14 @@ func GetKubernetesClientSet(clusterName string) (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	fmt.Printf("🌍 K3s Server IP: %s\n", serverIP)
+
+	if !checkKubeConfig() {
+		fmt.Println("Kubeconfig not found, generating it...")
+		err := generateKubeConfig(clusterName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate kubeconfig: %v", err)
+		}
+	}
 
 	err = updateKubeConfig(serverIP)
 	if err != nil {
@@ -56,15 +65,19 @@ func GetKubernetesClientSet(clusterName string) (*kubernetes.Clientset, error) {
 }
 
 func CreateKubernetesNamespace(clientset *kubernetes.Clientset, namespace string) error {
-	// Create namespace object
+	_, err := clientset.CoreV1().Namespaces().Get(context.Background(), namespace, metav1.GetOptions{})
+	if err == nil {
+		fmt.Printf("✅ Namespace '%s' already exists, skipping creation.\n", namespace)
+		return nil
+	}
+
 	ns := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: namespace,
 		},
 	}
 
-	// Create the namespace using clientset
-	_, err := clientset.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
+	_, err = clientset.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to create namespace '%s': %w", namespace, err)
 	}
@@ -74,16 +87,13 @@ func CreateKubernetesNamespace(clientset *kubernetes.Clientset, namespace string
 }
 
 func MakeKubernetesPortForward(namespace string, serviceName string, localPort string, remotePort string) error {
-	// Kill any existing process on the local port (if any)
 	err := utils.KillProcessOnPort(localPort)
 	if err != nil {
 		return fmt.Errorf("failed to ensure port is free: %w", err)
 	}
 
-	// Prepare the kubectl port-forward command
 	cmd := exec.Command("kubectl", "port-forward", "-n", namespace, fmt.Sprintf("svc/%s", serviceName), fmt.Sprintf("%s:%s", localPort, remotePort))
 
-	// Start the process in the background using goroutine
 	go func() {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -97,16 +107,6 @@ func MakeKubernetesPortForward(namespace string, serviceName string, localPort s
 			fmt.Printf("Port-forwarding process exited with error: %v\n", err)
 		}
 	}()
-
-	// Wait a few seconds for the port-forwarding to be established
-	time.Sleep(3 * time.Second)
-
-	// Check if the port forwarding was successful
-	listen, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", localPort))
-	if err != nil {
-		return fmt.Errorf("port-forwarding failed: %w", err)
-	}
-	defer listen.Close()
 
 	fmt.Printf("✅ Port forwarding established: localhost:%s -> %s:%s\n", localPort, serviceName, remotePort)
 	return nil
@@ -132,6 +132,47 @@ func getControlPlaneIP(clusterName string) (string, error) {
 	return serverIP, nil
 }
 
+// checkKubeConfig checks if the kubeconfig file exists
+func checkKubeConfig() bool {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error getting user home directory:", err)
+		return false
+	}
+
+	kubeConfigPath := filepath.Join(homeDir, ".kube", "config")
+	_, err = os.Stat(kubeConfigPath)
+	return !os.IsNotExist(err)
+}
+
+// generateKubeConfig generates the kubeconfig if it does not exist
+func generateKubeConfig(clusterName string) error {
+	cmd := exec.Command("k3d", "kubeconfig", "get", clusterName)
+	kubeconfig, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to get kubeconfig: %v", err)
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	kubeConfigPath := filepath.Join(homeDir, ".kube", "config")
+	err = os.MkdirAll(filepath.Dir(kubeConfigPath), os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create .kube directory: %w", err)
+	}
+
+	err = os.WriteFile(kubeConfigPath, kubeconfig, 0600)
+	if err != nil {
+		return fmt.Errorf("failed to write kubeconfig to %s: %v", kubeConfigPath, err)
+	}
+
+	fmt.Println("Kubeconfig generated and saved to:", kubeConfigPath)
+	return nil
+}
+
 // updateKubeConfig updates kubeconfig with the new server IP
 func updateKubeConfig(serverIP string) error {
 	// Get the home directory of the user
@@ -147,5 +188,111 @@ func updateKubeConfig(serverIP string) error {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to update kubeconfig: %w", err)
 	}
+	return nil
+}
+
+// deleteResource deletes a Kubernetes resource by type and name.
+func DeleteKubernetsResource(resourceType, label, namespace string) {
+	RunKubernetsCommand("delete", resourceType, "-n", namespace, "-l", label, "--ignore-not-found")
+}
+
+// RunKubernetsCommand runs a kubectl command with the given arguments.
+func RunKubernetsCommand(args ...string) {
+	cmd := exec.Command("kubectl", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("❌ Error running kubectl command: %v\n", err)
+	}
+}
+
+// runDockerCommand runs a docker command with the given arguments.
+func RunDockerCommand(nodeName, command string) {
+	cmd := exec.Command("docker", "exec", nodeName, "sh", "-c", command)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("❌ Error running docker command: %v\n", err)
+	}
+}
+
+// ApplyKubernetesManifestsDir applies Kubernetes manifests from a given directory.
+func ApplyKubernetesManifestsDir(workspacePath string) error {
+	// Get all YAML files in the directory
+	yamlFiles, err := getYamlFiles(workspacePath)
+	if err != nil {
+		return err
+	}
+
+	// Ensure there is at least one policy file
+	if len(yamlFiles) == 0 {
+		fmt.Printf("⚠️ No policy files found in %s", workspacePath)
+		return nil
+	}
+
+	// Apply remaining policies, excluding mesh.yml
+	for _, file := range yamlFiles {
+		fmt.Printf("📄 Applying policy: %s\n", file)
+		err = applyK8sManifest(file)
+		fmt.Errorf("⚠️ Policy file %s was not applyed: %w", file, err)
+	}
+
+	return nil
+}
+
+// getYamlFiles retrieves all .yml files in the given directory, sorted.
+func getYamlFiles(dir string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && strings.HasSuffix(info.Name(), ".yml") {
+			files = append(files, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Sort files alphabetically
+	sort.Strings(files)
+	return files, nil
+}
+
+// fileExists checks if a file exists.
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !os.IsNotExist(err)
+}
+
+// applyK8sManifest applies a Kubernetes manifest using kubectl.
+func applyK8sManifest(file string) error {
+	// Read the file content using os.ReadFile (since ioutil is deprecated)
+	content, err := os.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("failed to read file %s: %v", file, err)
+	}
+
+	// Substitute environment variables in the content
+	envSubstitutedContent := os.ExpandEnv(string(content))
+
+	// Create a temporary buffer for kubectl input
+	var kubectlInput bytes.Buffer
+	kubectlInput.WriteString(envSubstitutedContent)
+
+	// Execute kubectl apply command
+	cmd := exec.Command("kubectl", "apply", "-f", "-")
+	cmd.Stdin = &kubectlInput
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to apply manifest %s: %v", file, err)
+	}
+
 	return nil
 }

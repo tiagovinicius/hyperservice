@@ -4,6 +4,9 @@ RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
     curl nano lsof openssh-client
 
+# Install Air
+RUN go install github.com/air-verse/air@latest
+
 # Install K3d
 RUN curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 

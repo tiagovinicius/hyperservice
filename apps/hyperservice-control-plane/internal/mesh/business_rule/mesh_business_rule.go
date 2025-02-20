@@ -23,9 +23,9 @@ func WaitForMeshControlPlaneReadiness() error {
 	for retryCount < maxRetries {
 		if err := utils.CheckService("http://localhost:5681"); err != nil {
 			fmt.Errorf("Kuma Control Plane is not responsive: %w", err)
-			break
 		}
 		fmt.Println("✅ Kuma Control Plane is responsive!")
+		break
 	}
 	return nil
 }
