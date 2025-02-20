@@ -45,3 +45,5 @@ modules/kuma/tokens
 .moon/docker
 
 apps/*/bin
+*/tmp
+tmp

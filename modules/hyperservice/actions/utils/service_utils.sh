@@ -266,7 +266,6 @@ kubectl rollout restart deployment grafana -n mesh-observability
 # 🎯 Criando o cluster k3d e conectando ao Registry
 create_k3d_cluster() {
     local cluster_name=$1
-    local ip=$2
 
     # Remove old clusters to avoid conflicts
     existing_cluster=$(k3d cluster list -o json | jq -r '.[].name')

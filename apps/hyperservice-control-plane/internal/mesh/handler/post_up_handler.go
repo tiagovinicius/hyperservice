@@ -3,11 +3,11 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"io"   // Importing the 'io' package for ReadAll
+	"hyperservice-control-plane/internal/mesh"
+	"hyperservice-control-plane/internal/mesh/application"
+	"io" // Importing the 'io' package for ReadAll
 	"log"
 	"net/http"
-	"hyperservice-control-plane/internal/mesh/service"
-	"hyperservice-control-plane/internal/mesh"
 )
 
 // PostMeshUpHandler handles the POST request for /meshes/up.
@@ -19,7 +19,7 @@ func PostMeshUpHandler(w http.ResponseWriter, r *http.Request) {
 	// Log the body content for debugging purposes (ensure it's not too large)
 	if r.Body != nil {
 		defer r.Body.Close()
-		bodyBytes, err := io.ReadAll(r.Body)  // Use io.ReadAll instead of ioutil.ReadAll
+		bodyBytes, err := io.ReadAll(r.Body) // Use io.ReadAll instead of ioutil.ReadAll
 		if err != nil {
 			log.Printf("ERROR: Failed to read request body: %v", err)
 			http.Error(w, "Error reading request body", http.StatusInternalServerError)
@@ -40,13 +40,8 @@ func PostMeshUpHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("DEBUG: MeshRequest decoded successfully: %+v", meshRequest)
 
 	// Call the service to process the mesh creation
-	log.Printf("DEBUG: Calling MeshUpService")
-	err := service.MeshUpService() // Pass the name of the mesh
-	if err != nil {
-		log.Printf("ERROR: Failed to create mesh: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	log.Printf("DEBUG: Calling MeshUpApplication")
+	go application.MeshUpApplication()
 
 	// Send a success response
 	log.Println("DEBUG: Sending success response")
@@ -54,7 +49,7 @@ func PostMeshUpHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	response := map[string]string{
 		"status":  "success",
-		"message": "Mesh created successfully",
+		"message": "Mesh scheduled to be created successfully",
 	}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("ERROR: Failed to encode response: %v", err)
