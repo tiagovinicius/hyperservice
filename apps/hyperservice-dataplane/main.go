@@ -1,6 +1,7 @@
 package main
 
 import (
+	"hyperservice-dataplane/observability"
 	"hyperservice-dataplane/system" // Import the system package
 	"log"
 	"net/http"
@@ -12,6 +13,8 @@ func main() {
 
 	http.HandleFunc("/system/update", system.UpdateBinaryHandler)
 	http.HandleFunc("/system/version", system.GetVersionHandler)
+	
+	observability.CollectMetrics()
 
 	// Start the server
 	log.Println("Starting server on :3001...")

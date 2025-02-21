@@ -41,12 +41,5 @@ func StartCluster(clusterName string) error {
 	}
 	fmt.Printf("✅ Cluster k3d '%s' created successfully!\n", clusterName)
 
-
-	// Create application-specific namespace
-	fmt.Printf("⚙️ Creating '%s' namespace...\n", clusterName)
-	if err := business_rule.CreateApplicationsNamespace(clusterName, clusterName); err != nil {
-		return err
-	}
-
 	return nil
 }

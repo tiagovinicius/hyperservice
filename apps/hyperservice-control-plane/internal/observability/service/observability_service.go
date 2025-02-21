@@ -29,7 +29,7 @@ func StartObservability() error {
 		return err
 	}
 	fmt.Println("🚀 Forwarding Prometheus on port 9090...")
-	if err := infrastructure.MakeKubernetesPortForward(namespace, "grafana", "9090", "80"); err != nil {
+	if err := infrastructure.MakeKubernetesPortForward(namespace, "prometheus", "9090", "80"); err != nil {
 		return err
 	}
 

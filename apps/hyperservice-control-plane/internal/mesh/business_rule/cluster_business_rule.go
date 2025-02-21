@@ -21,6 +21,7 @@ func CreateCluster(clusterName string) error {
 		"--network", "hyperservice-network",
 		"--volume", "hyperservice-grafana-data:/var/lib/grafana",
 		"--volume", "/var/run/docker.sock:/var/run/docker.sock",
+		"--volume", "/home/hexagon/projects/hyperservice/:/workspaces/hyperservice/",
 	)
 
 	// Run the command

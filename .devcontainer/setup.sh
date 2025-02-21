@@ -25,8 +25,8 @@ chown -R root:root ~/.ssh
 #---------------------------------------------
 # Adding alias to apps
 declare -A aliases=(
-    ["hycp"]="moon hyperservice-control-plane:run"
-    ["hydp"]="moon hyperservice-dataplane:run"
+    ["hy-cp"]="moon hyperservice-control-plane:run"
+    ["hy-dp"]="moon hyperservice-dataplane:run"
     ["hyctl"]="moon hyperservice-cli:run"
 )
 

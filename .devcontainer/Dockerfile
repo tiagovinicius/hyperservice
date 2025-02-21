@@ -2,7 +2,7 @@ FROM golang:1.24.0-bookworm
 
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
-    curl nano lsof openssh-client
+    curl nano lsof openssh-client collectd
 
 # Install Air
 RUN go install github.com/air-verse/air@latest
