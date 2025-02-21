@@ -1,7 +1,7 @@
 apiVersion: kuma.io/v1alpha1
 kind: MeshTrafficPermission
 metadata:
-  name: allow-service-a-to-service-b
+  name: allow-service-b-to-service-a
   namespace: hyperservice  # Ajuste conforme necessário
 spec:
   targetRef:

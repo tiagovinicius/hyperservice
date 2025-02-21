@@ -47,7 +47,7 @@ func StartMesh(clusterName string) error {
 		return err
 	}
 
-	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/mesh/policies"); err != nil {
+	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/mesh/policies", map[string]string{}); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 

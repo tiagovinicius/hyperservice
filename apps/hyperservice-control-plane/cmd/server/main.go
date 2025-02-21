@@ -22,6 +22,10 @@ func main() {
 	http.HandleFunc("/observability/up", observabilityHandler.PostObservabilityUpHandler)
 	http.HandleFunc("/service/start", serviceHandler.PostServiceStartHandler)
 
+	infrastructure.MakeKubernetesPortForward("kuma-system", "kuma-control-plane", "5681", ":5681")
+	infrastructure.MakeKubernetesPortForward("mesh-observability", "grafana", "3000", "80")
+	infrastructure.MakeKubernetesPortForward("mesh-observability", "prometheus", "9090", "80")
+
 	fmt.Println("Server is running on port 3002...")
 	if err := http.ListenAndServe(":3002", nil); err != nil {
 		fmt.Printf("Error starting server: %v\n", err)

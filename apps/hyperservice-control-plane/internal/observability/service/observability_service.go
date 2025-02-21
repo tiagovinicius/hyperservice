@@ -35,10 +35,9 @@ func StartObservability() error {
 
 	business_rule.WaitForObservabilityReadiness()
 
-	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/observability/policies"); err != nil {
+	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/observability/policies", map[string]string{}); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
-
 
 	return nil
 }

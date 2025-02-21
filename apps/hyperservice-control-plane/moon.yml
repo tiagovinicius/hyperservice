@@ -2,5 +2,12 @@ stack: "backend"
 type: "application"
 language: "go"
 tasks:
+  run:
+    command: "moon :integrate && air"
   build:
     command: "go build -o ./bin/main ./cmd/server"
+  integrate:
+    script: |
+      mkdir -p offline-dependencies/bin/hy-dp 
+      moon hyperservice-dataplane:build 
+      cp -f /workspaces/hyperservice/apps/hyperservice-dataplane/bin/main offline-dependencies/bin/hy-dp

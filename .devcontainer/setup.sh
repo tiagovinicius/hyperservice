@@ -82,7 +82,7 @@ echo "Aliases added and applied successfully."
 #-------------------------------------------
 # Setting up Moon
 echo "Removing moon cache."
-rm -rf /workspaces/hyperservice/.moon/cache
+rm -rf .moon/cache
 
 
 #-------------------------------------------

@@ -218,8 +218,8 @@ func RunDockerCommand(nodeName, command string) {
 	}
 }
 
-// ApplyKubernetesManifestsDir applies Kubernetes manifests from a given directory.
-func ApplyKubernetesManifestsDir(workspacePath string) error {
+// ApplyKubernetesManifestsDir applies Kubernetes manifests from a given directory and substitutes variables with provided values.
+func ApplyKubernetesManifestsDir(workspacePath string, substitutions map[string]string) error {
 	// Get all YAML files in the directory
 	yamlFiles, err := getYamlFiles(workspacePath)
 	if err != nil {
@@ -235,8 +235,10 @@ func ApplyKubernetesManifestsDir(workspacePath string) error {
 	// Apply remaining policies, excluding mesh.yml
 	for _, file := range yamlFiles {
 		fmt.Printf("📄 Applying policy: %s\n", file)
-		err = applyK8sManifest(file)
-		fmt.Errorf("⚠️ Policy file %s was not applyed: %w", file, err)
+		err = applyK8sManifest(file, substitutions)
+		if err != nil {
+			fmt.Errorf("⚠️ Policy file %s was not applied: %w", file, err)
+		}
 	}
 
 	return nil
@@ -269,16 +271,22 @@ func fileExists(filename string) bool {
 	return !os.IsNotExist(err)
 }
 
-// applyK8sManifest applies a Kubernetes manifest using kubectl.
-func applyK8sManifest(file string) error {
+// applyK8sManifest applies a Kubernetes manifest using kubectl, with variable substitution.
+func applyK8sManifest(file string, substitutions map[string]string) error {
 	// Read the file content using os.ReadFile (since ioutil is deprecated)
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return fmt.Errorf("failed to read file %s: %v", file, err)
 	}
 
-	// Substitute environment variables in the content
+	// Substitute environment variables and custom variables in the content
 	envSubstitutedContent := os.ExpandEnv(string(content))
+
+	// Substitute custom variables from the map
+	for key, value := range substitutions {
+		// Replace variables in the form of {{key}} with their corresponding value
+		envSubstitutedContent = strings.ReplaceAll(envSubstitutedContent, fmt.Sprintf("{{%s}}", key), value)
+	}
 
 	// Create a temporary buffer for kubectl input
 	var kubectlInput bytes.Buffer

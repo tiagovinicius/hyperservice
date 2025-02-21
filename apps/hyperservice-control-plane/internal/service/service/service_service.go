@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"hyperservice-control-plane/internal/mesh/infrastructure"
 	"log"
 	"os"
 	"os/exec"
@@ -27,7 +28,7 @@ func replaceVariables(yamlContent []byte, variables map[string]string) ([]byte, 
 // Função que realiza a substituição das variáveis, faz o build da imagem Docker e aplica o manifesto no Kubernetes
 func StartService(name string, workdir string, podName string, policies []string) error {
 	imageName := "hyperservice-service-image"
-	if (podName == "") {
+	if podName == "" {
 		podName = name
 	}
 	// Debug: Exibir as variáveis recebidas
@@ -79,7 +80,7 @@ func StartService(name string, workdir string, podName string, policies []string
 		log.Printf("Docker build output: %s", buildOutput)
 		return err
 	}
-	
+
 	// Importando a imagem para o k3d
 	importCmd := exec.Command("k3d", "image", "import", imageName, "--cluster", "hyperservice")
 	importOutput, err := importCmd.CombinedOutput()
@@ -88,9 +89,8 @@ func StartService(name string, workdir string, podName string, policies []string
 		log.Printf("Import command output: %s", importOutput)
 		return err
 	}
-	
-	log.Printf("Docker image successfully built and imported to k3d!")
 
+	log.Printf("Docker image successfully built and imported to k3d!")
 
 	// Aplicar o manifesto diretamente no Kubernetes usando kubectl
 	log.Printf("DEBUG: Applying updated manifest to Kubernetes using kubectl apply -f -")
@@ -105,5 +105,14 @@ func StartService(name string, workdir string, podName string, policies []string
 	}
 
 	log.Printf("DEBUG: Successfully applied the updated manifest to Kubernetes: \n%s", output)
+
+	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/service/policies", variables); err != nil {
+		fmt.Printf("Error: %v\n", err)
+	}
+
+	if err := infrastructure.ApplyKubernetesManifestsDir(workdir + "/.hyperservice/policies", variables); err != nil {
+		fmt.Printf("Error: %v\n", err)
+	}
+
 	return nil
 }

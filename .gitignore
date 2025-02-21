@@ -44,6 +44,7 @@ modules/kuma/tokens
 .moon/cache
 .moon/docker
 
-apps/*/bin
-*/tmp
-tmp
+apps/*/bin/
+*/tmp/
+tmp/
+bin/hy-dp/
