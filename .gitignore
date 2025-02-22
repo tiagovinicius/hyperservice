@@ -42,9 +42,10 @@ kuma-configs/*.generated.yaml
 modules/kuma/tokens
 # moon
 .moon/cache
+*/.moon/cache
 .moon/docker
 
-apps/*/bin/
+apps/*/bin
 */tmp/
 tmp/
-bin/hy-dp/
+*/bin

@@ -304,3 +304,29 @@ func applyK8sManifest(file string, substitutions map[string]string) error {
 
 	return nil
 }
+
+// DeletePodsByLabel removes all pods matching a given label selector in a specified namespace.
+func DeletePodsByLabel(clientset *kubernetes.Clientset, namespace, labelSelector string) {
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		fmt.Printf("⚠️ Error listing pods: %v\n", err)
+		return
+	}
+
+	if len(pods.Items) == 0 {
+		fmt.Println("✅ No pods found matching the given label selector.")
+		return
+	}
+
+	for _, pod := range pods.Items {
+		fmt.Printf("🗑️ Deleting pod: %s...\n", pod.Name)
+		err := clientset.CoreV1().Pods(namespace).Delete(context.TODO(), pod.Name, metav1.DeleteOptions{})
+		if err != nil {
+			fmt.Printf("⚠️ Failed to delete pod %s: %v\n", pod.Name, err)
+		} else {
+			fmt.Printf("✅ Pod %s deleted successfully.\n", pod.Name)
+		}
+	}
+}

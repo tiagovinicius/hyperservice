@@ -1,0 +1,25 @@
+apiVersion: kuma.io/v1alpha1
+kind: MeshPassthrough
+metadata:
+  name: passthrough-to-toolchains-sources
+  namespace: kuma-system
+  labels:
+    kuma.io/mesh: default
+spec:
+  targetRef:
+    kind: MeshSubset
+    proxyTypes:
+    - Sidecar
+    tags:
+      k8s.kuma.io/namespace: hyperservice
+  default:
+    passthroughMode: Matched
+    appendMatch:
+    - type: Domain
+      value: "github.com"
+      protocol: tls
+      port: 443
+    - type: Domain
+      value: "objects.githubusercontent.com"
+      protocol: tls
+      port: 443

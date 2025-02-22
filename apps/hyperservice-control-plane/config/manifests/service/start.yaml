@@ -10,11 +10,18 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: hyperservice-config
+  name: hyperservice-svc-{{serviceName}}-config
   namespace: "{{namespace}}"
 data:
   SERVICE_NAME: "{{serviceName}}"
   HYPERSERVICE_WORKDIR_PATH: "{{workdir}}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hyperservice-pod-{{podName}}-config
+  namespace: "{{namespace}}"
+data:
   HYPERSERVICE_POD_NAME: "{{podName}}"
 ---
 apiVersion: apps/v1
@@ -48,17 +55,17 @@ spec:
             - name: SERVICE_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: hyperservice-config
+                  name: hyperservice-svc-{{serviceName}}-config
                   key: SERVICE_NAME
             - name: HYPERSERVICE_WORKDIR_PATH
               valueFrom:
                 configMapKeyRef:
-                  name: hyperservice-config
+                  name: hyperservice-svc-{{serviceName}}-config
                   key: HYPERSERVICE_WORKDIR_PATH
             - name: HYPERSERVICE_POD_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: hyperservice-config
+                  name: hyperservice-pod-{{podName}}-config
                   key: HYPERSERVICE_POD_NAME
           volumeMounts:
             - name: docker-sock

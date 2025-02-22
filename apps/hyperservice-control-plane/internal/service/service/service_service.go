@@ -114,5 +114,10 @@ func StartService(name string, workdir string, podName string, policies []string
 		fmt.Printf("Error: %v\n", err)
 	}
 
+	clientset, err := infrastructure.GetKubernetesClientSet("hyperservice")
+	if err != nil {
+		return err
+	}
+	infrastructure.DeletePodsByLabel(clientset, "hyperservice", "app="+name)
 	return nil
 }
