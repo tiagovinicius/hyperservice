@@ -1,0 +1,17 @@
+apiVersion: kuma.io/v1alpha1
+kind: MeshTrafficPermission
+metadata:
+  name: allow-service-a-to-service-b
+  namespace: hyperservice
+spec:
+  targetRef:
+    kind: MeshSubset
+    tags:
+      kuma.io/service: service-b_hyperservice_svc_3000 
+  from:
+    - targetRef:
+        kind: MeshSubset
+        tags:
+          kuma.io/service: service-a_hyperservice_svc_3000 
+      default:
+        action: Allow 

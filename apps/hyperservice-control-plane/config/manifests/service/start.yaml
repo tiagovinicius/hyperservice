@@ -47,6 +47,9 @@ spec:
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
+          envFrom:
+            - configMapRef:
+                name: hyperservice-svc-{{serviceName}}-env-var
           env:
             - name: KUMA_DPP
               valueFrom:

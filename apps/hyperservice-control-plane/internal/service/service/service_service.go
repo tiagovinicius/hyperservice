@@ -27,6 +27,11 @@ func replaceVariables(yamlContent []byte, variables map[string]string) ([]byte, 
 
 // Função que realiza a substituição das variáveis, faz o build da imagem Docker e aplica o manifesto no Kubernetes
 func StartService(name string, workdir string, podName string, policies []string) error {
+	clientset, err := infrastructure.GetKubernetesClientSet("hyperservice")
+	if err != nil {
+		return err
+	}
+
 	imageName := "hyperservice-service-image"
 	if podName == "" {
 		podName = name
@@ -95,6 +100,8 @@ func StartService(name string, workdir string, podName string, policies []string
 	// Aplicar o manifesto diretamente no Kubernetes usando kubectl
 	log.Printf("DEBUG: Applying updated manifest to Kubernetes using kubectl apply -f -")
 
+	infrastructure.ApplyKubernetsEnvVar(clientset, workdir+"/apps/"+name+"/.env" , "hyperservice-svc-"+name+"-env-var", "hyperservice")
+
 	cmd := exec.Command("kubectl", "apply", "-f", "-") // O "-" indica que vamos passar o YAML via stdin
 	cmd.Stdin = strings.NewReader(string(updatedYaml)) // Passar o YAML atualizado via stdin
 	output, err := cmd.CombinedOutput()
@@ -110,14 +117,12 @@ func StartService(name string, workdir string, podName string, policies []string
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	if err := infrastructure.ApplyKubernetesManifestsDir(workdir + "/.hyperservice/policies", variables); err != nil {
+	if err := infrastructure.ApplyKubernetesManifestsDir(workdir + "/apps/" + name + "/.hyperservice/policies", variables); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	clientset, err := infrastructure.GetKubernetesClientSet("hyperservice")
-	if err != nil {
-		return err
-	}
 	infrastructure.DeletePodsByLabel(clientset, "hyperservice", "app="+name)
+
+
 	return nil
 }

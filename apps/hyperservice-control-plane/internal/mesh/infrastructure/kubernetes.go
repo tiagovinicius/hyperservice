@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 
 	dockerClient "github.com/docker/docker/client"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -329,4 +331,66 @@ func DeletePodsByLabel(clientset *kubernetes.Clientset, namespace, labelSelector
 			fmt.Printf("✅ Pod %s deleted successfully.\n", pod.Name)
 		}
 	}
+}
+
+// ApplyKubernetsEnvVar recebe um clientset, lê um arquivo .env e aplica como ConfigMap no Kubernetes
+func ApplyKubernetsEnvVar(clientset *kubernetes.Clientset, envFilePath, configName string, namespace string) error {
+	// Ler as variáveis do .env e armazená-las em um map
+	envData := make(map[string]string)
+
+	file, err := os.Open(envFilePath)
+	if err != nil {
+		fmt.Println("Could not find or open .env file: %w", err)
+		return nil
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue // Ignorar linhas vazias e comentários
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			envData[key] = value
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("❌ error reading .env file: %w", err)
+		return nil
+	}
+
+	// Criar o objeto ConfigMap
+	configMap := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configName,
+			Namespace: namespace,
+		},
+		Data: envData,
+	}
+
+	// Aplicar o ConfigMap no cluster
+	existingConfigMap, err := clientset.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMap.Name, metav1.GetOptions{})
+	if err == nil {
+		// Se já existe, atualizar
+		configMap.ResourceVersion = existingConfigMap.ResourceVersion // Necessário para Update
+		_, err = clientset.CoreV1().ConfigMaps(namespace).Update(context.TODO(), configMap, metav1.UpdateOptions{})
+		if err != nil {
+			return fmt.Errorf("❌ error updating ConfigMap: %w", err)
+		}
+		fmt.Println("✅ ConfigMap updated successfully!")
+	} else {
+		// Se não existe, criar um novo
+		_, err = clientset.CoreV1().ConfigMaps(namespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
+		if err != nil {
+			return fmt.Errorf("❌ error creating ConfigMap: %w", err)
+		}
+		fmt.Println("✅ ConfigMap created successfully!")
+	}
+	return nil
 }
