@@ -23,6 +23,7 @@ metadata:
   namespace: "{{namespace}}"
 data:
   HYPERSERVICE_POD_NAME: "{{podName}}"
+  HYPERSERVICE_SERVE: "{{serve}}"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -43,7 +44,7 @@ spec:
     spec:
       containers:
         - name: "{{podName}}"
-          image: "{{imageName}}:latest"
+          image: "{{imageName}}"
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true
@@ -70,6 +71,11 @@ spec:
                 configMapKeyRef:
                   name: hyperservice-pod-{{podName}}-config
                   key: HYPERSERVICE_POD_NAME
+            - name: HYPERSERVICE_SERVE
+              valueFrom:
+                configMapKeyRef:
+                  name: hyperservice-pod-{{podName}}-config
+                  key: HYPERSERVICE_SERVE
           volumeMounts:
             - name: docker-sock
               mountPath: /var/run/docker.sock

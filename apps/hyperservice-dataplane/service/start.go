@@ -18,6 +18,7 @@ func Start() error {
 	if workDir == "" {
 		return fmt.Errorf("environment variable SERVICE_NAME is not set")
 	}
+	serve := os.Getenv("HYPERSERVICE_SERVE") == "true"
 
 	// Change to the working directory
 	if err := os.Chdir(workDir); err != nil {
@@ -26,9 +27,15 @@ func Start() error {
 
 	fmt.Printf("Starting service %s in background\n", serviceName)
 
-	// Execute the moon command in background
-	cmd := exec.Command("moon", serviceName+":dev")
-
+	var cmd *exec.Cmd
+	if(serve) {
+		fmt.Printf("Service %s will be served\n", serviceName)
+		cmd = exec.Command("moon", serviceName+":serve")
+	} else {
+		fmt.Printf("Service %s will be dev\n", serviceName)
+		// Execute the moon command in background
+		cmd = exec.Command("moon", serviceName+":dev")
+	}
 	// Create pipes to capture logs
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

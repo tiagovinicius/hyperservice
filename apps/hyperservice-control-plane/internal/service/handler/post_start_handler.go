@@ -10,14 +10,20 @@ import (
 )
 
 type MeshRequest struct {
-	Name     string    `json:"name"`
-	Workdir  string    `json:"workdir"`
-	Pod      *Pod      `json:"pod,omitempty"`
-	Policies *[]string `json:"policies,omitempty"`
+	Name      string     `json:"name"`
+	Workdir   string     `json:"workdir"`
+	Serve     bool	     `json:"serve"`
+	Pod       *Pod       `json:"pod,omitempty"`
+	Container *Container `json:"container,omitempty"`
+	Policies  *[]string  `json:"policies,omitempty"`
 }
 
 type Pod struct {
 	Name string `json:"name"`
+}
+
+type Container struct {
+	Image string `json:"image"`
 }
 
 func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
@@ -59,17 +65,28 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 		podName = meshRequest.Name
 	}
 
+	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
+	var imageName string
+	if meshRequest.Container != nil {
+		imageName = meshRequest.Container.Image
+	}
+
+
 	// Se Policies for nil, podemos passar um slice vazio para evitar problemas
 	if meshRequest.Policies == nil {
 		meshRequest.Policies = &[]string{}
 	}
+	
 
 	log.Printf("DEBUG: MeshRequest decoded successfully: %+v", meshRequest)
+	log.Printf("DEBUG:- name: %s, workdir: %s, serve: %t, imageName: %s,  podName: %s", meshRequest.Name, meshRequest.Workdir, meshRequest.Serve, imageName, podName)
 
 	// Debugging: Print the decoded body for inspection
 	go application.ServiceStartApplication(
 		meshRequest.Name,
 		meshRequest.Workdir,
+		meshRequest.Serve,
+		imageName,
 		podName,
 		*meshRequest.Policies,
 	)

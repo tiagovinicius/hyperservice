@@ -26,18 +26,48 @@ func replaceVariables(yamlContent []byte, variables map[string]string) ([]byte, 
 }
 
 // Função que realiza a substituição das variáveis, faz o build da imagem Docker e aplica o manifesto no Kubernetes
-func StartService(name string, workdir string, podName string, policies []string) error {
+func StartService(name string, workdir string, serve bool, imageName, podName string, policies []string) error {
+	// Debug: Exibir as variáveis recebidas
+	log.Printf("DEBUG: Received parameters - name: %s, workdir: %s, serve: %t, imageName: %s,  podName: %s", name, workdir, serve, imageName, podName)
+
 	clientset, err := infrastructure.GetKubernetesClientSet("hyperservice")
 	if err != nil {
 		return err
 	}
 
-	imageName := "hyperservice-service-image"
+	if imageName == "" {
+		imageName = "hyperservice-service-image:latest"
+	}
+
+	// **Passo 1: Build da imagem Docker**
+	// Caminho para o Dockerfile
+	dockerfilePath := "./config/dockerfile/service/Dockerfile"
+	log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
+
+	// Construção da imagem Docker
+	buildCmd := exec.Command("docker", "build", "-f", dockerfilePath, "-t", imageName, ".")
+	buildOutput, err := buildCmd.CombinedOutput()
+	if err != nil {
+		log.Printf("ERROR: Failed to build Docker image: %v", err)
+		log.Printf("Docker build output: %s", buildOutput)
+		return err
+	}
+
+	log.Printf("Importing image to k3d!")
+	// Importando a imagem para o k3d
+	importCmd := exec.Command("k3d", "image", "import", imageName, "--cluster", "hyperservice")
+	importOutput, err := importCmd.CombinedOutput()
+	if err != nil {
+		log.Printf("ERROR: Failed to import Docker image to k3d: %v", err)
+		log.Printf("Import command output: %s", importOutput)
+		return err
+	}
+
+	log.Printf("Docker image successfully built and imported to k3d!")
+
 	if podName == "" {
 		podName = name
 	}
-	// Debug: Exibir as variáveis recebidas
-	log.Printf("DEBUG: Received parameters - name: %s, workdir: %s, podName: %s", name, workdir, podName)
 
 	// Definir o caminho do arquivo YAML
 	yamlFilePath := "./config/manifests/service/start.yaml"
@@ -57,6 +87,7 @@ func StartService(name string, workdir string, podName string, policies []string
 	variables := map[string]string{
 		"serviceName": name,
 		"workdir":     workdir,
+		"serve":       fmt.Sprintf("%t", serve),
 		"podName":     podName,
 		"imageName":   imageName,
 		"namespace":   "hyperservice",
@@ -72,35 +103,10 @@ func StartService(name string, workdir string, podName string, policies []string
 	// Debug: Exibir o YAML atualizado
 	log.Printf("DEBUG: Updated YAML content after variable substitution:\n%s", string(updatedYaml))
 
-	// **Passo 1: Build da imagem Docker**
-	// Caminho para o Dockerfile
-	dockerfilePath := "./config/dockerfile/service/Dockerfile"
-	log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
-
-	// Construção da imagem Docker
-	buildCmd := exec.Command("docker", "build", "-f", dockerfilePath, "-t", imageName, ".")
-	buildOutput, err := buildCmd.CombinedOutput()
-	if err != nil {
-		log.Printf("ERROR: Failed to build Docker image: %v", err)
-		log.Printf("Docker build output: %s", buildOutput)
-		return err
-	}
-
-	// Importando a imagem para o k3d
-	importCmd := exec.Command("k3d", "image", "import", imageName, "--cluster", "hyperservice")
-	importOutput, err := importCmd.CombinedOutput()
-	if err != nil {
-		log.Printf("ERROR: Failed to import Docker image to k3d: %v", err)
-		log.Printf("Import command output: %s", importOutput)
-		return err
-	}
-
-	log.Printf("Docker image successfully built and imported to k3d!")
-
 	// Aplicar o manifesto diretamente no Kubernetes usando kubectl
 	log.Printf("DEBUG: Applying updated manifest to Kubernetes using kubectl apply -f -")
 
-	infrastructure.ApplyKubernetsEnvVar(clientset, workdir+"/apps/"+name+"/.env" , "hyperservice-svc-"+name+"-env-var", "hyperservice")
+	infrastructure.ApplyKubernetsEnvVar(clientset, workdir+"/apps/"+name+"/.env", "hyperservice-svc-"+name+"-env-var", "hyperservice")
 
 	cmd := exec.Command("kubectl", "apply", "-f", "-") // O "-" indica que vamos passar o YAML via stdin
 	cmd.Stdin = strings.NewReader(string(updatedYaml)) // Passar o YAML atualizado via stdin
@@ -117,12 +123,11 @@ func StartService(name string, workdir string, podName string, policies []string
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	if err := infrastructure.ApplyKubernetesManifestsDir(workdir + "/apps/" + name + "/.hyperservice/policies", variables); err != nil {
+	if err := infrastructure.ApplyKubernetesManifestsDir(workdir+"/apps/"+name+"/.hyperservice/policies", variables); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
 	infrastructure.DeletePodsByLabel(clientset, "hyperservice", "app="+name)
-
 
 	return nil
 }

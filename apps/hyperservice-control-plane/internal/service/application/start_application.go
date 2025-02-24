@@ -6,10 +6,12 @@ import (
 )
 
 // StartServiceService realiza o logging das variáveis passadas
-func ServiceStartApplication(name, workdir string, podName string, policies []string) error {
+func ServiceStartApplication(name, workdir string, serve bool, imageName string, podName string, policies []string) error {
 	err := service.StartService(
 		name,
 		workdir,
+		serve,
+		imageName,
 		podName,
 		policies,
 	)
