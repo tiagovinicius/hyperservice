@@ -9,7 +9,7 @@ tasks:
       TARGET_OS=${TARGET_OS:-linux}
       TARGET_ARCH=${TARGET_ARCH:-amd64}
       VERSION=$(cat version.txt)
-      GOOS=$TARGET_OS GOARCH=$TARGET_ARCH go build -o "./bin/$TARGET_OS-$TARGET_ARCH" ./cmd/server -ldflags "-X main.version=$VERSION($TARGET_OS/$TARGET_ARCH)"
+      GOOS=$TARGET_OS GOARCH=$TARGET_ARCH go build -ldflags "-X main.version=$VERSION($TARGET_OS/$TARGET_ARCH)" -o "./bin/$TARGET_OS-$TARGET_ARCH" ./cmd/server
   integrate:
     script: |
       mkdir -p offline-dependencies/bin/hy-dp 
