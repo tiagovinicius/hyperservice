@@ -3,7 +3,7 @@
 # GitHub repository details
 REPO_OWNER="tiagovinicius"
 REPO_NAME="hyperservice"
-BIN_NAME="hy-cp"
+BIN_NAME="hy-dp" 
 
 # Determine OS and ARCH if not provided
 OS=${OS:-$(uname | tr '[:upper:]' '[:lower:]')}
@@ -17,7 +17,7 @@ case "$ARCH" in
     *) echo "❌ Unsupported architecture: $ARCH" && exit 1 ;;
 esac
 
-# Get latest release tag
+# Get the latest release tag
 echo "🔍 Fetching latest release..."
 LATEST_TAG=$(curl -sL "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest" | grep '"tag_name":' | awk -F'"' '{print $4}')
 
@@ -28,8 +28,18 @@ fi
 
 echo "📦 Latest release: $LATEST_TAG"
 
+# Fetch the list of assets in the latest release
+ASSET_LIST=$(curl -sL "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest" | grep '"name":' | awk -F'"' '{print $4}')
+
+# Find the correct asset name based on BIN_NAME, OS, and ARCH
+FILE_NAME=$(echo "$ASSET_LIST" | grep -E "^${BIN_NAME}-[0-9]+\.[0-9]+\.[0-9]+-${OS}-${ARCH}$")
+
+if [[ -z "$FILE_NAME" ]]; then
+    echo "❌ Could not find a matching binary for ${BIN_NAME}, OS: ${OS}, ARCH: ${ARCH}."
+    exit 1
+fi
+
 # Construct download URL
-FILE_NAME="${BIN_NAME}-${LATEST_TAG}-${OS}-${ARCH}"
 DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_TAG/$FILE_NAME"
 
 # Download the binary
