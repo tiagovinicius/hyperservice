@@ -32,11 +32,8 @@ jobs:
       - name: Build and version
         run: |
           moon ci :version  # Update the version only apps with touched files
-          TARGET_OS=linux TARGET_ARCH=arm64 moon hyperservice-control-plane:build
-          TARGET_OS=linux TARGET_ARCH=amd64 moon hyperservice-control-plane:build
-          TARGET_OS=linux TARGET_ARCH=arm64 moon hyperservice-dataplane:build
-          TARGET_OS=linux TARGET_ARCH=amd64 moon hyperservice-dataplane:build
-          moon :tag # Tag all apps
+          TARGET_OS=linux TARGET_ARCH=arm64 moon :build
+          TARGET_OS=linux TARGET_ARCH=amd64 moon :build
       - name: Create Git Tag
         id: create_tag
         run: |

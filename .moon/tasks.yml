@@ -29,45 +29,4 @@ tasks:
       # Update version.txt with the new version
       echo "$NEW_FULL_VERSION" > version.txt
       echo "Updated version.txt with: $NEW_FULL_VERSION"
-  tag: 
-    script: |
-      LOCK_FILE="/tmp/git_lock"
-
-      # Wait until the lock file is removed (i.e., no other process is running Git operations)
-      echo "Checking if Git lock is present..."
-      while [ -e "$LOCK_FILE" ]; do
-          echo "Git operation is locked, waiting..."
-          sleep 1  # Check every second
-      done
-
-      # Create the lock file to indicate that Git operations are in progress
-      touch "$LOCK_FILE"
-      echo "Lock file created: $LOCK_FILE. Git operations are now locked."
-
-      # Read current version from version.txt
-      VERSION=$(cat version.txt)
-      echo "Current version from version.txt: $VERSION"
-
-      # Commit version.txt update
-      git add version.txt
-      git commit -m "Bump version to $VERSION"
-      echo "Version bumped and commit created with message: 'Bump version to $VERSION'"
-
-      # Push the commit and the version tag
-      git push
-      echo "Git push completed."
-
-      # Rename the binary to include the version
-      echo "Renaming binaries in ./bin directory..."
-      for file in ./bin/*; do
-          if [[ -f "$file" && -x "$file" ]]; then
-              FILENAME=$(basename "$file")
-              NEW_NAME="./bin/${VERSION}-${FILENAME}"
-              mv "$file" "$NEW_NAME"
-              echo "Renamed $file → $NEW_NAME"
-          fi
-      done
-
-      # Remove lock file to indicate completion
-      rm "$LOCK_FILE"
-      echo "Lock file removed. Git operations completed and lock released."
+  
