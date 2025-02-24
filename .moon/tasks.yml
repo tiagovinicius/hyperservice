@@ -7,46 +7,67 @@ tasks:
     script: |
       # Read current version from version.txt
       VERSION=$(cat version.txt)
+      echo "Current version from file: $VERSION"
 
       # Extract the base name (app name) and the current version
-      BASE_NAME=$(echo "$VERSION" | cut -d'-' -f1)
-      CURRENT_VERSION=$(echo "$VERSION" | cut -d'-' -f2-)
+      BASE_NAME=$(echo "$VERSION" | grep -oE '^[^-]+-[^-]+')
+      CURRENT_VERSION=$(echo "$VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+$')
 
-      # Increment PATCH version (you can modify this for MINOR or MAJOR as needed)
-      NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. -v OFS=. '{$NF++;print}')
-      NEW_VERSION=$(echo "$NEW_VERSION" | sed 's/\.\.$//')
+      echo "Base name extracted: $BASE_NAME"
+      echo "Current version extracted: $CURRENT_VERSION"
+
+      # Increment PATCH version (Modify for MINOR or MAJOR if needed)
+      IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+      PATCH=$((PATCH + 1))
+      NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+      echo "New incremented version: $NEW_VERSION"
 
       # Combine the base name with the new version
       NEW_FULL_VERSION="$BASE_NAME-$NEW_VERSION"
+      echo "New full version: $NEW_FULL_VERSION"
 
       # Update version.txt with the new version
       echo "$NEW_FULL_VERSION" > version.txt
-
-      go build -ldflags "-X main.version=$NEW_FULL_VERSION"
+      echo "Updated version.txt with: $NEW_FULL_VERSION"
   tag: 
     script: |
       LOCK_FILE="/tmp/git_lock"
+
       # Wait until the lock file is removed (i.e., no other process is running Git operations)
+      echo "Checking if Git lock is present..."
       while [ -e "$LOCK_FILE" ]; do
-        echo "Git operation is locked, waiting..."
-        sleep 1  # Check every second
+          echo "Git operation is locked, waiting..."
+          sleep 1  # Check every second
       done
+
       # Create the lock file to indicate that Git operations are in progress
       touch "$LOCK_FILE"
+      echo "Lock file created: $LOCK_FILE. Git operations are now locked."
 
       # Read current version from version.txt
       VERSION=$(cat version.txt)
+      echo "Current version from version.txt: $VERSION"
 
       # Commit version.txt update
       git add version.txt
       git commit -m "Bump version to $VERSION"
+      echo "Version bumped and commit created with message: 'Bump version to $VERSION'"
 
       # Push the commit and the version tag
       git push
+      echo "Git push completed."
 
       # Rename the binary to include the version
-      mv ./bin/main "./bin/$VERSION"
+      echo "Renaming binaries in ./bin directory..."
+      for file in ./bin/*; do
+          if [[ -f "$file" && -x "$file" ]]; then
+              FILENAME=$(basename "$file")
+              NEW_NAME="./bin/${VERSION}-${FILENAME}"
+              mv "$file" "$NEW_NAME"
+              echo "Renamed $file → $NEW_NAME"
+          fi
+      done
 
       # Remove lock file to indicate completion
       rm "$LOCK_FILE"
-      echo "Git operations completed and lock released."
+      echo "Lock file removed. Git operations completed and lock released."
