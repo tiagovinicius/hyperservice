@@ -10,7 +10,7 @@ tasks:
       echo "Current version from file: $VERSION"
 
       # Extract the base name (app name) and the current version
-      BASE_NAME=$(echo "$VERSION" | grep -oE '^[^-]+-[^-]+')
+      BASE_NAME=$(echo "$VERSION" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+$//')
       CURRENT_VERSION=$(echo "$VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+$')
 
       echo "Base name extracted: $BASE_NAME"

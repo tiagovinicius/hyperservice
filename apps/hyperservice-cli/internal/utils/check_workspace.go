@@ -31,6 +31,4 @@ func CheckWorkspace(workdir string) {
 			os.Exit(1)
 		}
 	}
-
-	fmt.Println("✅ Workspace validation successful!")
 }

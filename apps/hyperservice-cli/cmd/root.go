@@ -35,7 +35,6 @@ var rootCmd = &cobra.Command{
 		}
 		Workdir = absPath
 
-		fmt.Printf("📂 Using workdir: %s\n", Workdir)
 		// Check if we are in a valid hyperservice workspace
 		utils.CheckWorkspace(Workdir)
 	},
