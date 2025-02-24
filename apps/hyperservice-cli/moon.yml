@@ -2,5 +2,7 @@ stack: "backend"
 type: "application"
 language: "go"
 tasks:
+  run:
+    command: "go run ."
   build:
     command: "go build -o ./bin/main ./"

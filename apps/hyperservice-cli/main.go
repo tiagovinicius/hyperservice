@@ -1,7 +1,10 @@
 package main
 
-import "hyperservice-cli/cmd"
+import (
+	rootCmd "hyperservice-cli/cmd"
+	_ "hyperservice-cli/internal/mesh/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	rootCmd.Execute()
 }
