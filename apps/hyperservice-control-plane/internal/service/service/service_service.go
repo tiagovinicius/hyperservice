@@ -37,20 +37,19 @@ func StartService(name string, workdir string, serve bool, imageName, podName st
 
 	if imageName == "" {
 		imageName = "hyperservice-service-image:latest"
-	}
 
-	// **Passo 1: Build da imagem Docker**
-	// Caminho para o Dockerfile
-	dockerfilePath := "./config/dockerfile/service/Dockerfile"
-	log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
+		// Caminho para o Dockerfile
+		dockerfilePath := "./config/dockerfile/service/Dockerfile"
+		log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
 
-	// Construção da imagem Docker
-	buildCmd := exec.Command("docker", "build", "-f", dockerfilePath, "-t", imageName, ".")
-	buildOutput, err := buildCmd.CombinedOutput()
-	if err != nil {
-		log.Printf("ERROR: Failed to build Docker image: %v", err)
-		log.Printf("Docker build output: %s", buildOutput)
-		return err
+		// Construção da imagem Docker
+		buildCmd := exec.Command("docker", "build", "-f", dockerfilePath, "-t", imageName, ".")
+		buildOutput, err := buildCmd.CombinedOutput()
+		if err != nil {
+			log.Printf("ERROR: Failed to build Docker image: %v", err)
+			log.Printf("Docker build output: %s", buildOutput)
+			return err
+		}
 	}
 
 	log.Printf("Importing image to k3d!")

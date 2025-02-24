@@ -333,39 +333,46 @@ func DeletePodsByLabel(clientset *kubernetes.Clientset, namespace, labelSelector
 	}
 }
 
-// ApplyKubernetsEnvVar recebe um clientset, lê um arquivo .env e aplica como ConfigMap no Kubernetes
 func ApplyKubernetsEnvVar(clientset *kubernetes.Clientset, envFilePath, configName string, namespace string) error {
-	// Ler as variáveis do .env e armazená-las em um map
+	fmt.Println("🔍 Starting ApplyKubernetsEnvVar function...")
+	fmt.Printf("📂 Attempting to read .env file from path: %s\n", envFilePath)
+
+	// Criar um mapa vazio para armazenar variáveis de ambiente
 	envData := make(map[string]string)
 
 	file, err := os.Open(envFilePath)
 	if err != nil {
-		fmt.Println("Could not find or open .env file: %w", err)
-		return nil
-	}
-	defer file.Close()
+		fmt.Printf("⚠️  Could not find or open .env file (%s). Creating an empty ConfigMap.\n", envFilePath)
+		// Continua sem erro para criar um ConfigMap vazio
+	} else {
+		defer file.Close()
+		fmt.Println("📖 .env file opened successfully.")
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue // Ignorar linhas vazias e comentários
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue // Ignorar linhas vazias e comentários
+			}
+
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				key := strings.TrimSpace(parts[0])
+				value := strings.TrimSpace(parts[1])
+				envData[key] = value
+			}
 		}
 
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) == 2 {
-			key := strings.TrimSpace(parts[0])
-			value := strings.TrimSpace(parts[1])
-			envData[key] = value
+		if err := scanner.Err(); err != nil {
+			fmt.Printf("❌ Error reading .env file: %v\n", err)
+			return fmt.Errorf("error reading .env file: %w", err)
 		}
+
+		fmt.Printf("📊 Parsed %d environment variables from .env file.\n", len(envData))
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Println("❌ error reading .env file: %w", err)
-		return nil
-	}
-
-	// Criar o objeto ConfigMap
+	// Criar o objeto ConfigMap (vazio se o arquivo não foi encontrado ou sem variáveis)
+	fmt.Printf("🛠 Creating ConfigMap object with name: %s in namespace: %s\n", configName, namespace)
 	configMap := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configName,
@@ -375,22 +382,27 @@ func ApplyKubernetsEnvVar(clientset *kubernetes.Clientset, envFilePath, configNa
 	}
 
 	// Aplicar o ConfigMap no cluster
+	fmt.Println("🔎 Checking if ConfigMap already exists...")
 	existingConfigMap, err := clientset.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMap.Name, metav1.GetOptions{})
 	if err == nil {
-		// Se já existe, atualizar
+		fmt.Println("📝 ConfigMap exists. Updating...")
 		configMap.ResourceVersion = existingConfigMap.ResourceVersion // Necessário para Update
 		_, err = clientset.CoreV1().ConfigMaps(namespace).Update(context.TODO(), configMap, metav1.UpdateOptions{})
 		if err != nil {
-			return fmt.Errorf("❌ error updating ConfigMap: %w", err)
+			fmt.Printf("❌ Error updating ConfigMap: %v\n", err)
+			return fmt.Errorf("error updating ConfigMap: %w", err)
 		}
 		fmt.Println("✅ ConfigMap updated successfully!")
 	} else {
-		// Se não existe, criar um novo
+		fmt.Println("➕ ConfigMap does not exist. Creating new one...")
 		_, err = clientset.CoreV1().ConfigMaps(namespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
 		if err != nil {
-			return fmt.Errorf("❌ error creating ConfigMap: %w", err)
+			fmt.Printf("❌ Error creating ConfigMap: %v\n", err)
+			return fmt.Errorf("error creating ConfigMap: %w", err)
 		}
 		fmt.Println("✅ ConfigMap created successfully!")
 	}
+
+	fmt.Println("🎉 ApplyKubernetsEnvVar execution completed.")
 	return nil
 }

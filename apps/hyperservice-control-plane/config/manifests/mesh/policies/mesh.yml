@@ -10,3 +10,19 @@ spec:
     backends:
     - name: ca-1
       type: builtin
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hyperservice
+  labels:
+    kuma.io/sidecar-injection: enabled
+    kuma.io/mesh: default
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mesh-observability
+  labels:
+    kuma.io/sidecar-injection: disabled
+    kuma.io/mesh: default
