@@ -11,7 +11,7 @@ on:
 jobs:
   ci:
     name: "CI"
-    runs-on: "ubuntu-latest"
+    runs-on: "golang:1.24.0-bookworm"
     env:
       ACTIONS_STEP_DEBUG: true
     permissions:
