@@ -1,1 +1,1 @@
-hyperservice-cli-0.0.7
+hyctl-0.0.7
