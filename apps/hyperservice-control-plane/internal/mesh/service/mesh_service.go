@@ -29,12 +29,12 @@ func StartMesh(clusterName string) error {
     if err := utils.RunCommand("helm repo update"); err != nil {
 		return err
 	}
-	
+
     fmt.Println("🔄 Installing Kuma in namespace 'kuma-system'...")
 
 	// Install Kuma in 'kuma-system' namespace using Helm
 	fmt.Println("🔄 Installing Kuma in namespace 'kuma-system'...")
-	if err := utils.RunCommand("helm", "install", "kuma", "--namespace", "kuma-system", "./offline-dependencies/helm_chart/kuma"); err != nil {
+	if err := utils.RunCommand("helm", "install", "--namespace", "kuma-system", "kuma", "kuma/kuma"); err != nil {
 		return err
 	}
 
