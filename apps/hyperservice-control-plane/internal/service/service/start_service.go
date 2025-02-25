@@ -26,9 +26,9 @@ func replaceVariables(yamlContent []byte, variables map[string]string) ([]byte, 
 }
 
 // Função que realiza a substituição das variáveis, faz o build da imagem Docker e aplica o manifesto no Kubernetes
-func StartService(name string, workdir string, serve bool, imageName, podName string, policies []string) error {
+func StartService(name string, workdir string, imageName, podName string, policies []string) error {
 	// Debug: Exibir as variáveis recebidas
-	log.Printf("DEBUG: Received parameters - name: %s, workdir: %s, serve: %t, imageName: %s,  podName: %s", name, workdir, serve, imageName, podName)
+	log.Printf("DEBUG: Received parameters - name: %s, workdir: %s, imageName: %s,  podName: %s", name, workdir, imageName, podName)
 
 	clientset, err := infrastructure.GetKubernetesClientSet("hyperservice")
 	if err != nil {
@@ -86,7 +86,7 @@ func StartService(name string, workdir string, serve bool, imageName, podName st
 	variables := map[string]string{
 		"serviceName": name,
 		"workdir":     workdir,
-		"serve":       fmt.Sprintf("%t", serve),
+		"serve":       "false",
 		"podName":     podName,
 		"imageName":   imageName,
 		"namespace":   "hyperservice",

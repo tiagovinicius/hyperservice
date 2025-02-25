@@ -9,26 +9,17 @@ import (
 	"net/http"
 )
 
-type ServiceStartRequest struct {
+type ServiceStartServeRequest struct {
 	Name      string     `json:"name"`
-	Workdir   string     `json:"workdir"`
 	Pod       *Pod       `json:"pod,omitempty"`
-	Container *Container `json:"container,omitempty"`
+	Container *Container `json:"container"`
 	Policies  *[]string  `json:"policies,omitempty"`
 }
 
-type Pod struct {
-	Name string `json:"name"`
-}
+func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("DEBUG: Handling /service/start/serve request")
 
-type Container struct {
-	Image string `json:"image"`
-}
-
-func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("DEBUG: Handling /service/start request")
-
-	var request ServiceStartRequest // request agora usa a estrutura atualizada
+	var request ServiceStartServeRequest 
 
 	// Log the body content for debugging purposes (ensure it's not too large)
 	if r.Body != nil {
@@ -52,9 +43,16 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Ensure required fields are present
-	if request.Name == "" || request.Workdir == "" {
-		log.Printf("ERROR: Missing required fields (Name or Workdir)")
-		http.Error(w, "Missing required fields", http.StatusBadRequest)
+	if request.Name == "" {
+		log.Printf("ERROR: Missing required fields (Name or Container Image)")
+		http.Error(w, "Missing required field: name", http.StatusBadRequest)
+		return
+	}
+
+	// Ensure required fields are present
+	if request.Container == nil || request.Container.Image == "" {
+		log.Printf("ERROR: Missing required fields (Name or Container Image)")
+		http.Error(w, "Missing required field: container.name", http.StatusBadRequest)
 		return
 	}
 
@@ -64,27 +62,19 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 		podName = request.Name
 	}
 
-	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
-	var imageName string
-	if request.Container != nil {
-		imageName = request.Container.Image
-	}
-
-
 	// Se Policies for nil, podemos passar um slice vazio para evitar problemas
 	if request.Policies == nil {
 		request.Policies = &[]string{}
 	}
 	
 
-	log.Printf("DEBUG: ServiceStartRequest decoded successfully: %+v", request)
-	log.Printf("DEBUG:- name: %s, workdir: %s, imageName: %s,  podName: %s", request.Name, request.Workdir, imageName, podName)
+	log.Printf("DEBUG: ServiceStartServeRequest decoded successfully: %+v", request)
+	log.Printf("DEBUG:- name: %s, imageName: %s,  podName: %s", request.Name, request.Container.Image, podName)
 
 	// Debugging: Print the decoded body for inspection
-	go application.ServiceStartApplication(
+	go application.ServiceServeApplication(
 		request.Name,
-		request.Workdir,
-		imageName,
+		request.Container.Image,
 		podName,
 		*request.Policies,
 	)
@@ -95,7 +85,7 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	response := map[string]string{
 		"status":  "success",
-		"message": "Service scheduled to start successfully",
+		"message": "Service scheduled to serve successfully",
 	}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("ERROR: Failed to encode response: %v", err)

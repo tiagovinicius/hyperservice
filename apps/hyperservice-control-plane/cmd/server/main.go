@@ -21,6 +21,7 @@ func main() {
 	http.HandleFunc("/mesh/up", meshHandler.PostMeshUpHandler)
 	http.HandleFunc("/observability/up", observabilityHandler.PostObservabilityUpHandler)
 	http.HandleFunc("/service/start", serviceHandler.PostServiceStartHandler)
+	http.HandleFunc("/service/start/serve", serviceHandler.PostServiceStartServeHandler)
 
 	infrastructure.MakeKubernetesPortForward("kuma-system", "kuma-control-plane", "5681", ":5681")
 	infrastructure.MakeKubernetesPortForward("mesh-observability", "grafana", "3000", "80")
