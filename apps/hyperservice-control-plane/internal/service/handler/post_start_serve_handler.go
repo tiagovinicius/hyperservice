@@ -10,16 +10,17 @@ import (
 )
 
 type ServiceStartServeRequest struct {
-	Name      string     `json:"name"`
-	Pod       *Pod       `json:"pod,omitempty"`
-	Container *Container `json:"container"`
-	Policies  *[]string  `json:"policies,omitempty"`
+	Name      string            `json:"name"`
+	Pod       *Pod              `json:"pod,omitempty"`
+	Container *Container        `json:"container"`
+	Policies  *[]string         `json:"policies,omitempty"`
+	EnvVars   map[string]string `json:"env,omitempty"`
 }
 
 func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("DEBUG: Handling /service/start/serve request")
 
-	var request ServiceStartServeRequest 
+	var request ServiceStartServeRequest
 
 	// Log the body content for debugging purposes (ensure it's not too large)
 	if r.Body != nil {
@@ -66,7 +67,11 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 	if request.Policies == nil {
 		request.Policies = &[]string{}
 	}
-	
+
+	// Se EnvVars for nil, podemos passar um slice vazio para evitar problemas
+	if request.EnvVars == nil {
+		request.EnvVars = map[string]string{}
+	}
 
 	log.Printf("DEBUG: ServiceStartServeRequest decoded successfully: %+v", request)
 	log.Printf("DEBUG:- name: %s, imageName: %s,  podName: %s", request.Name, request.Container.Image, podName)
@@ -77,6 +82,7 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		request.Container.Image,
 		podName,
 		*request.Policies,
+		request.EnvVars,
 	)
 
 	// Send a success response

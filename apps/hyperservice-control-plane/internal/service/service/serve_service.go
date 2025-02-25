@@ -10,9 +10,17 @@ import (
 )
 
 // Função que realiza a substituição das variáveis, faz o build da imagem Docker e aplica o manifesto no Kubernetes
-func ServeService(name string, imageName, podName string, policies []string) error {
+func ServeService(name string, imageName, podName string, policies []string, envVars map[string]string) error {
 	// Debug: Exibir as variáveis recebidas
 	log.Printf("DEBUG: Received parameters - name: %s, imageName: %s,  podName: %s", name, imageName, podName)
+	log.Println("DEBUG: Policies received:")
+	for _, policy := range policies {
+		log.Println(policy)
+	}
+	log.Println("DEBUG: Env vars received:")
+	for _, envVar := range envVars {
+		log.Println(envVar)
+	}
 
 	clientset, err := infrastructure.GetKubernetesClientSet("hyperservice")
 	if err != nil {
@@ -71,7 +79,7 @@ func ServeService(name string, imageName, podName string, policies []string) err
 	// Aplicar o manifesto diretamente no Kubernetes usando kubectl
 	log.Printf("DEBUG: Applying updated manifest to Kubernetes using kubectl apply -f -")
 
-	infrastructure.ApplyKubernetsEnvVar(clientset, "/apps/"+name+"/.env", "hyperservice-svc-"+name+"-env-var", "hyperservice")
+	infrastructure.ApplyKubernetsEnvVars(clientset, envVars, "hyperservice-svc-"+name+"-env-var", "hyperservice")
 
 	cmd := exec.Command("kubectl", "apply", "-f", "-") // O "-" indica que vamos passar o YAML via stdin
 	cmd.Stdin = strings.NewReader(string(updatedYaml)) // Passar o YAML atualizado via stdin
@@ -88,7 +96,7 @@ func ServeService(name string, imageName, podName string, policies []string) err
 		fmt.Printf("Error: %v\n", err)
 	}
 
-	if err := infrastructure.ApplyKubernetesManifestsDir("/apps/"+name+"/.hyperservice/policies", variables); err != nil {
+	if err := infrastructure.ApplyKubernetesManifests(policies, variables); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 

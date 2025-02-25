@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"hyperservice-control-plane/utils"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -307,6 +308,54 @@ func applyK8sManifest(file string, substitutions map[string]string) error {
 	return nil
 }
 
+// ApplyKubernetesManifests applies Kubernetes manifests from a slice of strings and substitutes variables with provided values.
+func ApplyKubernetesManifests(policies []string, substitutions map[string]string) error {
+	// Ensure there is at least one policy
+	if len(policies) == 0 {
+		fmt.Println("⚠️ No policies provided")
+		return nil
+	}
+
+	// Iterate over each policy manifest
+	for _, policy := range policies {
+		fmt.Println("📄 Applying policy...")
+
+		// Substitute environment variables and custom variables in the manifest
+		envSubstitutedContent := os.ExpandEnv(policy)
+
+		// Apply custom substitutions from the provided map
+		for key, value := range substitutions {
+			envSubstitutedContent = strings.ReplaceAll(envSubstitutedContent, fmt.Sprintf("{{%s}}", key), value)
+		}
+
+		// Apply the manifest using kubectl
+		if err := applyManifestFromString(envSubstitutedContent); err != nil {
+			log.Printf("⚠️ Failed to apply policy: %v", err)
+		}
+	}
+
+	return nil
+}
+
+// applyManifestFromString applies a Kubernetes manifest from a string using kubectl.
+func applyManifestFromString(manifestContent string) error {
+	// Create a temporary buffer for kubectl input
+	var kubectlInput bytes.Buffer
+	kubectlInput.WriteString(manifestContent)
+
+	// Execute kubectl apply command
+	cmd := exec.Command("kubectl", "apply", "-f", "-")
+	cmd.Stdin = &kubectlInput
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to apply manifest: %v", err)
+	}
+
+	return nil
+}
+
 // DeletePodsByLabel removes all pods matching a given label selector in a specified namespace.
 func DeletePodsByLabel(clientset *kubernetes.Clientset, namespace, labelSelector string) {
 	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{
@@ -333,7 +382,7 @@ func DeletePodsByLabel(clientset *kubernetes.Clientset, namespace, labelSelector
 	}
 }
 
-func ApplyKubernetsEnvVar(clientset *kubernetes.Clientset, envFilePath, configName string, namespace string) error {
+func ApplyKubernetsEnvVarsFromPath(clientset *kubernetes.Clientset, envFilePath, configName string, namespace string) error {
 	fmt.Println("🔍 Starting ApplyKubernetsEnvVar function...")
 	fmt.Printf("📂 Attempting to read .env file from path: %s\n", envFilePath)
 
@@ -404,5 +453,52 @@ func ApplyKubernetsEnvVar(clientset *kubernetes.Clientset, envFilePath, configNa
 	}
 
 	fmt.Println("🎉 ApplyKubernetsEnvVar execution completed.")
+	return nil
+}
+
+// ApplyKubernetsEnvVars applies environment variables from a map and stores them in a Kubernetes ConfigMap.
+func ApplyKubernetsEnvVars(clientset *kubernetes.Clientset, envVars map[string]string, configName string, namespace string) error {
+	fmt.Println("🔍 Starting ApplyKubernetesEnvVar function...")
+
+	// Verificar se há variáveis de ambiente fornecidas
+	if len(envVars) == 0 {
+		fmt.Println("⚠️ No environment variables provided. Creating an empty ConfigMap.")
+	}
+
+	fmt.Printf("📊 Preparing ConfigMap with %d environment variables.\n", len(envVars))
+
+	// Criar o objeto ConfigMap
+	fmt.Printf("🛠 Creating ConfigMap object with name: %s in namespace: %s\n", configName, namespace)
+	configMap := &v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      configName,
+			Namespace: namespace,
+		},
+		Data: envVars,
+	}
+
+	// Aplicar o ConfigMap no cluster
+	fmt.Println("🔎 Checking if ConfigMap already exists...")
+	existingConfigMap, err := clientset.CoreV1().ConfigMaps(namespace).Get(context.TODO(), configMap.Name, metav1.GetOptions{})
+	if err == nil {
+		fmt.Println("📝 ConfigMap exists. Updating...")
+		configMap.ResourceVersion = existingConfigMap.ResourceVersion // Necessário para Update
+		_, err = clientset.CoreV1().ConfigMaps(namespace).Update(context.TODO(), configMap, metav1.UpdateOptions{})
+		if err != nil {
+			fmt.Printf("❌ Error updating ConfigMap: %v\n", err)
+			return fmt.Errorf("error updating ConfigMap: %w", err)
+		}
+		fmt.Println("✅ ConfigMap updated successfully!")
+	} else {
+		fmt.Println("➕ ConfigMap does not exist. Creating new one...")
+		_, err = clientset.CoreV1().ConfigMaps(namespace).Create(context.TODO(), configMap, metav1.CreateOptions{})
+		if err != nil {
+			fmt.Printf("❌ Error creating ConfigMap: %v\n", err)
+			return fmt.Errorf("error creating ConfigMap: %w", err)
+		}
+		fmt.Println("✅ ConfigMap created successfully!")
+	}
+
+	fmt.Println("🎉 ApplyKubernetesEnvVar execution completed.")
 	return nil
 }

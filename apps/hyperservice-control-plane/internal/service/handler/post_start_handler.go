@@ -10,11 +10,20 @@ import (
 )
 
 type ServiceStartRequest struct {
-	Name      string     `json:"name"`
-	Workdir   string     `json:"workdir"`
-	Pod       *Pod       `json:"pod,omitempty"`
-	Container *Container `json:"container,omitempty"`
-	Policies  *[]string  `json:"policies,omitempty"`
+	Name      string            `json:"name"`
+	Workdir   string            `json:"workdir"`
+	Pod       *Pod              `json:"pod,omitempty"`
+	Container *Container        `json:"container,omitempty"`
+	Policies  *[]string         `json:"policies,omitempty"`
+	EnvVars   map[string]string `json:"env,omitempty"`
+}
+
+type PartialServiceStartRequest struct {
+	Name      string      `json:"name"`
+	Pod       *Pod        `json:"pod,omitempty"`
+	Container *Container  `json:"container"`
+	Policies  *[]string   `json:"policies,omitempty"`
+	EnvVars   interface{} `json:"env,omitempty"` // Mudar para interface{} para capturar qualquer tipo
 }
 
 type Pod struct {
@@ -70,12 +79,15 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 		imageName = request.Container.Image
 	}
 
-
 	// Se Policies for nil, podemos passar um slice vazio para evitar problemas
 	if request.Policies == nil {
 		request.Policies = &[]string{}
 	}
-	
+
+	// Se EnvVars for nil, podemos passar um slice vazio para evitar problemas
+	if request.EnvVars == nil {
+		request.EnvVars = map[string]string{}
+	}
 
 	log.Printf("DEBUG: ServiceStartRequest decoded successfully: %+v", request)
 	log.Printf("DEBUG:- name: %s, workdir: %s, imageName: %s,  podName: %s", request.Name, request.Workdir, imageName, podName)
@@ -87,6 +99,7 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 		imageName,
 		podName,
 		*request.Policies,
+		request.EnvVars,
 	)
 
 	// Send a success response
