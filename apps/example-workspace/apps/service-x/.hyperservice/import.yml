@@ -1,1 +1,2 @@
 image: hyprserverice-service-x-image:latest
+git: https://github.com/tiagovinicius/hyperservice-dependency-example.git

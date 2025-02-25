@@ -45,6 +45,7 @@ modules/kuma/tokens
 */.moon/cache
 .moon/docker
 /workspaces/hyperservice/apps/example-workspace/.moon/cache
+/workspaces/hyperservice/apps/example-workspace/apps/service-x/.hyperservice/cache
 
 apps/*/bin
 */tmp/

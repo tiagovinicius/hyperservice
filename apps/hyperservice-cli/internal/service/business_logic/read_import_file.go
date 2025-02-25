@@ -10,20 +10,21 @@ import (
 // ImportConfig represents the expected structure of import.yml
 type ImportConfig struct {
 	Image string `yaml:"image"`
+	Git   string `yaml:"git"`
 }
 
 // ReadImportFile reads the image from import.yml
-func ReadImportFile(path string) (string, error) {
+func ReadImportFile(path string) (*ImportConfig, error) {
 	file, err := os.ReadFile(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to read YAML file: %w", err)
+		return nil, fmt.Errorf("failed to read YAML file: %w", err)
 	}
 
 	var config ImportConfig
 	err = yaml.Unmarshal(file, &config)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse YAML file: %w", err)
+		return nil, fmt.Errorf("failed to parse YAML file: %w", err)
 	}
 
-	return config.Image, nil
+	return &config, nil
 }

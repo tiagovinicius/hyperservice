@@ -8,6 +8,7 @@ import (
 	rootCmd "hyperservice-cli/cmd"
 	"hyperservice-cli/internal/service/business_logic"
 	"hyperservice-cli/internal/service/request"
+	"hyperservice-cli/internal/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -20,15 +21,21 @@ var serviceStartCmd = &cobra.Command{
 		serviceName := args[0]
 		workdir := rootCmd.GetWorkdir()
 		importFilePath := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "import.yml")
+		cacheDir := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "cache", "git")
 
 		if _, err := os.Stat(importFilePath); err == nil {
 			// Read container image from import.yml
-			image, err := business_logic.ReadImportFile(importFilePath)
+			importData, err := business_logic.ReadImportFile(importFilePath)
 			if err != nil {
-				return fmt.Errorf("failed to read import file: %w", err)
+				fmt.Println("failed to read import file: %w", err)
 			}
 
-			response, err := request.StartServeServiceRequest(serviceName, image)
+			// Clone or update the repository
+			if err := utils.ImportRepo(importData.Git, cacheDir); err != nil {
+				fmt.Println("failed to clone or update repository: %w", err)
+			}
+
+			response, err := request.StartImportServiceRequest(serviceName, workdir, importData.Image)
 			if err != nil {
 				return err
 			}

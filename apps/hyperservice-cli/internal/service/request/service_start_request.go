@@ -7,7 +7,6 @@ import (
 	"hyperservice-cli/internal/utils"
 	"io"
 	"net/http"
-	"os"
 )
 
 // ServiceStartRequest represents the payload for the service start request
@@ -23,7 +22,7 @@ func StartServiceRequest(name, workdir string) (string, error) {
 	policies, err := utils.ReadPoliciesFromDir(workdir + "/apps/" + name)
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
-		os.Exit(1)
+		policies = []string{}
 	}
 
 	requestBody, err := json.Marshal(ServiceStartRequest{
