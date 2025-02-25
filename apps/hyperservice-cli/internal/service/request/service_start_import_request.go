@@ -21,8 +21,7 @@ type ServiceStartServeRequest struct {
 func StartImportServiceRequest(name, workdir, image string) (string, error) {
 	meshPoliciesDir := filepath.Join(workdir, "apps", name, ".hyperservice/cache/git")
 	servicePoliciesDir := filepath.Join(workdir, "apps", name, ".hyperservice/cache/git/apps", name)
-	fmt.Printf("📂 Mesh Policies Directory: %s\n", meshPoliciesDir)
-	fmt.Printf("📂 Service Policies Directory: %s\n", servicePoliciesDir)
+
 	meshPolicies, err := utils.ReadPoliciesFromDir(meshPoliciesDir)
 	if err != nil {
 		fmt.Printf("❌ Error: %v\n", err)
@@ -47,8 +46,6 @@ func StartImportServiceRequest(name, workdir, image string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %w", err)
 	}
-
-	fmt.Printf("📤 Request Body: %s\n", string(requestBody))
 
 	resp, err := http.Post("http://localhost:3002/service/start/serve", "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
