@@ -9,8 +9,13 @@ import (
 
 // ImportConfig represents the expected structure of import.yml
 type ImportConfig struct {
-	Image string `yaml:"image"`
-	Git   string `yaml:"git"`
+	Image string     `yaml:"image"`
+	Git   *GitConfig `yaml:"git"`
+}
+
+type GitConfig struct {
+	Url     string `yaml:"url"`
+	Workdir string `yaml:"workdir"`
 }
 
 // ReadImportFile reads the image from import.yml

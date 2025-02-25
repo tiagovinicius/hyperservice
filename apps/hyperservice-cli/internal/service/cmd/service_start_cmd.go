@@ -30,12 +30,16 @@ var serviceStartCmd = &cobra.Command{
 				fmt.Println("failed to read import file: %w", err)
 			}
 
-			// Clone or update the repository
-			if err := utils.ImportRepo(importData.Git, cacheDir); err != nil {
-				fmt.Println("failed to clone or update repository: %w", err)
+			importWorkdir := ""
+			if importData.Git != nil {
+				importWorkdir = importData.Git.Workdir
+				// Clone or update the repository
+				if err := utils.ImportRepo(importData.Git.Url, cacheDir); err != nil {
+					fmt.Println("failed to clone or update repository: %w", err)
+				}
 			}
 
-			response, err := request.StartImportServiceRequest(serviceName, workdir, importData.Image)
+			response, err := request.StartImportServiceRequest(serviceName, workdir, importData.Image, importWorkdir)
 			if err != nil {
 				return err
 			}

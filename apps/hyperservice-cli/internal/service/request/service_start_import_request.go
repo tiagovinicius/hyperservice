@@ -18,9 +18,9 @@ type ServiceStartServeRequest struct {
 }
 
 // StartImportServiceRequest sends a request to start a service with container image
-func StartImportServiceRequest(name, workdir, image string) (string, error) {
+func StartImportServiceRequest(name, workdir, image string, importWorkdir string) (string, error) {
 	meshPoliciesDir := filepath.Join(workdir, "apps", name, ".hyperservice/cache/git")
-	servicePoliciesDir := filepath.Join(workdir, "apps", name, ".hyperservice/cache/git/apps", name)
+	servicePoliciesDir := filepath.Join(workdir, "apps", name, ".hyperservice/cache/git/apps", importWorkdir, name)
 
 	meshPolicies, err := utils.ReadPoliciesFromDir(meshPoliciesDir)
 	if err != nil {
