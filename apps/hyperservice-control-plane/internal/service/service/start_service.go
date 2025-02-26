@@ -61,7 +61,10 @@ func StartService(name string, workdir string, imageName, podName string, polici
 		}
 
 	} else {
-		buildCmd := exec.Command("docker", "build", "--build-arg BASE_IMAGE=", imageName, "-f", dockerfilePath, "-t", imageName, ".")
+		baseImage := imageName
+		imageName = "hyperservice-custom-service-image-" + imageName
+		buildCmd := exec.Command("docker", "buildx", "build", "--build-arg", "BASE_IMAGE="+baseImage, "-f", dockerfilePath, "-t", imageName, ".")
+		log.Printf("Executing command: %s", strings.Join(buildCmd.Args, " "))
 		buildOutput, err := buildCmd.CombinedOutput()
 		if err != nil {
 			log.Printf("ERROR: Failed to build Docker image: %v", err)
