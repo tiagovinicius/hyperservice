@@ -1,21 +1,36 @@
-FROM node:23-bookworm-slim
+# Define uma imagem base com opção de argumento
+ARG BASE_IMAGE=node:23-bookworm-slim
+FROM ${BASE_IMAGE} AS base
 
-RUN echo "Install base dependencies" && \
+# Instala dependências base
+RUN echo "🛠 Installing base dependencies..." && \
     apt-get update && apt-get install -y \
-    curl collectd
+    curl collectd git
 
-# Install hyperservice Dataplane
-RUN curl -sL https://raw.githubusercontent.com/tiagovinicius/hyperservice/main/get-hy-dp.sh | bash && \
-chmod +x hy-dp && mv hy-dp /usr/local/bin/
+# Verifica se o Node.js está instalado, caso contrário, instala manualmente
+RUN if ! command -v node > /dev/null; then \
+      echo "⚡ Node.js not found, installing manually..."; \
+      curl -fsSL https://deb.nodesource.com/setup_23.x | bash - && \
+      apt-get install -y nodejs; \
+    else \
+      echo "✅ Node.js already installed!"; \
+    fi
 
-# Install Kuma
-RUN curl -L https://kuma.io/installer.sh | VERSION=2.9.3 sh - && \
+# Instala o Hyperservice Dataplane
+RUN echo "🚀 Installing Hyperservice Dataplane..." && \
+    curl -sL https://raw.githubusercontent.com/tiagovinicius/hyperservice/main/get-hy-dp.sh | bash && \
+    chmod +x hy-dp && mv hy-dp /usr/local/bin/
+
+# Instala o Kuma
+RUN echo "🔧 Installing Kuma..." && \
+    curl -L https://kuma.io/installer.sh | VERSION=2.9.3 sh - && \
     mv kuma-2.9.3/bin/* /usr/local/bin/ && \
     rm -rf kuma-2.9.3
 
-# Install Moonrepo CLI
-RUN curl -fsSL https://moonrepo.dev/install/moon.sh | bash && \
+# Instala o Moonrepo CLI
+RUN echo "🌙 Installing Moonrepo CLI..." && \
+    curl -fsSL https://moonrepo.dev/install/moon.sh | bash && \
     mv "$HOME/.moon/bin/moon" /usr/local/bin/
 
+# Define o comando de entrada
 ENTRYPOINT ["hy-dp"]
- 

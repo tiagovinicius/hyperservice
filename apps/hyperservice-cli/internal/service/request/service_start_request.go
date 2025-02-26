@@ -13,14 +13,15 @@ import (
 
 // ServiceStartRequest represents the payload for the service start request
 type ServiceStartRequest struct {
-	Name     string            `json:"name"`
-	Workdir  string            `json:"workdir"`
-	Policies []string          `json:"policies"`
-	Env      map[string]string `json:"env"`
+	Name      string            `json:"name"`
+	Container map[string]string `json:"container,omitempty"`
+	Workdir   string            `json:"workdir"`
+	Policies  []string          `json:"policies,omitempty"`
+	Env       map[string]string `json:"env,omitempty"`
 }
 
 // StartService sends a request to start a service
-func StartServiceRequest(name, workdir string) (string, error) {
+func StartServiceRequest(name, workdir string, image string) (string, error) {
 	envFilePath := filepath.Join(workdir, "apps", name, ".env")
 
 	// Read policies from the optional directory
@@ -41,7 +42,10 @@ func StartServiceRequest(name, workdir string) (string, error) {
 	}
 
 	requestBody, err := json.Marshal(ServiceStartRequest{
-		Name:     name,
+		Name: name,
+		Container: map[string]string{
+			"image": image,
+		},
 		Workdir:  workdir,
 		Policies: policies,
 		Env:      envVars,

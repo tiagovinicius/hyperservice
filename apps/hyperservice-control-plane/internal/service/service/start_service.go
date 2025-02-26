@@ -48,15 +48,20 @@ func StartService(name string, workdir string, imageName, podName string, polici
 		configPath = "/etc/hy-cp"
 	}
 
+	dockerfilePath := configPath + "/dockerfile/service/Dockerfile"
+	log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
 	if imageName == "" {
 		imageName = "hyperservice-service-image:latest"
-
-		// Caminho para o Dockerfile
-		dockerfilePath := configPath + "/dockerfile/service/Dockerfile"
-		log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
-
-		// Construção da imagem Docker
 		buildCmd := exec.Command("docker", "build", "-f", dockerfilePath, "-t", imageName, ".")
+		buildOutput, err := buildCmd.CombinedOutput()
+		if err != nil {
+			log.Printf("ERROR: Failed to build Docker image: %v", err)
+			log.Printf("Docker build output: %s", buildOutput)
+			return err
+		}
+
+	} else {
+		buildCmd := exec.Command("docker", "build", "--build-arg BASE_IMAGE=", imageName, "-f", dockerfilePath, "-t", imageName, ".")
 		buildOutput, err := buildCmd.CombinedOutput()
 		if err != nil {
 			log.Printf("ERROR: Failed to build Docker image: %v", err)

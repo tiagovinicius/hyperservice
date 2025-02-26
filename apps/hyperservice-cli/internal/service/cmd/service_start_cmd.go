@@ -21,6 +21,7 @@ var serviceStartCmd = &cobra.Command{
 		serviceName := args[0]
 		workdir := rootCmd.GetWorkdir()
 		importFilePath := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "import.yml")
+		containerFilePath := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "container.yml")
 		cacheDir := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "cache", "git")
 
 		if _, err := os.Stat(importFilePath); err == nil {
@@ -48,8 +49,18 @@ var serviceStartCmd = &cobra.Command{
 			return nil
 		}
 
+		var image string
+		if _, err := os.Stat(containerFilePath); err == nil {
+			containerData, err := business_logic.ReadContainerFile(containerFilePath)
+			if err != nil {
+				fmt.Println("failed to read container file:", err)
+			} else {
+				image = containerData.Image // Captura a imagem se disponível
+			}
+		}
+
 		// Call external function to start the service
-		response, err := request.StartServiceRequest(serviceName, workdir)
+		response, err := request.StartServiceRequest(serviceName, workdir, image)
 		if err != nil {
 			return err
 		}
