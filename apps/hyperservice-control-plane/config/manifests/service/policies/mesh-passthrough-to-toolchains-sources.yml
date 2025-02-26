@@ -27,3 +27,12 @@ spec:
         value: "registry.npmjs.org"
         protocol: tls
         port: 443
+      - type: Domain
+        value: "proxy.golang.org"
+        protocol: tls
+        port: 443
+      - type: Domain
+        value: "sum.golang.org"
+        protocol: tls
+        port: 443
+        
