@@ -69,13 +69,13 @@ else
     exit 1
 fi
 
-# Ensure /opt/hy-cp exists
-mkdir -p /opt/hy-cp
+# Ensure /etc/hy-cp exists
+mkdir -p /etc/hy-cp
 
-# Move config files to /opt/hy-cp if they exist
+# Move config files to /etc/hy-cp if they exist
 if [[ -d "$TMP_DIR/config" && "$(ls -A $TMP_DIR/config)" ]]; then
     echo "📂 Moving config files..."
-    cp -r "$TMP_DIR/config/." /opt/hy-cp/
+    cp -r "$TMP_DIR/config/." /etc/hy-cp/
 else
     echo "⚠️ No config files found in the package."
 fi
