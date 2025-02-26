@@ -10,7 +10,7 @@ tasks:
       TARGET_ARCH=${TARGET_ARCH:-amd64}
       HYCP_VERSION=$(cat version.txt)
       mkdir -p ./bin/tmp/config
-      cp ./config ./bin/tmp/config
+      cp -r ./config/* ./bin/tmp/config
       GOOS=$TARGET_OS GOARCH=$TARGET_ARCH go build -ldflags "-X main.version=$HYCP_VERSION-$TARGET_OS-$TARGET_ARCH-" -o "./bin/tmp/hy-cp" ./cmd/server
-      tar -cvf ./bin/${HYCP_VERSION}-${TARGET_OS}-${TARGET_ARCH}.tar -C ./bin/tmp .
+      tar -cvf ./bin/${HYCP_VERSION}-${TARGET_OS}-${TARGET_ARCH}.tar -C ./bin/tmp hy-cp config
       rm -rf ./bin/tmp
