@@ -15,6 +15,7 @@
   ],
   "containerEnv": {
     "HYPERSERVICE_DEV_HOST_WORKSPACE_PATH": "${localWorkspaceFolder}",
+    "HYPERSERVICE_DEV_WORKSPACE_PATH": "${containerWorkspaceFolder}",
     "HYPERSERVICE_DEV_PATH": "modules/hyperservice"
   },
   "customizations": {

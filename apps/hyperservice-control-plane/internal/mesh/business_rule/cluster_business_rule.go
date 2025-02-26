@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hyperservice-control-plane/internal/mesh/infrastructure"
+	"os"
 	"os/exec"
 
 	"github.com/docker/docker/api/types/volume"
@@ -14,6 +15,16 @@ import (
 )
 
 func CreateCluster(clusterName string) error {
+	hostWorkspacePath := os.Getenv("HYPERSERVICE_DEV_HOST_WORKSPACE_PATH")
+	devWorkspacePath := os.Getenv("HYPERSERVICE_DEV_WORKSPACE_PATH")
+
+	if devWorkspacePath == "" {
+		return fmt.Errorf("HYPERSERVICE_DEV_WORKSPACE_PATH is not set")
+	}
+	if hostWorkspacePath == "" {
+		hostWorkspacePath = devWorkspacePath
+	}
+
 	// Build the K3D command
 	cmd := exec.Command("k3d", "cluster", "create", clusterName,
 		"--servers", "1",
@@ -21,7 +32,7 @@ func CreateCluster(clusterName string) error {
 		"--network", "hyperservice-network",
 		"--volume", "hyperservice-grafana-data:/var/lib/grafana",
 		"--volume", "/var/run/docker.sock:/var/run/docker.sock",
-		"--volume", "/home/hexagon/projects/hyperservice/:/workspaces/hyperservice/",
+		"--volume", hostWorkspacePath+":"+devWorkspacePath,
 	)
 
 	// Run the command
