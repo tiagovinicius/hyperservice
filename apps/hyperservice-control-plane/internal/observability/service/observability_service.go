@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hyperservice-control-plane/internal/mesh/infrastructure"
 	business_rule "hyperservice-control-plane/internal/observability/busines_rule"
+	"os"
 )
 
 func StartObservability() error {
@@ -13,10 +14,14 @@ func StartObservability() error {
 	}
 
 	namespace := "mesh-observability"
+	configPath := os.Getenv("HY_CP_CONFIG")
+	if configPath == "" {
+		configPath = "/etc/hy-cp"
+	}
 
 	// Applying the Grafana Manifest
 	fmt.Println("🚀 Applying Grafana Manifest...")
-	infrastructure.RunKubernetsCommand("apply", "-f", "./config/manifests/observability/deploy.yml")
+	infrastructure.RunKubernetsCommand("apply", "-f", configPath+"/manifests/observability/deploy.yml")
 
 	// Triggering a rolling update to apply the label and restart pods
 	fmt.Println("🔄 Triggering a rolling update for the deployment...")
@@ -35,7 +40,7 @@ func StartObservability() error {
 
 	business_rule.WaitForObservabilityReadiness()
 
-	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/observability/policies", map[string]string{}); err != nil {
+	if err := infrastructure.ApplyKubernetesManifestsDir(configPath+"/manifests/observability/policies", map[string]string{}); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 

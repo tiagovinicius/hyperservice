@@ -3,15 +3,14 @@ type: "application"
 language: "go"
 tasks:
   run:
-    command: "moon :integrate && air"
+    command: "export HY_CP_CONFIG=config && air"
   build:
     script: |
       TARGET_OS=${TARGET_OS:-linux}
       TARGET_ARCH=${TARGET_ARCH:-amd64}
       HYCP_VERSION=$(cat version.txt)
-      GOOS=$TARGET_OS GOARCH=$TARGET_ARCH go build -ldflags "-X main.version=$HYCP_VERSION-$TARGET_OS-$TARGET_ARCH-" -o "./bin/$HYCP_VERSION-$TARGET_OS-$TARGET_ARCH" ./cmd/server
-  integrate:
-    script: |
-      mkdir -p offline-dependencies/bin/hy-dp 
-      moon hyperservice-dataplane:build 
-      cp -f /workspaces/hyperservice/apps/hyperservice-dataplane/bin/main offline-dependencies/bin/hy-dp
+      mkdir -p ./bin/tmp/config
+      cp ./config ./bin/tmp/config
+      GOOS=$TARGET_OS GOARCH=$TARGET_ARCH go build -ldflags "-X main.version=$HYCP_VERSION-$TARGET_OS-$TARGET_ARCH-" -o "./bin/tmp/hy-cp" ./cmd/server
+      tar -cvf ./bin/${HYCP_VERSION}-${TARGET_OS}-${TARGET_ARCH}.tar -C ./bin/tmp .
+      rm -rf ./bin/tmp

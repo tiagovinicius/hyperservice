@@ -43,11 +43,16 @@ func StartService(name string, workdir string, imageName, podName string, polici
 		return err
 	}
 
+	configPath := os.Getenv("HY_CP_CONFIG")
+	if configPath == "" {
+		configPath = "/etc/hy-cp"
+	}
+
 	if imageName == "" {
 		imageName = "hyperservice-service-image:latest"
 
 		// Caminho para o Dockerfile
-		dockerfilePath := "./config/dockerfile/service/Dockerfile"
+		dockerfilePath := configPath + "/dockerfile/service/Dockerfile"
 		log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
 
 		// Construção da imagem Docker
@@ -77,7 +82,7 @@ func StartService(name string, workdir string, imageName, podName string, polici
 	}
 
 	// Definir o caminho do arquivo YAML
-	yamlFilePath := "./config/manifests/service/start.yaml"
+	yamlFilePath := configPath + "/manifests/service/start.yaml"
 	log.Printf("DEBUG: Reading YAML file from path: %s", yamlFilePath)
 
 	// Ler o conteúdo do arquivo YAML
@@ -126,7 +131,7 @@ func StartService(name string, workdir string, imageName, podName string, polici
 
 	log.Printf("DEBUG: Successfully applied the updated manifest to Kubernetes: \n%s", output)
 
-	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/service/policies", variables); err != nil {
+	if err := infrastructure.ApplyKubernetesManifestsDir(configPath+"/manifests/service/policies", variables); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 

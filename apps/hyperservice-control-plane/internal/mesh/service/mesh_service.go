@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"os"
 
 	"hyperservice-control-plane/internal/mesh/business_rule"
 	"hyperservice-control-plane/internal/mesh/infrastructure"
@@ -23,10 +24,10 @@ func StartMesh(clusterName string) error {
 	}
 
 	fmt.Println("📦 Adding Helm repository for Kuma...")
-    if err := utils.RunCommand("helm", "repo", "add", "kuma", "https://kumahq.github.io/charts"); err != nil {
+	if err := utils.RunCommand("helm", "repo", "add", "kuma", "https://kumahq.github.io/charts"); err != nil {
 		return err
 	}
-    if err := utils.RunCommand("helm", "repo", "update"); err != nil {
+	if err := utils.RunCommand("helm", "repo", "update"); err != nil {
 		return err
 	}
 
@@ -55,7 +56,12 @@ func StartMesh(clusterName string) error {
 		return err
 	}
 
-	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/mesh/policies", map[string]string{}); err != nil {
+	configPath := os.Getenv("HY_CP_CONFIG")
+	if configPath == "" {
+		configPath = "/etc/hy-cp"
+	}
+
+	if err := infrastructure.ApplyKubernetesManifestsDir(configPath+"/manifests/mesh/policies", map[string]string{}); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 

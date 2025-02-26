@@ -42,9 +42,12 @@ func ServeService(name string, imageName, podName string, policies []string, env
 	if podName == "" {
 		podName = name
 	}
-
+	configPath := os.Getenv("HY_CP_CONFIG")
+	if configPath == "" {
+		configPath = "/etc/hy-cp"
+	}
 	// Definir o caminho do arquivo YAML
-	yamlFilePath := "./config/manifests/service/serve.yaml"
+	yamlFilePath := configPath + "/manifests/service/serve.yaml"
 	log.Printf("DEBUG: Reading YAML file from path: %s", yamlFilePath)
 
 	// Ler o conteúdo do arquivo YAML
@@ -92,7 +95,7 @@ func ServeService(name string, imageName, podName string, policies []string, env
 
 	log.Printf("DEBUG: Successfully applied the updated manifest to Kubernetes: \n%s", output)
 
-	if err := infrastructure.ApplyKubernetesManifestsDir("./config/manifests/service/policies", variables); err != nil {
+	if err := infrastructure.ApplyKubernetesManifestsDir(configPath+"/manifests/service/policies", variables); err != nil {
 		fmt.Printf("Error: %v\n", err)
 	}
 
