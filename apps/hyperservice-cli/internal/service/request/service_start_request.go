@@ -50,8 +50,6 @@ func StartServiceRequest(name, workdir string) (string, error) {
 		return "", fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	fmt.Printf("📤 Request Body: %s\n", string(requestBody))
-
 	resp, err := http.Post("http://localhost:3002/service/start", "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return "", fmt.Errorf("failed to send request: %w", err)

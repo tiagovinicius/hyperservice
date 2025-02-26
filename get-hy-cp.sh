@@ -51,26 +51,37 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+# Create a temporary directory for extraction
+TMP_DIR="/tmp/extract"
+mkdir -p "$TMP_DIR"
+
 # Extract the package
 echo "📦 Extracting $FILE_NAME..."
-tar -xvf "$FILE_NAME" -C /tmp/
+tar -xvf "$FILE_NAME" -C "$TMP_DIR"
 
 # Move hy-cp binary to /usr/local/bin
-echo "🚀 Installing $BIN_NAME..."
-mv -f /tmp/hy-cp /usr/local/bin/
-chmod +x /usr/local/bin/hy-cp
+if [[ -f "$TMP_DIR/hy-cp" ]]; then
+    echo "🚀 Installing $BIN_NAME..."
+    mv -f "$TMP_DIR/hy-cp" /usr/local/bin/
+    chmod +x /usr/local/bin/hy-cp
+else
+    echo "❌ Error: hy-cp binary not found in the package."
+    exit 1
+fi
 
-# Ensure /etc/hy-cp exists
-mkdir -p /etc/hy-cp
-mkdir -p /etc/collectd
+# Ensure /opt/hy-cp exists
+mkdir -p /opt/hy-cp
 
-# Move config files to /etc/hy-cp
-echo "📂 Moving config files..."
-mv -f /tmp/config/* /etc/hy-cp/
-mv -f /etc/config/collectd.conf /etc/collectd/collectd.conf
+# Move config files to /opt/hy-cp if they exist
+if [[ -d "$TMP_DIR/config" && "$(ls -A $TMP_DIR/config)" ]]; then
+    echo "📂 Moving config files..."
+    mv -f "$TMP_DIR/config"/* /opt/hy-cp/
+else
+    echo "⚠️ No config files found in the package."
+fi
 
 # Cleanup
 echo "🧹 Cleaning up..."
-rm -rf /tmp/hy-cp /tmp/config "$FILE_NAME"
+rm -rf "$TMP_DIR" "$FILE_NAME"
 
 echo "✅ Installation complete! Run with: hy-cp"
