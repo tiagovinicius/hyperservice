@@ -23,14 +23,12 @@ func StartMesh(clusterName string) error {
 	}
 
 	fmt.Println("📦 Adding Helm repository for Kuma...")
-    if err := utils.RunCommand("helm repo add kuma https://kumahq.github.io/charts"); err != nil {
+    if err := utils.RunCommand("helm", "repo", "add", "kuma", "https://kumahq.github.io/charts"); err != nil {
 		return err
 	}
-    if err := utils.RunCommand("helm repo update"); err != nil {
+    if err := utils.RunCommand("helm", "repo", "update"); err != nil {
 		return err
 	}
-
-    fmt.Println("🔄 Installing Kuma in namespace 'kuma-system'...")
 
 	// Install Kuma in 'kuma-system' namespace using Helm
 	fmt.Println("🔄 Installing Kuma in namespace 'kuma-system'...")
