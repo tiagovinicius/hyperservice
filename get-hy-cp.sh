@@ -52,7 +52,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # Create a temporary directory for extraction
-TMP_DIR="/tmp/extract"
+TMP_DIR="/tmp/hy-cp"
 mkdir -p "$TMP_DIR"
 
 # Extract the package
@@ -62,7 +62,7 @@ tar -xvf "$FILE_NAME" -C "$TMP_DIR"
 # Move hy-cp binary to /usr/local/bin
 if [[ -f "$TMP_DIR/hy-cp" ]]; then
     echo "🚀 Installing $BIN_NAME..."
-    mv -f "$TMP_DIR/hy-cp" /usr/local/bin/
+    cp "$TMP_DIR/hy-cp" /usr/local/bin/
     chmod +x /usr/local/bin/hy-cp
 else
     echo "❌ Error: hy-cp binary not found in the package."
@@ -75,7 +75,7 @@ mkdir -p /opt/hy-cp
 # Move config files to /opt/hy-cp if they exist
 if [[ -d "$TMP_DIR/config" && "$(ls -A $TMP_DIR/config)" ]]; then
     echo "📂 Moving config files..."
-    mv -f "$TMP_DIR/config"/* /opt/hy-cp/
+    cp -r "$TMP_DIR/config/." /opt/hy-cp/
 else
     echo "⚠️ No config files found in the package."
 fi
