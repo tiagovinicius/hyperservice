@@ -9,6 +9,14 @@ import (
 
 // MeshUpApplication handles the business logic for creating the mesh, invoking network setup, and starting the cluster.
 func MeshUpApplication() error {
+	semaphoreFile := "/etc/hy-dp/env/HYPERSERVICE_MESH_INITIALIZING"
+
+	// Set semaphore to "true" at the beginning
+	if err := utils.UpdateSemaphore(semaphoreFile, "true"); err != nil {
+		return utils.LogError("failed to update semaphore file", err)
+	}
+	defer utils.UpdateSemaphore(semaphoreFile, "false")
+
 	// Call StartNetwork with the generated network name
 	name := "hyperservice"
 	err := service.StartNetwork(name)

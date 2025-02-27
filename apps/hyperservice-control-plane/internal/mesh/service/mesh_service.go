@@ -67,3 +67,13 @@ func StartMesh(clusterName string) error {
 
 	return nil
 }
+
+// GetClusterReadinessService checks if the Kubernetes cluster and Kuma Control Plane are ready
+func GetClusterReadinessService(clusterName string) error {
+	// Check if Kuma Control Plane is responsive
+	if err := business_rule.GetMeshControlPlaneReadiness(); err != nil {
+		return fmt.Errorf("❌ ERROR: Kuma Control Plane is not ready: %w", err)
+	}
+
+	return nil
+}

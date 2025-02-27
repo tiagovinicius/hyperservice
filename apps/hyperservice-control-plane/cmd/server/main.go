@@ -19,6 +19,7 @@ func main() {
 	// Setup routing
 	http.HandleFunc("/system/version", systemHandler.GetVersionHandler)
 	http.HandleFunc("/mesh/up", meshHandler.PostMeshUpHandler)
+	http.HandleFunc("/mesh/ready", meshHandler.GetMeshReadyHandler)
 	http.HandleFunc("/observability/up", observabilityHandler.PostObservabilityUpHandler)
 	http.HandleFunc("/service/start", serviceHandler.PostServiceStartHandler)
 	http.HandleFunc("/service/start/serve", serviceHandler.PostServiceStartServeHandler)

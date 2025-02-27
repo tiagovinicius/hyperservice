@@ -13,19 +13,33 @@ import (
 )
 
 // Function to check if Kuma Control Plane is responsive on port 5681
-func WaitForMeshControlPlaneReadiness() error {
+func GetMeshControlPlaneReadiness() error {
 	fmt.Println("⏳ Checking if Kuma Control Plane is responsive...")
-	// Retry logic for checking the pod status
+
+	if err := utils.CheckService("http://localhost:5681"); err != nil {
+		fmt.Println("Kuma Control Plane is not responsive: %w", err)
+	}
+	fmt.Println("✅ Kuma Control Plane is responsive!")
+
+	return nil
+}
+
+// Function to check if Kuma Control Plane is responsive on port 5681
+func WaitForMeshControlPlaneReadiness() error {
 	maxRetries := 10
 	retryCount := 0
 
 	// Loop to check pod readiness
 	for retryCount < maxRetries {
-		if err := utils.CheckService("http://localhost:5681"); err != nil {
-			fmt.Errorf("Kuma Control Plane is not responsive: %w", err)
+		if err := GetMeshControlPlaneReadiness(); err == nil {
+			break
 		}
-		fmt.Println("✅ Kuma Control Plane is responsive!")
-		break
+		if retryCount == maxRetries {
+			fmt.Println("❌ Reached maximum retry attempts for service readiness.")
+			return fmt.Errorf("❌ Kuma Control Plane service not ready after %d retries", maxRetries)
+		}
+		fmt.Printf("🔄 Kuma Control Plane is not ready yet. Retrying... (%d/%d)\n", retryCount, maxRetries)
+		retryCount++
 	}
 	return nil
 }
