@@ -1,14 +1,16 @@
-package utils
+package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"syscall"
 )
 
-// KillProcessOnPort attempts to kill the process running on the specified port
+// KillProcessOnPort attempts to kill the process running on the specified port,
+// but ensures it does not kill itself.
 func KillProcessOnPort(port string) error {
 	// Find the PID of the process using the port
 	cmd := exec.Command("lsof", "-t", "-i", fmt.Sprintf(":%s", port))
@@ -21,21 +23,29 @@ func KillProcessOnPort(port string) error {
 	}
 
 	// Get the PID from the output
-	pid := strings.TrimSpace(string(output))
-	fmt.Printf("Killing process with PID %s on port %s...\n", pid, port)
-
-	// Kill the process
-	pidInt, err := strconv.Atoi(pid)
+	pidStr := strings.TrimSpace(string(output))
+	pid, err := strconv.Atoi(pidStr)
 	if err != nil {
 		return fmt.Errorf("failed to convert PID to integer: %w", err)
 	}
 
-	// Kill the process
-	process := syscall.Kill(pidInt, syscall.SIGKILL)
-	if process != nil {
-		return fmt.Errorf("failed to kill process with PID %d: %w", pidInt, process)
+	// Get the current process PID
+	selfPID := os.Getpid()
+
+	// Ensure we are not killing ourselves
+	if pid == selfPID {
+		fmt.Printf("⚠️ Skipping process with PID %d (this program itself).\n", pid)
+		return nil
 	}
 
-	fmt.Printf("✅ Process with PID %d killed successfully.\n", pidInt)
+	fmt.Printf("Killing process with PID %d on port %s...\n", pid, port)
+
+	// Kill the process
+	err = syscall.Kill(pid, syscall.SIGKILL)
+	if err != nil {
+		return fmt.Errorf("failed to kill process with PID %d: %w", pid, err)
+	}
+
+	fmt.Printf("✅ Process with PID %d killed successfully.\n", pid)
 	return nil
 }

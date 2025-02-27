@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"hyperservice-control-plane/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -90,10 +89,10 @@ func CreateKubernetesNamespace(clientset *kubernetes.Clientset, namespace string
 }
 
 func MakeKubernetesPortForward(namespace string, serviceName string, localPort string, remotePort string) error {
-	err := utils.KillProcessOnPort(localPort)
-	if err != nil {
-		return fmt.Errorf("failed to ensure port is free: %w", err)
-	}
+	// err := utils.KillProcessOnPort(localPort)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to ensure port is free: %w", err)
+	// }
 
 	cmd := exec.Command("kubectl", "port-forward", "-n", namespace, fmt.Sprintf("svc/%s", serviceName), fmt.Sprintf("%s:%s", localPort, remotePort))
 
