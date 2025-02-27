@@ -61,7 +61,7 @@ func waitForMeshReady() error {
 	// Configuração de tempo
 	totalTimeout := 180 * time.Second  // Timeout total de 3 minutos
 	progressDuration := 90 * time.Second // Tempo para alcançar 90%
-	interval := 3 * time.Second         // Intervalo de verificação
+	interval := 5 * time.Second         // Intervalo de verificação
 	barSize := 30                       // Tamanho visual da barra
 
 	// Criar barra inicial com 30% preenchido
@@ -87,6 +87,11 @@ func waitForMeshReady() error {
 		resp, err := client.Get(checkURL)
 		if err == nil && resp.StatusCode == http.StatusOK {
 			resp.Body.Close()
+
+			// Completa a barra quando o serviço está pronto
+			for i := range progressBar {
+				progressBar[i] = '='
+			}
 			fmt.Printf("\r⏳[%s] ✅ Mesh is ready!\n", string(progressBar))
 			return nil
 		}
