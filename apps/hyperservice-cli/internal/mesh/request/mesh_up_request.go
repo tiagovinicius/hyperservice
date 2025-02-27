@@ -57,31 +57,45 @@ func MeshUpRequest(policies []string) error {
 func waitForMeshReady() error {
 	checkURL := "http://localhost:3002/mesh/ready"
 	client := &http.Client{}
-	interval := 5 * time.Second
-	maxSteps := 120 / 5 // 120s / 5s = 24 steps
+	interval := 3 * time.Second
+	maxSteps := 180 / 3 // 180s / 3s = 24 steps
+	barSize := 30       // Define o tamanho da barra visualmente
+
+	// Criar a barra vazia
+	progressBar := make([]rune, barSize)
+	for i := range progressBar {
+		progressBar[i] = ' ' // Inicialmente preenchida com espaços
+	}
 
 	fmt.Print("⏳[")
-	os.Stdout.Sync() // Força a exibição inicial
+	fmt.Print(string(progressBar)) // Imprime a barra vazia
+	fmt.Print("]")
+	os.Stdout.Sync()
 
+	// Live progress updates
 	for i := 0; i < maxSteps; i++ {
 		resp, err := client.Get(checkURL)
 		if err == nil && resp.StatusCode == http.StatusOK {
 			resp.Body.Close()
-			fmt.Println("] ✅ Mesh is ready!")
-			os.Stdout.Sync()
+			fmt.Printf("\r⏳[%s] ✅ Mesh is ready!\n", string(progressBar))
 			return nil
 		}
 		if resp != nil {
 			resp.Body.Close()
 		}
 
-		// Atualiza a barra de progresso na mesma linha
-		fmt.Print("=")
-		os.Stdout.Sync() // Força a exibição da barra
+		// Calcula a proporção da barra preenchida
+		fillCount := (i + 1) * barSize / maxSteps
+		for j := 0; j < fillCount; j++ {
+			progressBar[j] = '=' // Substitui espaços por '=' conforme o tempo passa
+		}
+
+		// Atualiza a barra na mesma linha
+		fmt.Printf("\r⏳[%s]", string(progressBar))
+		os.Stdout.Sync()
 		time.Sleep(interval)
 	}
 
-	fmt.Println("] ⛔ Timeout: mesh did not become ready within 2 minutes")
-	os.Stdout.Sync()
+	fmt.Printf("\r⏳ Waiting for mesh to be ready... [%s] ⛔ Timeout: mesh did not become ready within 2 minutes\n", string(progressBar))
 	return fmt.Errorf("\n⛔ Timeout: mesh did not become ready within 2 minutes")
 }
