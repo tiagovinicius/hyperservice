@@ -1,12 +1,9 @@
 package service
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
-	"time"
 )
 
 // Start runs the service in the background and logs its output.
@@ -37,24 +34,14 @@ func Start() error {
 		cmd = exec.Command("moon", serviceName+":dev")
 	}
 
-	// Create pipes to capture logs
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("❌ failed to create stdout pipe: %v", err)
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("❌ failed to create stderr pipe: %v", err)
-	}
+	// Configuração do output para capturar os logs do collectd
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	// Start the process
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("❌ failed to start service '%s': %v", serviceName, err)
 	}
-
-	// Goroutines to capture logs
-	go logOutput(stdout, "STDOUT")
-	go logOutput(stderr, "STDERR")
 
 	// Wait in a separate goroutine to properly clean up the process
 	go func() {
@@ -67,16 +54,4 @@ func Start() error {
 	}()
 
 	return nil
-}
-
-// logOutput reads and prints logs from the given pipe
-func logOutput(pipe io.ReadCloser, prefix string) {
-	defer pipe.Close()
-	scanner := bufio.NewScanner(pipe)
-	for scanner.Scan() {
-		fmt.Printf("[%s] %s: %s\n", prefix, time.Now().Format("15:04:05"), scanner.Text())
-	}
-	if err := scanner.Err(); err != nil {
-		fmt.Printf("⚠️ Error reading %s logs: %v\n", prefix, err)
-	}
 }

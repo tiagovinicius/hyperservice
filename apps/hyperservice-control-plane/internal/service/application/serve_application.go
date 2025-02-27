@@ -9,7 +9,7 @@ import (
 func ServiceServeApplication(name, imageName string, podName string, policies []string, envVars map[string]string, build bool, workdir string) error {
 	if build {
 		baseImageName := imageName
-		imageName = fmt.Sprintf("hyperservice-svc-%s-image", name)
+		imageName = fmt.Sprintf("hyperservice-svc-%s-image:latest", name)
 		err := service.BuildServeImageService(name, workdir, imageName, baseImageName)
 		if err != nil {
 			return fmt.Errorf("ERROR: Failed to build service: %w", err)

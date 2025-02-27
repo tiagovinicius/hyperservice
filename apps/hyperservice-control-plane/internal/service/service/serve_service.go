@@ -27,18 +27,6 @@ func ServeService(name string, imageName, podName string, policies []string, env
 		return err
 	}
 
-	log.Printf("Importing image to k3d!")
-	// Importando a imagem para o k3d
-	importCmd := exec.Command("k3d", "image", "import", imageName, "--cluster", "hyperservice")
-	importOutput, err := importCmd.CombinedOutput()
-	if err != nil {
-		log.Printf("ERROR: Failed to import Docker image to k3d: %v", err)
-		log.Printf("Import command output: %s", importOutput)
-		return err
-	}
-
-	log.Printf("Docker image successfully built and imported to k3d!")
-
 	if podName == "" {
 		podName = name
 	}
