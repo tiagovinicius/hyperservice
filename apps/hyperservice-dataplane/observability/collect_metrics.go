@@ -22,7 +22,7 @@ func CollectMetrics() error {
 	}
 
 	// Garantir que o processo continue rodando em background
-	log.Println("Collectd started in background 🎉 usando go routines")
+	log.Println("Collectd started in background 🎉")
 
 	// Não esperar pelo processo terminar, pois estamos rodando em background
 	go func() {

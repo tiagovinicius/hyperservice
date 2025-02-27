@@ -48,7 +48,7 @@ func StartService(name string, workdir string, imageName, podName string, polici
 		configPath = "/etc/hy-cp"
 	}
 
-	dockerfilePath := configPath + "/dockerfile/service/Dockerfile"
+	dockerfilePath := configPath + "/dockerfile/service/start/Dockerfile"
 	log.Printf("DEBUG: Building Docker image from Dockerfile: %s", dockerfilePath)
 	if imageName == "" {
 		imageName = "hyperservice-service-image:latest"

@@ -12,6 +12,8 @@ import (
 type ServiceStartServeRequest struct {
 	Name      string            `json:"name"`
 	Pod       *Pod              `json:"pod,omitempty"`
+	Build     bool              `json:"build,omitempty"`
+	Workdir   string            `json:"workdir,omitempty"`
 	Container *Container        `json:"container"`
 	Policies  *[]string         `json:"policies,omitempty"`
 	EnvVars   map[string]string `json:"env,omitempty"`
@@ -57,6 +59,13 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Ensure required fields are present
+	if request.Build && request.Workdir == "" {
+		log.Printf("ERROR: Missing required fields (Name or Container Image)")
+		http.Error(w, "Missing required field: workdir", http.StatusBadRequest)
+		return
+	}
+
 	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
 	var podName string
 	if request.Pod != nil {
@@ -74,7 +83,7 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("DEBUG: ServiceStartServeRequest decoded successfully: %+v", request)
-	log.Printf("DEBUG:- name: %s, imageName: %s,  podName: %s", request.Name, request.Container.Image, podName)
+	log.Printf("DEBUG:- name: %s, imageName: %s,  podName: %s, build: %t, workdir: %s", request.Name, request.Container.Image, podName, request.Build, request.Workdir)
 
 	// Debugging: Print the decoded body for inspection
 	go application.ServiceServeApplication(
@@ -83,6 +92,8 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		podName,
 		*request.Policies,
 		request.EnvVars,
+		request.Build,
+		request.Workdir,
 	)
 
 	// Send a success response
