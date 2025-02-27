@@ -59,17 +59,31 @@ var serviceStartCmd = &cobra.Command{
 			}
 		}
 
-		// Call external function to start the service
-		response, err := request.StartServiceRequest(serviceName, workdir, image)
+		serveMode, err := cmd.Flags().GetBool("serve")
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to parse flag --serve: %w", err)
 		}
 
-		fmt.Printf("Response: %s\n", response)
+		if serveMode {
+			response, err := request.StartServeServiceRequest(serviceName, workdir, image)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Response: %s\n", response)
+		} else {
+			// Call external function to start the service
+			response, err := request.StartServiceRequest(serviceName, workdir, image)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Response: %s\n", response)
+		}
+
 		return nil
 	},
 }
 
 func init() {
+	serviceStartCmd.Flags().Bool("serve", false, "Run the service in continuous mode")
 	GetServiceCmd().AddCommand(serviceStartCmd)
 }

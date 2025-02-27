@@ -47,21 +47,21 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Ensure required fields are present
 	if request.Name == "" {
-		log.Printf("ERROR: Missing required fields (Name or Container Image)")
+		log.Printf("ERROR: Missing required fields: name")
 		http.Error(w, "Missing required field: name", http.StatusBadRequest)
 		return
 	}
 
 	// Ensure required fields are present
-	if request.Container == nil || request.Container.Image == "" {
-		log.Printf("ERROR: Missing required fields (Name or Container Image)")
-		http.Error(w, "Missing required field: container.name", http.StatusBadRequest)
+	if !request.Build && (request.Container == nil || request.Container.Image == "") {
+		log.Printf("ERROR: Missing required fields: container.image")
+		http.Error(w, "Missing required field: container.image", http.StatusBadRequest)
 		return
 	}
 
 	// Ensure required fields are present
 	if request.Build && request.Workdir == "" {
-		log.Printf("ERROR: Missing required fields (Name or Container Image)")
+		log.Printf("ERROR: Missing required fields: workdir")
 		http.Error(w, "Missing required field: workdir", http.StatusBadRequest)
 		return
 	}

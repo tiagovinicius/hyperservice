@@ -11,20 +11,10 @@ import (
 	"path/filepath"
 )
 
-// ServiceStartServeRequest represents the payload for the serve start request
-type ServiceStartServeRequest struct {
-	Name      string            `json:"name"`
-	Workdir   string            `json:"workdir,omitempty"`
-	Build     bool              `json:"build,omitempty"`
-	Container map[string]string `json:"container,omitempty"`
-	Policies  []string          `json:"policies,omitempty"`
-	Env       map[string]string `json:"env,omitempty"`
-}
-
-// StartImportServiceRequest sends a request to start a service with container image
-func StartImportServiceRequest(name, workdir, image string, importWorkdir string) (string, error) {
-	meshPoliciesDir := filepath.Join(workdir, "apps", name, ".hyperservice/cache/git")
-	servicePoliciesDir := filepath.Join(workdir, "apps", name, ".hyperservice/cache/git/apps", importWorkdir, name)
+// StartServeServiceRequest sends a request to start a service with container image
+func StartServeServiceRequest(name, workdir, image string) (string, error) {
+	meshPoliciesDir := filepath.Join(workdir, "apps", name)
+	servicePoliciesDir := filepath.Join(workdir, "apps", name)
 	envFilePath := filepath.Join(workdir, "apps", name, ".env")
 
 	meshPolicies, err := utils.ReadPoliciesFromDir(meshPoliciesDir)
@@ -56,6 +46,8 @@ func StartImportServiceRequest(name, workdir, image string, importWorkdir string
 		Container: map[string]string{
 			"image": image,
 		},
+		Workdir:  workdir,
+		Build:    true,
 		Policies: policies,
 		Env:      envVars,
 	})
