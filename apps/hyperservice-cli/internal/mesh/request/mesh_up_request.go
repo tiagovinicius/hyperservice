@@ -57,23 +57,33 @@ func MeshUpRequest(policies []string) error {
 func waitForMeshReady() error {
 	checkURL := "http://localhost:3002/mesh/ready"
 	client := &http.Client{}
-	interval := 3 * time.Second
-	maxSteps := 180 / 3 // 180s / 3s = 24 steps
-	barSize := 30       // Define o tamanho da barra visualmente
 
-	// Criar a barra vazia
+	// Configuração de tempo
+	totalTimeout := 180 * time.Second  // Timeout total de 3 minutos
+	progressDuration := 90 * time.Second // Tempo para alcançar 90%
+	interval := 3 * time.Second         // Intervalo de verificação
+	barSize := 30                       // Tamanho visual da barra
+
+	// Criar barra inicial com 30% preenchido
 	progressBar := make([]rune, barSize)
-	for i := range progressBar {
-		progressBar[i] = ' ' // Inicialmente preenchida com espaços
+	initialFill := barSize * 30 / 100 // Começa em 30%
+	for i := 0; i < barSize; i++ {
+		if i < initialFill {
+			progressBar[i] = '='
+		} else {
+			progressBar[i] = ' '
+		}
 	}
 
 	fmt.Print("⏳[")
-	fmt.Print(string(progressBar)) // Imprime a barra vazia
+	fmt.Print(string(progressBar)) // Exibe a barra inicial
 	fmt.Print("]")
 	os.Stdout.Sync()
 
-	// Live progress updates
-	for i := 0; i < maxSteps; i++ {
+	startTime := time.Now()
+
+	for {
+		// Checa se a malha está pronta
 		resp, err := client.Get(checkURL)
 		if err == nil && resp.StatusCode == http.StatusOK {
 			resp.Body.Close()
@@ -84,18 +94,25 @@ func waitForMeshReady() error {
 			resp.Body.Close()
 		}
 
-		// Calcula a proporção da barra preenchida
-		fillCount := (i + 1) * barSize / maxSteps
-		for j := 0; j < fillCount; j++ {
-			progressBar[j] = '=' // Substitui espaços por '=' conforme o tempo passa
+		// Calcula tempo decorrido
+		elapsed := time.Since(startTime)
+		if elapsed >= totalTimeout {
+			fmt.Printf("\r⏳[%s] ⛔ Timeout: mesh did not become ready within 3 minutes\n", string(progressBar))
+			return fmt.Errorf("\n⛔ Timeout: mesh did not become ready within 3 minutes")
 		}
 
-		// Atualiza a barra na mesma linha
+		// Atualiza a barra de progresso **até 90% em 90s**
+		if elapsed <= progressDuration {
+			progress := 30 + int((elapsed.Seconds()/progressDuration.Seconds())*60) // Vai de 30% a 90%
+			fillCount := barSize * progress / 100
+			for i := 0; i < fillCount; i++ {
+				progressBar[i] = '='
+			}
+		}
+
+		// Atualiza a barra de progresso na mesma linha
 		fmt.Printf("\r⏳[%s]", string(progressBar))
 		os.Stdout.Sync()
 		time.Sleep(interval)
 	}
-
-	fmt.Printf("\r⏳ Waiting for mesh to be ready... [%s] ⛔ Timeout: mesh did not become ready within 2 minutes\n", string(progressBar))
-	return fmt.Errorf("\n⛔ Timeout: mesh did not become ready within 2 minutes")
 }
