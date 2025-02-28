@@ -19,7 +19,6 @@ RUN if ! command -v node > /dev/null; then \
 # Instala o Hyperservice Dataplane
 RUN echo "🚀 Installing Hyperservice Dataplane..." && \
     curl -sL https://raw.githubusercontent.com/tiagovinicius/hyperservice/main/get-hy-dp.sh | bash
-COPY /etc/hy-dp/collectd.conf /etc/collectd/collectd.conf
 
 # Instala o Kuma
 RUN echo "🔧 Installing Kuma..." && \

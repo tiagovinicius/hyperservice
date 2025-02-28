@@ -76,6 +76,7 @@ mkdir -p /etc/hy-dp
 if [[ -d "$TMP_DIR/config" && "$(ls -A $TMP_DIR/config)" ]]; then
     echo "📂 Moving config files..."
     cp -r "$TMP_DIR/config/." /etc/hy-dp/
+    cp /etc/hy-dp/collectd.conf /etc/collectd/
 else
     echo "⚠️ No config files found in the package."
 fi
