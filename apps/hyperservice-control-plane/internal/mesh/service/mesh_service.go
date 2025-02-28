@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"hyperservice-control-plane/internal/mesh/business_rule"
-	"hyperservice-control-plane/internal/mesh/infrastructure"
+	"hyperservice-control-plane/internal/infrastructure"
 	"hyperservice-control-plane/utils"
 )
 

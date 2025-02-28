@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"hyperservice-control-plane/internal/mesh/infrastructure"
+	"hyperservice-control-plane/internal/infrastructure"
 	"os"
 	"os/exec"
 

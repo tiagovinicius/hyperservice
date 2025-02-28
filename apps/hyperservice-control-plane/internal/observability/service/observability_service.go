@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"hyperservice-control-plane/internal/mesh/infrastructure"
+	"hyperservice-control-plane/internal/infrastructure"
 	business_rule "hyperservice-control-plane/internal/observability/busines_rule"
 	"os"
 )

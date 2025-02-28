@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"hyperservice-control-plane/internal/mesh/infrastructure"
+	"hyperservice-control-plane/internal/infrastructure"
 	"hyperservice-control-plane/utils"
 
 	corev1 "k8s.io/api/core/v1"

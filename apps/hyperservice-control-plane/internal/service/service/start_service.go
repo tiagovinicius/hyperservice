@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"hyperservice-control-plane/internal/mesh/infrastructure"
+	"hyperservice-control-plane/internal/infrastructure"
 	"log"
 	"os"
 	"os/exec"

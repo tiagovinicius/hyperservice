@@ -4,25 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"hyperservice-control-plane/internal/service/application"
+	"hyperservice-control-plane/internal/service/model"
 	"io"
 	"log"
 	"net/http"
 )
 
-type ServiceStartServeRequest struct {
-	Name      string            `json:"name"`
-	Pod       *Pod              `json:"pod,omitempty"`
-	Build     bool              `json:"build,omitempty"`
-	Workdir   string            `json:"workdir,omitempty"`
-	Container *Container        `json:"container"`
-	Policies  *[]string         `json:"policies,omitempty"`
-	EnvVars   map[string]string `json:"env,omitempty"`
-}
 
 func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("DEBUG: Handling /service/start/serve request")
 
-	var request ServiceStartServeRequest
+	var request model.ServiceStartServeRequest
 
 	// Log the body content for debugging purposes (ensure it's not too large)
 	if r.Body != nil {
@@ -66,6 +58,17 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Ensure required fields are present
+	if request.Cluster != nil {
+		for _, node := range *request.Cluster {
+			if node.Name == "" {
+				log.Printf("ERROR: Missing required field: cluster[].name")
+				http.Error(w, "Missing required field: cluster[].name", http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
 	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
 	var podName string
 	if request.Pod != nil {
@@ -94,6 +97,7 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		request.EnvVars,
 		request.Build,
 		request.Workdir,
+		request.Cluster,
 	)
 
 	// Send a success response

@@ -4,40 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"hyperservice-control-plane/internal/service/application"
+	"hyperservice-control-plane/internal/service/model"
 	"io"
 	"log"
 	"net/http"
 )
 
-type ServiceStartRequest struct {
-	Name      string            `json:"name"`
-	Workdir   string            `json:"workdir"`
-	Pod       *Pod              `json:"pod,omitempty"`
-	Container *Container        `json:"container,omitempty"`
-	Policies  *[]string         `json:"policies,omitempty"`
-	EnvVars   map[string]string `json:"env,omitempty"`
-}
-
-type PartialServiceStartRequest struct {
-	Name      string      `json:"name"`
-	Pod       *Pod        `json:"pod,omitempty"`
-	Container *Container  `json:"container"`
-	Policies  *[]string   `json:"policies,omitempty"`
-	EnvVars   interface{} `json:"env,omitempty"` // Mudar para interface{} para capturar qualquer tipo
-}
-
-type Pod struct {
-	Name string `json:"name"`
-}
-
-type Container struct {
-	Image string `json:"image"`
-}
-
 func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("DEBUG: Handling /service/start request")
 
-	var request ServiceStartRequest // request agora usa a estrutura atualizada
+	var request model.ServiceStartRequest // request agora usa a estrutura atualizada
 
 	// Log the body content for debugging purposes (ensure it's not too large)
 	if r.Body != nil {

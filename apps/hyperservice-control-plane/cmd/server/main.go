@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"hyperservice-control-plane/internal/infrastructure"
 	meshHandler "hyperservice-control-plane/internal/mesh/handler"
-	"hyperservice-control-plane/internal/mesh/infrastructure"
 	observabilityHandler "hyperservice-control-plane/internal/observability/handler"
 	serviceHandler "hyperservice-control-plane/internal/service/handler"
 	systemHandler "hyperservice-control-plane/internal/system/handler"
