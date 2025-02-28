@@ -3,7 +3,7 @@
 # GitHub repository details
 REPO_OWNER="tiagovinicius"
 REPO_NAME="hyperservice"
-BIN_NAME="hy-dp" 
+BIN_NAME="hy-dp"
 
 # Determine OS and ARCH if not provided
 OS=${OS:-$(uname | tr '[:upper:]' '[:lower:]')}
@@ -32,26 +32,56 @@ echo "📦 Latest release: $LATEST_TAG"
 ASSET_LIST=$(curl -sL "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest" | grep '"name":' | awk -F'"' '{print $4}')
 
 # Find the correct asset name based on BIN_NAME, OS, and ARCH
-FILE_NAME=$(echo "$ASSET_LIST" | grep -E "^${BIN_NAME}-[0-9]+\.[0-9]+\.[0-9]+-${OS}-${ARCH}$")
+FILE_NAME=$(echo "$ASSET_LIST" | grep -E "^${BIN_NAME}-[0-9]+\.[0-9]+\.[0-9]+-${OS}-${ARCH}\.tar$")
 
 if [[ -z "$FILE_NAME" ]]; then
-    echo "❌ Could not find a matching binary for ${BIN_NAME}, OS: ${OS}, ARCH: ${ARCH}."
+    echo "❌ Could not find a matching package for ${BIN_NAME}, OS: ${OS}, ARCH: ${ARCH}."
     exit 1
 fi
 
 # Construct download URL
 DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_TAG/$FILE_NAME"
 
-# Download the binary
+# Download the tar package
 echo "⬇️ Downloading $FILE_NAME..."
-curl -L "$DOWNLOAD_URL" -o "$BIN_NAME"
+curl -L "$DOWNLOAD_URL" -o "$FILE_NAME"
 
 if [[ $? -ne 0 ]]; then
     echo "❌ Download failed. Check the repository or the asset name."
     exit 1
 fi
 
-# Make executable
-chmod +x "$BIN_NAME"
+# Create a temporary directory for extraction
+TMP_DIR="/tmp/hy-dp"
+mkdir -p "$TMP_DIR"
 
-echo "✅ Download complete! Run with: ./$BIN_NAME"
+# Extract the package
+echo "📦 Extracting $FILE_NAME..."
+tar -xvf "$FILE_NAME" -C "$TMP_DIR"
+
+# Move hy-dp binary to /usr/local/bin
+if [[ -f "$TMP_DIR/hy-dp" ]]; then
+    echo "🚀 Installing $BIN_NAME..."
+    cp "$TMP_DIR/hy-dp" /usr/local/bin/
+    chmod +x /usr/local/bin/hy-dp
+else
+    echo "❌ Error: hy-dp binary not found in the package."
+    exit 1
+fi
+
+# Ensure /etc/hy-dp exists
+mkdir -p /etc/hy-dp
+
+# Move config files to /etc/hy-dp if they exist
+if [[ -d "$TMP_DIR/config" && "$(ls -A $TMP_DIR/config)" ]]; then
+    echo "📂 Moving config files..."
+    cp -r "$TMP_DIR/config/." /etc/hy-dp/
+else
+    echo "⚠️ No config files found in the package."
+fi
+
+# Cleanup
+echo "🧹 Cleaning up..."
+rm -rf "$TMP_DIR" "$FILE_NAME"
+
+echo "✅ Installation complete! Run with: hy-dp"

@@ -7,4 +7,8 @@ tasks:
       TARGET_OS=${TARGET_OS:-linux}
       TARGET_ARCH=${TARGET_ARCH:-amd64}
       HYDP_VERSION=$(cat version.txt)
-      GOOS=$TARGET_OS GOARCH=$TARGET_ARCH go build -ldflags "-X main.version=$HYDP_VERSION-$TARGET_OS-$TARGET_ARCH" -o "./bin/$HYDP_VERSION-$TARGET_OS-$TARGET_ARCH" ./
+      mkdir -p ./bin/tmp/config
+      cp -r ./config/* ./bin/tmp/config
+      GOOS=$TARGET_OS GOARCH=$TARGET_ARCH go build -ldflags "-X main.version=$HYDP_VERSION-$TARGET_OS-$TARGET_ARCH" -o "./bin/tmp/hy-dp" ./
+      tar -cvf ./bin/${HYDP_VERSION}-${TARGET_OS}-${TARGET_ARCH}.tar -C ./bin/tmp hy-dp config
+      rm -rf ./bin/tmp
