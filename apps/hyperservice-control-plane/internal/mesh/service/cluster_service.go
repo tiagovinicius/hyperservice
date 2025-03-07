@@ -5,10 +5,11 @@ import (
 	"strings"
 
 	"hyperservice-control-plane/internal/mesh/business_rule"
+	"hyperservice-control-plane/internal/mesh/model"
 )
 
 // StartCluster creates a k3d cluster and connects it to the Registry using the K3D binary
-func StartCluster(clusterName string) error {
+func StartCluster(clusterName string, cluster *[]model.ClusterNode) error {
 	// Remove old clusters to avoid conflicts
 	existingCluster, err := business_rule.GetExistingClusters()
 	if err != nil {
@@ -36,7 +37,7 @@ func StartCluster(clusterName string) error {
 
 	// Create K3D cluster using the K3D binary
 	fmt.Printf("⏳ Creating K3s cluster '%s'...\n", clusterName)
-	if err := business_rule.CreateCluster(clusterName); err != nil {
+	if err := business_rule.CreateCluster(clusterName, cluster); err != nil {
 		return err
 	}
 	fmt.Printf("✅ Cluster k3d '%s' created successfully!\n", clusterName)

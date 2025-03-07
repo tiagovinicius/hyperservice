@@ -3,12 +3,13 @@ package application
 import (
 	"fmt"
 
+	"hyperservice-control-plane/internal/mesh/model"
 	"hyperservice-control-plane/internal/mesh/service"
 	"hyperservice-control-plane/utils"
 )
 
 // MeshUpApplication handles the business logic for creating the mesh, invoking network setup, and starting the cluster.
-func MeshUpApplication() error {
+func MeshUpApplication(cluster *[]model.ClusterNode) error {
 	semaphoreFile := "/etc/hy-dp/env/HYPERSERVICE_MESH_INITIALIZING"
 
 	// Set semaphore to "true" at the beginning
@@ -25,7 +26,7 @@ func MeshUpApplication() error {
 	}
 
 	// Call StartCluster to start the K3D cluster after setting up the network
-	err = service.StartCluster(name) // Using 'name' for the cluster name as well
+	err = service.StartCluster(name, cluster) // Using 'name' for the cluster name as well
 	if err != nil {
 		return utils.LogError("failed to start K3D cluster for mesh", err)
 	}

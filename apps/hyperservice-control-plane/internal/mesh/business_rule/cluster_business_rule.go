@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"hyperservice-control-plane/internal/infrastructure"
+	"hyperservice-control-plane/internal/mesh/model"
 	"os"
 	"os/exec"
+
+	k3dModel "hyperservice-control-plane/internal/infrastructure/model"
 
 	"github.com/docker/docker/api/types/volume"
 	dockerClient "github.com/docker/docker/client"
@@ -14,7 +17,7 @@ import (
 	"k8s.io/client-go/util/retry"
 )
 
-func CreateCluster(clusterName string) error {
+func CreateCluster(clusterName string, cluster *[]model.ClusterNode) error {
 	hostWorkspacePath := os.Getenv("HYPERSERVICE_DEV_HOST_WORKSPACE_PATH")
 	devWorkspacePath := os.Getenv("HYPERSERVICE_DEV_WORKSPACE_PATH")
 
@@ -25,23 +28,18 @@ func CreateCluster(clusterName string) error {
 		hostWorkspacePath = devWorkspacePath
 	}
 
-	// Build the K3D command
-	cmd := exec.Command("k3d", "cluster", "create", clusterName,
-		"--servers", "1",
-		"--api-port", "6443",
-		"--network", "hyperservice-network",
-		"--volume", "hyperservice-grafana-data:/var/lib/grafana",
-		"--volume", "/var/run/docker.sock:/var/run/docker.sock",
-		"--volume", hostWorkspacePath+":"+devWorkspacePath,
-	)
-
-	// Run the command
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to create K3D cluster '%s': %w", clusterName, err)
+	var nodes []k3dModel.ClusterNode
+	for _, node := range *cluster {
+		nodes = append(nodes, &node)
 	}
 
-	// Successfully created the cluster
+	err := infrastructure.CreateK3DCluster(clusterName, nodes, hostWorkspacePath, devWorkspacePath)
+	if err != nil {
+		fmt.Printf("❌ Failed to create K3D cluster: %v\n", err)
+		return err
+	}
+
+	fmt.Println("✅ K3D cluster created successfully!")
 	return nil
 }
 

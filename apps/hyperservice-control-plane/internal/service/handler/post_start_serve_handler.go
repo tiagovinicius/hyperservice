@@ -58,17 +58,6 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ensure required fields are present
-	if request.Cluster != nil {
-		for _, node := range *request.Cluster {
-			if node.Name == "" {
-				log.Printf("ERROR: Missing required field: cluster[].name")
-				http.Error(w, "Missing required field: cluster[].name", http.StatusBadRequest)
-				return
-			}
-		}
-	}
-
 	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
 	var podName string
 	if request.Pod != nil {
@@ -97,7 +86,6 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		request.EnvVars,
 		request.Build,
 		request.Workdir,
-		request.Cluster,
 	)
 
 	// Send a success response

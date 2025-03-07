@@ -8,5 +8,4 @@ type ServiceStartServeRequest struct {
 	Container *Container        `json:"container"`
 	Policies  *[]string         `json:"policies,omitempty"`
 	EnvVars   map[string]string `json:"env,omitempty"`
-	Cluster   *[]ClusterNode    `json:"cluster,omitempty"`
 }

@@ -3,8 +3,8 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"hyperservice-control-plane/internal/mesh"
 	"hyperservice-control-plane/internal/mesh/application"
+	"hyperservice-control-plane/internal/mesh/model"
 	"io" // Importing the 'io' package for ReadAll
 	"log"
 	"net/http"
@@ -14,7 +14,7 @@ import (
 func PostMeshUpHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("DEBUG: Handling /meshes/up request")
 
-	var meshRequest mesh.MeshRequest // mesh is now correctly imported
+	var request model.MeshRequest // mesh is now correctly imported
 
 	// Log the body content for debugging purposes (ensure it's not too large)
 	if r.Body != nil {
@@ -29,19 +29,30 @@ func PostMeshUpHandler(w http.ResponseWriter, r *http.Request) {
 		r.Body = io.NopCloser(bytes.NewReader(bodyBytes)) // Reset the body to allow further reading
 	}
 
-	// Decode the request body into the meshRequest object
-	log.Println("DEBUG: Decoding request body into meshRequest")
-	if err := json.NewDecoder(r.Body).Decode(&meshRequest); err != nil {
+	// Ensure required fields are present
+	if request.Cluster != nil {
+		for _, node := range request.Cluster {
+			if node.Name == "" {
+				log.Printf("ERROR: Missing required field: cluster[].name")
+				http.Error(w, "Missing required field: cluster[].name", http.StatusBadRequest)
+				return
+			}
+		}
+	}
+
+	// Decode the request body into the request object
+	log.Println("DEBUG: Decoding request body into request")
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		log.Printf("ERROR: Failed to decode request body: %v", err)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("DEBUG: MeshRequest decoded successfully: %+v", meshRequest)
+	log.Printf("DEBUG: MeshRequest decoded successfully: %+v", request)
 
 	// Call the service to process the mesh creation
 	log.Printf("DEBUG: Calling MeshUpApplication")
-	go application.MeshUpApplication()
+	go application.MeshUpApplication(&request.Cluster)
 
 	// Send a success response
 	log.Println("DEBUG: Sending success response")
