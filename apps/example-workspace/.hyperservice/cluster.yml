@@ -1,0 +1,4 @@
+- name: device-001
+  simulate: true
+  container:
+    image: node:23-bookworm-slim

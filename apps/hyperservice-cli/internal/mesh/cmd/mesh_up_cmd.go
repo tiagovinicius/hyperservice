@@ -28,8 +28,14 @@ var meshUpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		cluster, err := utils.ReadClusterNodesFromPath(workdir)
+		if err != nil {
+			fmt.Printf("❌ Error: %v\n", err)
+			os.Exit(1)
+		}
+
 		// Send the request to bring up the mesh
-		if err := request.MeshUpRequest(policies); err != nil {
+		if err := request.MeshUpRequest(policies, cluster); err != nil {
 			fmt.Printf("❌ Error: %v\n", err)
 			os.Exit(1)
 		}

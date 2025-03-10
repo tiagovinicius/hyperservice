@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"hyperservice-cli/internal/utils"
 	"io"
 	"net/http"
 	"os"
@@ -12,13 +13,14 @@ import (
 
 // MeshUpRequest represents the JSON body for the mesh up request
 type MeshUp struct {
-	Policies []string `json:"policies"`
+	Policies []string            `json:"policies,omitempty"`
+	Cluster  []utils.ClusterNode `json:"cluster,omitempty"`
 }
 
 // MeshUpRequest sends the HTTP request to bring the mesh up
-func MeshUpRequest(policies []string) error {
+func MeshUpRequest(policies []string, cluster []utils.ClusterNode) error {
 	url := "http://localhost:3002/mesh/up"
-	payload := MeshUp{Policies: policies}
+	payload := MeshUp{Policies: policies, Cluster: cluster}
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
@@ -45,7 +47,7 @@ func MeshUpRequest(policies []string) error {
 	if readErr != nil {
 		return fmt.Errorf("error reading response body: %v", readErr)
 	}
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to schedule mesh up. Status: %d, Response: %s", resp.StatusCode, string(body))
 	}
@@ -59,10 +61,10 @@ func waitForMeshReady() error {
 	client := &http.Client{}
 
 	// Configuração de tempo
-	totalTimeout := 180 * time.Second  // Timeout total de 3 minutos
+	totalTimeout := 180 * time.Second    // Timeout total de 3 minutos
 	progressDuration := 90 * time.Second // Tempo para alcançar 90%
-	interval := 5 * time.Second         // Intervalo de verificação
-	barSize := 30                       // Tamanho visual da barra
+	interval := 5 * time.Second          // Intervalo de verificação
+	barSize := 30                        // Tamanho visual da barra
 
 	// Criar barra inicial com 30% preenchido
 	progressBar := make([]rune, barSize)
