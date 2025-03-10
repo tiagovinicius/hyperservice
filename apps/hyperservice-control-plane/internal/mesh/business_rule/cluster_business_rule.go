@@ -17,7 +17,7 @@ import (
 	"k8s.io/client-go/util/retry"
 )
 
-func CreateCluster(clusterName string, cluster *[]model.ClusterNode) error {
+func CreateCluster(clusterName string) error {
 	hostWorkspacePath := os.Getenv("HYPERSERVICE_DEV_HOST_WORKSPACE_PATH")
 	devWorkspacePath := os.Getenv("HYPERSERVICE_DEV_WORKSPACE_PATH")
 
@@ -28,18 +28,35 @@ func CreateCluster(clusterName string, cluster *[]model.ClusterNode) error {
 		hostWorkspacePath = devWorkspacePath
 	}
 
-	var nodes []k3dModel.ClusterNode
-	for _, node := range *cluster {
-		nodes = append(nodes, &node)
-	}
-
-	err := infrastructure.CreateK3DCluster(clusterName, nodes, hostWorkspacePath, devWorkspacePath)
+	err := infrastructure.CreateK3DCluster(clusterName, hostWorkspacePath, devWorkspacePath)
 	if err != nil {
 		fmt.Printf("❌ Failed to create K3D cluster: %v\n", err)
 		return err
 	}
 
+	return nil
+}
+
+func CreateNodes(clusterName string, cluster *[]model.ClusterNode) error {
+	if err := WaitForClusterReadiness(clusterName); err != nil {
+		fmt.Printf("Error checking Cluter liveness: %v\n", err)
+		return err
+	}
+
 	fmt.Println("✅ K3D cluster created successfully!")
+
+
+	var nodes []k3dModel.ClusterNode
+	for _, node := range *cluster {
+		nodes = append(nodes, &node)
+	}
+
+	err := infrastructure.CreateK3dNodes(clusterName, nodes)
+	if err != nil {
+		fmt.Printf("❌ Failed to create K3D nodes: %v\n", err)
+		return err
+	}
+
 	return nil
 }
 

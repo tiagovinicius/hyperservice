@@ -26,7 +26,7 @@ func MeshUpApplication(cluster *[]model.ClusterNode) error {
 	}
 
 	// Call StartCluster to start the K3D cluster after setting up the network
-	err = service.StartCluster(name, cluster) // Using 'name' for the cluster name as well
+	err = service.StartCluster(name) 
 	if err != nil {
 		return utils.LogError("failed to start K3D cluster for mesh", err)
 	}
@@ -35,6 +35,11 @@ func MeshUpApplication(cluster *[]model.ClusterNode) error {
 		utils.LogError("Error: %s\n", err)
 	} else {
 		fmt.Println("Kuma installation completed successfully.")
+	}
+
+	err = service.StartNodes(name, cluster)
+	if err != nil {
+		return utils.LogError("failed to start cluster nodes", err)
 	}
 
 	return nil

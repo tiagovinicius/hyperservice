@@ -27,12 +27,11 @@ func CreateK3dNode(nodeName string) error {
 	return nil
 }
 
-func CreateK3DCluster(clusterName string, agents []model.ClusterNode, hostWorkspacePath, devWorkspacePath string) error {
-	fmt.Printf("🛠️ Creating K3D cluster '%s' with 1 server and %d agents\n", clusterName, len(agents))
-
+func CreateK3DCluster(clusterName string, hostWorkspacePath, devWorkspacePath string) error {
 	// Step 1: Create the cluster with only the server
 	cmdArgs := []string{
 		"cluster", "create", clusterName,
+		"--no-lb",
 		"--servers", "1",
 		"--api-port", "6443",
 		"--network", "hyperservice-network",
@@ -53,7 +52,10 @@ func CreateK3DCluster(clusterName string, agents []model.ClusterNode, hostWorksp
 	}
 
 	fmt.Printf("✅ K3D cluster created successfully with server only!\nOutput:\n%s\n", cmdOutput.String())
+	return nil
+}
 
+func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 	// Step 2: Retrieve the K3S token from the server container
 	serverContainerName := "k3d-" + clusterName + "-server-0"
 	cmdGetToken := exec.Command("docker", "exec", serverContainerName, "cat", "/var/lib/rancher/k3s/server/node-token")
@@ -64,18 +66,6 @@ func CreateK3DCluster(clusterName string, agents []model.ClusterNode, hostWorksp
 		return err
 	}
 	k3sToken := strings.TrimSpace(string(tokenOutput))
-	log.Printf("INFO: Retrieved K3S token: %s", k3sToken)
-
-	// Step 3: Retrieve the CA Certificate from the server
-	cmdGetCaCert := exec.Command("docker", "exec", serverContainerName, "cat", "/var/lib/rancher/k3s/server/tls/server-ca.crt")
-	caCertOutput, err := cmdGetCaCert.CombinedOutput()
-	if err != nil {
-		log.Printf("ERROR: Failed to retrieve K3S server CA certificate: %v\n", err)
-		log.Printf("Command output:\n%s\n", caCertOutput)
-		return err
-	}
-	caCert := strings.TrimSpace(string(caCertOutput))
-	log.Printf("INFO: Retrieved K3S server CA certificate")
 
 	// Step 4: Dynamically add agents
 	for _, agent := range agents {
@@ -104,8 +94,7 @@ func CreateK3DCluster(clusterName string, agents []model.ClusterNode, hostWorksp
 		buildCmd := exec.Command("docker", "buildx", "build", "--no-cache",
 			"--build-arg", "BASE_IMAGE="+image,
 			"--build-arg", "K3S_TOKEN="+k3sToken,
-			"--build-arg", "K3S_URL=https://k3d-hyperservice-serverlb:6443",
-			"--build-arg", "K3S_CA_CERT="+caCert,
+			"--build-arg", "K3S_URL=https://k3d-hyperservice-server-0:6443",
 			"-f", dockerfilePath, "-t", internalImage, ".")
 
 		buildOutput, err := buildCmd.CombinedOutput()
@@ -140,8 +129,8 @@ func CreateK3DCluster(clusterName string, agents []model.ClusterNode, hostWorksp
 			"-e", "K3S_TOKEN=" + k3sToken,
 			internalImage, "agent",
 		}
-		cmd = exec.Command("docker", agentArgs...)
-		cmdOutput = &bytes.Buffer{}
+		cmd := exec.Command("docker", agentArgs...)
+		cmdOutput := &bytes.Buffer{}
 		cmd.Stdout = cmdOutput
 		cmd.Stderr = cmdOutput
 

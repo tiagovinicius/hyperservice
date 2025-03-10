@@ -13,26 +13,5 @@ spec:
     tags:
       k8s.kuma.io/namespace: hyperservice
   default:
-    passthroughMode: Matched
-    appendMatch:
-      - type: Domain
-        value: "github.com"
-        protocol: tls
-        port: 443
-      - type: Domain
-        value: "objects.githubusercontent.com"
-        protocol: tls
-        port: 443
-      - type: Domain
-        value: "registry.npmjs.org"
-        protocol: tls
-        port: 443
-      - type: Domain
-        value: "proxy.golang.org"
-        protocol: tls
-        port: 443
-      - type: Domain
-        value: "sum.golang.org"
-        protocol: tls
-        port: 443
+    passthroughMode: All
         
