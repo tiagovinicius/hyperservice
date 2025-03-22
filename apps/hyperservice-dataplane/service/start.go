@@ -10,7 +10,8 @@ import (
 func Start() error {
 	workDir := os.Getenv("HYPERSERVICE_WORKDIR_PATH")
 	if workDir == "" {
-		return fmt.Errorf("❌ environment variable HYPERSERVICE_WORKDIR_PATH is not set")
+		fmt.Println("❌ environment variable HYPERSERVICE_WORKDIR_PATH is not set")
+		workDir = "/"
 	}
 	serviceName := os.Getenv("SERVICE_NAME")
 	if serviceName == "" {
