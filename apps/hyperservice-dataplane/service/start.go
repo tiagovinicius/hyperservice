@@ -28,7 +28,7 @@ func Start() error {
 	var cmd *exec.Cmd
 	if serve {
 		fmt.Printf("🔧 Service '%s' will be served\n", serviceName)
-		cmd = exec.Command("moon", serviceName+":build", "&&", "moon", serviceName+":serve")
+		cmd = exec.Command("moon", serviceName+":serve")
 	} else {
 		fmt.Printf("🔧 Service '%s' will run in dev mode\n", serviceName)
 		cmd = exec.Command("moon", serviceName+":dev")
