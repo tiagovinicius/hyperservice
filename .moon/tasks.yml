@@ -1,6 +1,8 @@
 tasks:
   run:
     command: "air"
+    options:
+      cache: false
   test:
     command: "go test -v ./..."
   version:
@@ -29,4 +31,3 @@ tasks:
       # Update version.txt with the new version
       echo "$NEW_FULL_VERSION" > version.txt
       echo "Updated version.txt with: $NEW_FULL_VERSION"
-  

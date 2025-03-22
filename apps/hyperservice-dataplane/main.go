@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"hyperservice-dataplane/observability"
 	"hyperservice-dataplane/service"
 	"hyperservice-dataplane/system" // Import the system package
@@ -16,9 +17,13 @@ func main() {
 	http.HandleFunc("/system/version", system.GetVersionHandler)
 	
 	log.Println("Starting observability...")
-	observability.CollectMetrics()
+	if err := observability.CollectMetrics(); err != nil {
+		fmt.Printf("Error starting observability: %v\n", err)
+	}
 	log.Println("Starting service server...")
-	service.Start()
+	if err := service.Start(); err != nil {
+		fmt.Printf("Error starting server: %v\n", err)
+	}
 
 	// Start the server
 	log.Println("Starting hy-dp server on :3001...")

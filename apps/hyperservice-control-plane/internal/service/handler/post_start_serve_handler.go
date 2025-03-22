@@ -69,6 +69,11 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		request.Policies = &[]string{}
 	}
 
+	// Se Cluster for nil, podemos passar um slice vazio para evitar problemas
+	if request.Cluster == nil {
+		request.Cluster = &[]string{}
+	}
+
 	// Se EnvVars for nil, podemos passar um slice vazio para evitar problemas
 	if request.EnvVars == nil {
 		request.EnvVars = map[string]string{}
@@ -80,8 +85,8 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 	// Debugging: Print the decoded body for inspection
 	go application.ServiceServeApplication(
 		request.Name,
+		*request.Cluster,
 		request.Container.Image,
-		podName,
 		*request.Policies,
 		request.EnvVars,
 		request.Build,

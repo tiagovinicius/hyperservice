@@ -7,5 +7,6 @@ type ServiceStartServeRequest struct {
 	Workdir   string            `json:"workdir,omitempty"`
 	Container *Container        `json:"container"`
 	Policies  *[]string         `json:"policies,omitempty"`
+	Cluster   *[]string         `json:"cluster,omitempty"`
 	EnvVars   map[string]string `json:"env,omitempty"`
 }

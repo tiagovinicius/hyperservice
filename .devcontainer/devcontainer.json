@@ -41,7 +41,7 @@
       }
     }
   },
-  "forwardPorts": [3001],
+  "forwardPorts": [3001, 3002],
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "postAttachCommand": "bash"
 }

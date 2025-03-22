@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-
 	"hyperservice-control-plane/internal/mesh/model"
 	"hyperservice-control-plane/internal/mesh/service"
 	"hyperservice-control-plane/utils"
@@ -31,15 +30,15 @@ func MeshUpApplication(cluster *[]model.ClusterNode) error {
 		return utils.LogError("failed to start K3D cluster for mesh", err)
 	}
 
+	err = service.StartNodes(name, cluster)
+	if err != nil {
+		return utils.LogError("failed to start cluster nodes", err)
+	}
+
 	if err := service.StartMesh(name); err != nil {
 		utils.LogError("Error: %s\n", err)
 	} else {
 		fmt.Println("Kuma installation completed successfully.")
-	}
-
-	err = service.StartNodes(name, cluster)
-	if err != nil {
-		return utils.LogError("failed to start cluster nodes", err)
 	}
 
 	return nil

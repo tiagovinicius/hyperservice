@@ -108,7 +108,7 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 		// internalImage is already specified in the docker run command above, no need to append.
 
 		// Step 4.1: Remove existing container if present
-		existingContainerCmd := exec.Command("docker", "rm", "-f", "k3d-" + clusterName + "-" + agentName)
+		existingContainerCmd := exec.Command("docker", "rm", "-f", "k3d-"+clusterName+"-"+agentName)
 		existingContainerOutput, err := existingContainerCmd.CombinedOutput()
 		if err != nil {
 			log.Printf("INFO: No existing container to remove: %s\n", agentName)
@@ -118,18 +118,14 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 
 		fmt.Printf("🔍 Adding agent %s\n", agentName)
 		agentArgs := []string{
-			"run", "--network", "hyperservice-network",
-			"--name", "k3d-" + clusterName + "-" + agentName,
-			"--hostname", "k3d-" + clusterName + "-" + agentName,
-			"--privileged",
-			"-d",
-			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
-			"-v", "/lib/modules:/lib/modules:ro",
-			"-e", "K3S_URL=https://k3d-hyperservice-serverlb:6443",
-			"-e", "K3S_TOKEN=" + k3sToken,
-			internalImage, "agent",
+			"node", "create", clusterName + "-" + agentName,
+			"--role", "agent",
+			"--network", "hyperservice-network",
+			"--cluster",  clusterName,
+			"--k3s-arg", "--kubelet-arg=--cgroup-driver=cgroupfs",
+			"--image", internalImage,
 		}
-		cmd := exec.Command("docker", agentArgs...)
+		cmd := exec.Command("k3d", agentArgs...)
 		cmdOutput := &bytes.Buffer{}
 		cmd.Stdout = cmdOutput
 		cmd.Stderr = cmdOutput

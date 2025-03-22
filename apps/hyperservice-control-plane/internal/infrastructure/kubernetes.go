@@ -17,8 +17,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/retry"
 )
 
 // getKubernetesClientSet creates a Kubernetes clientset from the kube config file.
@@ -503,39 +503,35 @@ func ApplyKubernetsEnvVars(clientset *kubernetes.Clientset, envVars map[string]s
 	return nil
 }
 
-func UpdateKubernetsDeploymentAffinity(deploymentName, namespace string, nodesName []string) error {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return fmt.Errorf("failed to create k8s config: %w", err)
-	}
+// LabelNodesForService labels the specified nodes to run the service
+func LabelNodesForService(clientset *kubernetes.Clientset, serviceName string, nodeNames []string) error {
+    for _, nodeName := range nodeNames {
+        err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+            node, err := clientset.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
+            if err != nil {
+                return fmt.Errorf("❌ Failed to get node %s: %w", nodeName, err)
+            }
 
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return fmt.Errorf("failed to create k8s client: %w", err)
-	}
+            // Add the label to the node
+            if node.Labels == nil {
+                node.Labels = make(map[string]string)
+            }
+            node.Labels["app"] = serviceName
 
-	deployment, err := clientset.AppsV1().Deployments(namespace).Get(context.TODO(), deploymentName, metav1.GetOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to get deployment %s: %w", deploymentName, err)
-	}
+            // Update the node with the new label
+            _, err = clientset.CoreV1().Nodes().Update(context.TODO(), node, metav1.UpdateOptions{})
+            if err != nil {
+                return fmt.Errorf("❌ Failed to update node %s: %w", nodeName, err)
+            }
 
-	deployment.Spec.Template.Spec.Affinity = &corev1.Affinity{
-		NodeAffinity: &corev1.NodeAffinity{
-			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
-				NodeSelectorTerms: []corev1.NodeSelectorTerm{{
-					MatchExpressions: []corev1.NodeSelectorRequirement{{
-						Key:      "kubernetes.io/hostname",
-						Operator: corev1.NodeSelectorOpIn,
-						Values:   nodesName,
-					}},
-				}},
-			},
-		},
-	}
+            log.Printf("✅ Successfully labeled node %s with app=%s\n", nodeName, serviceName)
+            return nil
+        })
 
-	_, err = clientset.AppsV1().Deployments(namespace).Update(context.TODO(), deployment, metav1.UpdateOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to update deployment affinity: %w", err)
-	}
-	return nil
+        if err != nil {
+            log.Printf("❌ Could not label node %s: %v\n", nodeName, err)
+            return err
+        }
+    }
+    return nil
 }

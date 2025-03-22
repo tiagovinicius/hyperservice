@@ -10,9 +10,9 @@ import (
 )
 
 // Função que realiza a substituição das variáveis, faz o build da imagem Docker e aplica o manifesto no Kubernetes
-func ServeService(name string, imageName, podName string, policies []string, envVars map[string]string) error {
+func ServeService(name string, imageName string, policies []string, envVars map[string]string) error {
 	// Debug: Exibir as variáveis recebidas
-	log.Printf("DEBUG: Received parameters - name: %s, imageName: %s,  podName: %s", name, imageName, podName)
+	log.Printf("DEBUG: Received parameters - name: %s, imageName: %s", name, imageName)
 	log.Println("DEBUG: Policies received:")
 	for _, policy := range policies {
 		log.Println(policy)
@@ -27,9 +27,6 @@ func ServeService(name string, imageName, podName string, policies []string, env
 		return err
 	}
 
-	if podName == "" {
-		podName = name
-	}
 	configPath := os.Getenv("HY_CP_CONFIG")
 	if configPath == "" {
 		configPath = "/etc/hy-cp"
@@ -52,7 +49,7 @@ func ServeService(name string, imageName, podName string, policies []string, env
 	variables := map[string]string{
 		"serviceName": name,
 		"serve":       "true",
-		"podName":     podName,
+		"podName":     name,
 		"imageName":   imageName,
 		"namespace":   "hyperservice",
 	}
