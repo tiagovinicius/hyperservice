@@ -32,6 +32,9 @@ func Start() error {
 	if err := os.Chdir(workDir); err != nil {
 		return fmt.Errorf("❌ failed to navigate to %s: %v", workDir, err)
 	}
+	
+	runMoonTask("migrate")
+	runMoonTask("seed")
 
 	log.Printf("🚀 Starting service '%s' in background...\n", serviceName)
 
@@ -69,4 +72,17 @@ func Start() error {
 	}()
 
 	return nil
+}
+
+func runMoonTask(name string) {
+	log.Printf("⚙️ Running moon %s...\n", name)
+	cmd := exec.Command("moon", name)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		log.Printf("⚠️ moon %s failed: %v\n", name, err)
+	} else {
+		log.Printf("✅ moon %s completed successfully\n", name)
+	}
 }
