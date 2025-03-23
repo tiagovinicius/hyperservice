@@ -12,7 +12,7 @@ import (
 )
 
 // StartServeServiceRequest sends a request to start a service with container image
-func StartServeServiceRequest(name, workdir, image string) (string, error) {
+func StartServeServiceRequest(name, workdir, image string, cluster []string) (string, error) {
 	meshPoliciesDir := filepath.Join(workdir, "apps", name)
 	servicePoliciesDir := filepath.Join(workdir, "apps", name)
 	envFilePath := filepath.Join(workdir, "apps", name, ".env")
@@ -49,6 +49,7 @@ func StartServeServiceRequest(name, workdir, image string) (string, error) {
 		Workdir:  workdir,
 		Build:    true,
 		Policies: policies,
+		Cluster:  cluster,
 		Env:      envVars,
 	})
 	if err != nil {

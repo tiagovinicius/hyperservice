@@ -22,7 +22,18 @@ var serviceStartCmd = &cobra.Command{
 		workdir := rootCmd.GetWorkdir()
 		importFilePath := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "import.yml")
 		containerFilePath := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "container.yml")
+		clusterFilePath := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "cluster.yml")
 		cacheDir := filepath.Join(workdir, "apps", serviceName, ".hyperservice", "cache", "git")
+
+		var cluster []string
+		if _, err := os.Stat(clusterFilePath); err == nil {
+			clusterData, err := business_logic.ReadClusterFile(clusterFilePath)
+			if err != nil {
+				fmt.Println("failed to read cluster file:", err)
+			} else {
+				cluster = clusterData.Cluster
+			}
+		}
 
 		if _, err := os.Stat(importFilePath); err == nil {
 			// Read container image from import.yml
@@ -40,7 +51,7 @@ var serviceStartCmd = &cobra.Command{
 				}
 			}
 
-			response, err := request.StartImportServiceRequest(serviceName, workdir, importData.Image, importWorkdir)
+			response, err := request.StartImportServiceRequest(serviceName, workdir, importData.Image, importWorkdir, cluster)
 			if err != nil {
 				return err
 			}
@@ -65,7 +76,7 @@ var serviceStartCmd = &cobra.Command{
 		}
 
 		if serveMode {
-			response, err := request.StartServeServiceRequest(serviceName, workdir, image)
+			response, err := request.StartServeServiceRequest(serviceName, workdir, image, cluster)
 			if err != nil {
 				return err
 			}

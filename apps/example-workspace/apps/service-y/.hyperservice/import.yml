@@ -1,3 +1,3 @@
-image: hyperservice-service-x-image:latest
+image: hyperservice-service-y-image:latest
 git:
   url: https://github.com/tiagovinicius/hyperservice-dependency-example.git

@@ -2,6 +2,7 @@ package service
 
 import (
 	"hyperservice-control-plane/internal/infrastructure"
+	"log"
 )
 
 func DeployService(serviceName string, cluster []string) error {
@@ -10,5 +11,10 @@ func DeployService(serviceName string, cluster []string) error {
 	if err != nil {
 		return err
 	}
-	return infrastructure.LabelNodesForService(clientset, serviceName, cluster)
+	var formattedCluster []string
+	for _, node := range cluster {
+		formattedCluster = append(formattedCluster, "k3d-hyperservice-"+node+"-0")
+	}
+	log.Println("Formatted nodes:", formattedCluster)
+	return infrastructure.LabelNodesForService(clientset, serviceName, formattedCluster)
 }
