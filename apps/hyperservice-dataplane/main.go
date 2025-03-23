@@ -20,7 +20,13 @@ func main() {
 	if err := observability.CollectMetrics(); err != nil {
 		fmt.Printf("Error starting observability: %v\n", err)
 	}
+
 	log.Println("Starting service server...")
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("💥 Panic recovered in main: %v\n", r)
+		}
+	}()
 	if err := service.Start(); err != nil {
 		fmt.Printf("Error starting server: %v\n", err)
 	}

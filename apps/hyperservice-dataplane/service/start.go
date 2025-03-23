@@ -9,26 +9,26 @@ import (
 )
 
 func Start() error {
-	log.Println("[service] Starting service...")
+	log.Println("Starting service...")
 
 	workDir := os.Getenv("HYPERSERVICE_WORKDIR_PATH")
-	log.Printf("[service] HYPERSERVICE_WORKDIR_PATH: %s\n", workDir)
+	log.Printf("HYPERSERVICE_WORKDIR_PATH: %s\n", workDir)
 	if workDir == "" {
 		log.Println("❌ environment variable HYPERSERVICE_WORKDIR_PATH is not set")
 		workDir = "/"
-		log.Printf("[service] Defaulting workDir to %s\n", workDir)
+		log.Printf("Defaulting workDir to %s\n", workDir)
 	}
 
 	serviceName := os.Getenv("SERVICE_NAME")
-	log.Printf("[service] SERVICE_NAME: %s\n", serviceName)
+	log.Printf("SERVICE_NAME: %s\n", serviceName)
 	if serviceName == "" {
 		return fmt.Errorf("❌ environment variable SERVICE_NAME is not set")
 	}
 
 	serve := os.Getenv("HYPERSERVICE_SERVE") == "true"
-	log.Printf("[service] HYPERSERVICE_SERVE: %v\n", serve)
+	log.Printf("HYPERSERVICE_SERVE: %v\n", serve)
 
-	log.Printf("[service] 📁 Changing working directory to: %s\n", workDir)
+	log.Printf("📁 Changing working directory to: %s\n", workDir)
 	if err := os.Chdir(workDir); err != nil {
 		return fmt.Errorf("❌ failed to navigate to %s: %v", workDir, err)
 	}
