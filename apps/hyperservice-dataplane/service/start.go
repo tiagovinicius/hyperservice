@@ -76,7 +76,7 @@ func Start() error {
 
 func runMoonTask(serviceName, name string) {
 	log.Printf("⚙️ Running moon %s...\n", name)
-	cmd := exec.Command("moon", serviceName+":serve")
+	cmd := exec.Command("moon", serviceName+":"+name)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
