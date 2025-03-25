@@ -8,7 +8,7 @@ app.get("/call-service-b", async (req, res) => {
   try {
     const response = await axios.get(process.env.SERVICE_B_API_URL ?? "");
     res.json({
-      message: "Data fetched from Service B XXXXX",
+      message: "Data fetched from Service B",
       data: response.data,
     });
   } catch (error) {
