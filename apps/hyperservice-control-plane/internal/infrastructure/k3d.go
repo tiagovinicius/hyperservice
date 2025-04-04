@@ -121,8 +121,7 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 			"node", "create", clusterName + "-" + agentName,
 			"--role", "agent",
 			"--network", "hyperservice-network",
-			"--cluster",  clusterName,
-			"--k3s-arg", "--kubelet-arg=--cgroup-driver=cgroupfs",
+			"--cluster", clusterName,
 			"--image", internalImage,
 		}
 		cmd := exec.Command("k3d", agentArgs...)
@@ -134,6 +133,7 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 			fmt.Printf("❌ Failed to add agent %s: %v\nOutput:\n%s\n", agentName, err, cmdOutput.String())
 			return fmt.Errorf("failed to add agent %s: %w", agentName, err)
 		}
+		
 
 		fmt.Printf("✅ Agent %s added successfully!\nOutput:\n%s\n", agentName, cmdOutput.String())
 	}

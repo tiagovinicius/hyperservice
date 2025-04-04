@@ -516,7 +516,7 @@ func LabelNodesForService(clientset *kubernetes.Clientset, serviceName string, n
             if node.Labels == nil {
                 node.Labels = make(map[string]string)
             }
-            node.Labels["app"] = serviceName
+            node.Labels["app."+ serviceName] = "true"
 
             // Update the node with the new label
             _, err = clientset.CoreV1().Nodes().Update(context.TODO(), node, metav1.UpdateOptions{})
@@ -524,7 +524,7 @@ func LabelNodesForService(clientset *kubernetes.Clientset, serviceName string, n
                 return fmt.Errorf("❌ Failed to update node %s: %w", nodeName, err)
             }
 
-            log.Printf("✅ Successfully labeled node %s with app=%s\n", nodeName, serviceName)
+            log.Printf("✅ Successfully labeled node %s with app.%s=true\n", nodeName, serviceName)
             return nil
         })
 

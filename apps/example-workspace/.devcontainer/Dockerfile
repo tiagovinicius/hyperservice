@@ -1,4 +1,4 @@
-FROM node:22
+FROM node:23-bookworm-slim
 
 RUN echo "Install base dependencies" && \
     apt-get update && apt-get install -y \
@@ -10,9 +10,6 @@ RUN curl -sL https://raw.githubusercontent.com/tiagovinicius/hyperservice/main/g
 # Install hyperservice CLI
 RUN curl -sL https://raw.githubusercontent.com/tiagovinicius/hyperservice/main/get-hyctl.sh | bash && \
 chmod +x hyctl && mv hyctl /usr/local/bin/
-
-# Install Air
-RUN go install github.com/air-verse/air@latest
 
 # Install K3d
 RUN curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
