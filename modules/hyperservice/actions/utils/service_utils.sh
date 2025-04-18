@@ -214,7 +214,7 @@ spec:
           mountPath: /var/lib/grafana   # Mount volume to /var/lib/grafana
       containers:
       - name: grafana
-        image: grafana/grafana:8.5.2
+        image: grafana/grafana:11.6.0
         ports:
         - containerPort: 3000
           name: grafana

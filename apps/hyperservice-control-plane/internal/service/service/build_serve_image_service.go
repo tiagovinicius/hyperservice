@@ -52,7 +52,7 @@ func BuildServeImageService(name string, workdir string, serviceImageName string
 		internalBaseImage = "hyperservice-custom-service-image-" + baseImageName
 		log.Printf("INFO: Using custom base image: %s", baseImageName)
 
-		buildCmd := exec.Command("docker", "buildx", "build", "--no-cache",
+		buildCmd := exec.Command("docker", "buildx", "build",
 			"--build-arg", "BASE_IMAGE="+baseImageName,
 			"-f", dockerfilePath, "-t", internalBaseImage, ".")
 

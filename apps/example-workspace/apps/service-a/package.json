@@ -2,22 +2,26 @@
   "name": "service-a",
   "version": "1.0.0",
   "description": "Service A providing data",
-  "types": "./lib/index.d.ts",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
     "lint": "tsc",
-    "build": "bun build ./src/index.ts --outdir ./dist",
-    "start": "node dist/index.js",
-    "dev": "npm install && npm run lint & bun --watch run ./src/index.ts"
+    "build": "esbuild src/index.ts --bundle --outfile=dist/index.cjs --platform=node --format=cjs",
+    "start": "node dist/index.cjs",
+    "build:watch": "esbuild src/index.ts --bundle --outfile=dist/index.cjs --platform=node --format=cjs --watch",
+    "dev": "npm install && concurrently -k -n esbuild,node -c yellow,cyan \"npm:build:watch\" \"wait-on dist/index.cjs && npm run start\""
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "axios": "^1.5.0"
+    "axios": "^1.5.0",
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
-    "bun": "^1.1.42",
-    "typescript": "^5.7.2"
+    "concurrently": "^9.1.2",
+    "esbuild": "^0.25.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.2",
+    "wait-on": "^8.0.3"
   }
 }

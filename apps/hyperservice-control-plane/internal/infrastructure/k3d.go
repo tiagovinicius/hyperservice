@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"hyperservice-control-plane/internal/infrastructure/model"
+	"hyperservice-control-plane/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -66,6 +67,8 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 		return err
 	}
 	k3sToken := strings.TrimSpace(string(tokenOutput))
+	controlPlaneIp, err := GetControlPlaneIP(clusterName)
+	fmt.Printf("🌍 K3s Server IP: %s\n", controlPlaneIp)
 
 	// Step 4: Dynamically add agents
 	for _, agent := range agents {
@@ -91,10 +94,10 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 		}
 		log.Printf("INFO: Building node image: %s", internalImage)
 
-		buildCmd := exec.Command("docker", "buildx", "build", "--no-cache",
+		buildCmd := exec.Command("docker", "buildx", "build",
 			"--build-arg", "BASE_IMAGE="+image,
 			"--build-arg", "K3S_TOKEN="+k3sToken,
-			"--build-arg", "K3S_URL=https://k3d-hyperservice-server-0:6443",
+			"--build-arg", "K3S_URL=https://"+controlPlaneIp+":6443",
 			"-f", dockerfilePath, "-t", internalImage, ".")
 
 		buildOutput, err := buildCmd.CombinedOutput()
@@ -123,6 +126,9 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 			"--network", "hyperservice-network",
 			"--cluster", clusterName,
 			"--image", internalImage,
+			"--k3s-arg", "--server=https://" + controlPlaneIp + ":6443",
+			"--k3s-arg", "--flannel-iface=eth0",
+			"--k3s-arg", "--disable-apiserver-lb",
 		}
 		cmd := exec.Command("k3d", agentArgs...)
 		cmdOutput := &bytes.Buffer{}
@@ -133,11 +139,53 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 			fmt.Printf("❌ Failed to add agent %s: %v\nOutput:\n%s\n", agentName, err, cmdOutput.String())
 			return fmt.Errorf("failed to add agent %s: %w", agentName, err)
 		}
-		
 
 		fmt.Printf("✅ Agent %s added successfully!\nOutput:\n%s\n", agentName, cmdOutput.String())
 	}
 
 	fmt.Println("🎯 All agents added successfully!")
+
+	fmt.Println("Importing images...")
+	var images = []string{
+		"rancher/mirrored-pause:3.6",
+		"library/alpine:latest",
+		"curlimages/curl:latest",
+		"ghcr.io/k3d-io/k3d-tools:5.8.2",
+		"ghcr.io/k3d-io/k3d-proxy:5.8.2",
+		"nginx:latest",
+		"kumahq/kuma-cp:2.9.3",
+		"kumahq/kumactl:2.9.3",
+		"kumahq/kuma-init:2.9.3",
+		"kumahq/kuma-dp:2.9.3",
+		"kumahq/kuma-cni:2.9.3",
+		"library/busybox:latest",
+		"busybox:latest",
+		"bitnami/kubectl:1.27.5",
+		"bitnami/kube-state-metrics:2.9.2",
+		"jaegertracing/all-in-one:1.42.0",
+		"grafana/grafana:11.6.0",
+		"prom/prometheus:v2.35.0",
+		"grafana/loki:2.5.0",
+		"jimmidyson/configmap-reload:v0.6.1",
+		"grafana/promtail:2.4.1",
+	}
+	for _, image := range images {
+		fmt.Printf("🚀 Pulling image: %s\n", image)
+		if err := utils.RunCommand("docker", "pull", image); err != nil {
+			fmt.Printf("❌ Failed to pull image %s: %v\n", image, err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("📦 Importing image to k3d cluster: %s\n", image)
+		if err := utils.RunCommand("k3d", "image", "import", image, "-c", clusterName); err != nil {
+			fmt.Printf("❌ Failed to import image %s: %v\n", image, err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("✅ Done: %s\n\n", image)
+	}
+
+	fmt.Println("✅ All images imported successfully!")
+
 	return nil
 }

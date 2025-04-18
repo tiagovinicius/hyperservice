@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"hyperservice-control-plane/internal/mesh/business_rule"
 	"hyperservice-control-plane/internal/infrastructure"
+	"hyperservice-control-plane/internal/mesh/business_rule"
 	"hyperservice-control-plane/utils"
 )
 
@@ -33,7 +33,12 @@ func StartMesh(clusterName string) error {
 
 	// Install Kuma in 'kuma-system' namespace using Helm
 	fmt.Println("🔄 Installing Kuma in namespace 'kuma-system'...")
-	if err := utils.RunCommand("helm", "install", "--namespace", "kuma-system", "kuma", "kuma/kuma"); err != nil {
+	if err := utils.RunCommand(
+		"helm", "install",
+		"--namespace", "kuma-system",
+		"--version", "2.9.3",
+		"kuma", "kuma/kuma",
+	); err != nil {
 		return err
 	}
 

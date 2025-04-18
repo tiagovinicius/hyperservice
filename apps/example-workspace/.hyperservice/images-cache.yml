@@ -15,7 +15,7 @@ images:
   - bitnami/kubectl:1.27.5
   - bitnami/kube-state-metrics:2.9.2
   - jaegertracing/all-in-one:1.42.0
-  - grafana/grafana:8.5.2
+  - grafana/grafana:11.6.0
   - prom/prometheus:v2.35.0
   - grafana/loki:2.5.0
   - jimmidyson/configmap-reload:v0.6.1

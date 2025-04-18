@@ -12003,11 +12003,11 @@ spec:
             [
               "/bin/sh",
               "-c",
-               "wget -O /tmp/kuma.zip https://github.com/kumahq/kuma-grafana-datasource/releases/download/v0.1.1/kumahq-kuma-datasource-0.1.1.zip && unzip -o /tmp/kuma.zip -d /var/lib/grafana/plugins/ && rm /tmp/kuma.zip && chmod -R 777 /var/lib/grafana",
+              "wget -O /tmp/kuma.zip https://github.com/kumahq/kuma-grafana-datasource/releases/download/v0.1.1/kumahq-kuma-datasource-0.1.1.zip && unzip -o /tmp/kuma.zip -d /var/lib/grafana/plugins/ && rm /tmp/kuma.zip && chmod -R 777 /var/lib/grafana",
             ]
           securityContext:
-            runAsUser: 0     # Rodar como root para ter permissões para mudar as permissões
-            runAsGroup: 0    # Grupo root
+            runAsUser: 0 # Rodar como root para ter permissões para mudar as permissões
+            runAsGroup: 0 # Grupo root
           volumeMounts:
             - name: plugins-volume
               mountPath: /var/lib/grafana/plugins
@@ -12015,7 +12015,7 @@ spec:
               mountPath: /var/lib/grafana
       containers:
         - name: grafana
-          image: "grafana/grafana:8.5.2"
+          image: "grafana/grafana:11.6.0"
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: config

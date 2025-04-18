@@ -15,7 +15,11 @@ func CheckService(url string) error {
         // Send a GET request to check if the service is up
         resp, err := http.Get(url)
         if err == nil && resp.StatusCode == http.StatusOK {
-            return nil // Service is up and running
+            defer resp.Body.Close()
+            return nil
+        }
+        if err == nil {
+            defer resp.Body.Close()
         }
         
         if err != nil {

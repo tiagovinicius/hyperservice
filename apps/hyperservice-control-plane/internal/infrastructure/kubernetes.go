@@ -24,7 +24,7 @@ import (
 // getKubernetesClientSet creates a Kubernetes clientset from the kube config file.
 func GetKubernetesClientSet(clusterName string) (*kubernetes.Clientset, error) {
 	// Get the server IP inside the "hyperservice-network" network
-	serverIP, err := getControlPlaneIP(clusterName)
+	serverIP, err := GetControlPlaneIP(clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +115,8 @@ func MakeKubernetesPortForward(namespace string, serviceName string, localPort s
 	return nil
 }
 
-// getClusterControlPlaneIP retrieves the server IP inside the "hyperservice-network" network using Docker SDK
-func getControlPlaneIP(clusterName string) (string, error) {
+// GetClusterControlPlaneIP retrieves the server IP inside the "hyperservice-network" network using Docker SDK
+func GetControlPlaneIP(clusterName string) (string, error) {
 	// Create a Docker client
 	cli, err := dockerClient.NewClientWithOpts(dockerClient.FromEnv)
 	if err != nil {

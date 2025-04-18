@@ -3,13 +3,8 @@ type: "application"
 tasks:
   dev:
     command: "npm run dev"
-    options:
-      persistent: true
   build:
     command: "npm run build"
-    options:
-      persistent: true
   serve:
     command: "npm run start"
-    options:
-      persistent: true
+    
