@@ -83,7 +83,7 @@ var serviceStartCmd = &cobra.Command{
 			fmt.Printf("Response: %s\n", response)
 		} else {
 			// Call external function to start the service
-			response, err := request.StartServiceRequest(serviceName, workdir, image)
+			response, err := request.StartServiceRequest(serviceName, workdir, image, cluster)
 			if err != nil {
 				return err
 			}

@@ -11,6 +11,9 @@ func DeployService(serviceName string, cluster []string) error {
 	if err != nil {
 		return err
 	}
+	if len(cluster) == 0 {
+		cluster = []string{"server"}
+	}
 	var formattedCluster []string
 	for _, node := range cluster {
 		formattedCluster = append(formattedCluster, "k3d-hyperservice-"+node+"-0")

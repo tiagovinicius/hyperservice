@@ -15,35 +15,36 @@ metadata:
 data:
   SERVICE_NAME: "{{serviceName}}"
   HYPERSERVICE_WORKDIR_PATH: "{{workdir}}"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: hyperservice-pod-{{podName}}-config
-  namespace: "{{namespace}}"
-data:
-  HYPERSERVICE_POD_NAME: "{{podName}}"
   HYPERSERVICE_SERVE: "{{serve}}"
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
-  name: "{{podName}}"
+  name: "{{serviceName}}"
   namespace: "{{namespace}}"
   labels:
-    app: "{{podName}}"
+    app: "{{serviceName}}"
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      app: "{{podName}}"
+      app: "{{serviceName}}"
   template:
     metadata:
       labels:
-        app: "{{podName}}"
+        app: "{{serviceName}}"
     spec:
+      subdomain: "{{serviceName}}"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: app.{{serviceName}}
+                    operator: In
+                    values:
+                      - "true"
       containers:
-        - name: "{{podName}}"
+        - name: "{{serviceName}}"
           image: "{{imageName}}"
           imagePullPolicy: IfNotPresent
           securityContext:
@@ -66,16 +67,6 @@ spec:
                 configMapKeyRef:
                   name: hyperservice-svc-{{serviceName}}-config
                   key: HYPERSERVICE_WORKDIR_PATH
-            - name: HYPERSERVICE_POD_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: hyperservice-pod-{{podName}}-config
-                  key: HYPERSERVICE_POD_NAME
-            - name: HYPERSERVICE_SERVE
-              valueFrom:
-                configMapKeyRef:
-                  name: hyperservice-pod-{{podName}}-config
-                  key: HYPERSERVICE_SERVE
           volumeMounts:
             - name: docker-sock
               mountPath: /var/run/docker.sock
@@ -90,19 +81,17 @@ spec:
           hostPath:
             path: "{{workdir}}"
             type: Directory
-      nodeSelector:
-        "kubernetes.io/hostname": "k3d-hyperservice-server-0"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{podName}}" # Nome dinâmico baseado na variáve}l
+  name: "{{serviceName}}"
   namespace: "{{namespace}}"
   labels:
-    app: "{{podName}}"
+    app: "{{serviceName}}"
 spec:
   selector:
-    app: "{{podName}}"
+    app: "{{serviceName}}"
   ports:
     - protocol: TCP
       port: 3000

@@ -6,10 +6,10 @@
   "type": "module",
   "scripts": {
     "lint": "tsc",
-    "build": "esbuild src/index.ts --bundle --outfile=dist/index.cjs --platform=node --format=cjs",
     "start": "node dist/index.cjs",
+    "build": "esbuild src/index.ts --bundle --outfile=dist/index.cjs --platform=node --format=cjs",
     "build:watch": "esbuild src/index.ts --bundle --outfile=dist/index.cjs --platform=node --format=cjs --watch",
-    "dev": "npm install && concurrently -k -n esbuild,node -c yellow,cyan \"npm:build:watch\" \"wait-on dist/index.cjs && npm run start\""
+    "dev": "concurrently -k -n esbuild,app -c yellow,cyan \"npm run build:watch\" \"node scripts/dev-watch.js\""
   },
   "dependencies": {
     "axios": "^1.5.0",
@@ -18,6 +18,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
+    "chokidar": "^4.0.3",
     "concurrently": "^9.1.2",
     "esbuild": "^0.25.2",
     "ts-node-dev": "^2.0.0",

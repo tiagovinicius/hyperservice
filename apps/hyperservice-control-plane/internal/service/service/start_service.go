@@ -26,9 +26,9 @@ func replaceVariables(yamlContent []byte, variables map[string]string) ([]byte, 
 }
 
 // Função que realiza a substituição das variáveis, faz o build da imagem Docker e aplica o manifesto no Kubernetes
-func StartService(name string, workdir string, imageName, podName string, policies []string, envVars map[string]string) error {
+func StartService(name string, workdir string, imageName string, policies []string, envVars map[string]string) error {
 	// Debug: Exibir as variáveis recebidas
-	log.Printf("DEBUG: Received parameters - name: %s, workdir: %s, imageName: %s,  podName: %s", name, workdir, imageName, podName)
+	log.Printf("DEBUG: Received parameters - name: %s, workdir: %s, imageName: %s", name, workdir, imageName)
 	log.Println("DEBUG: Policies received:")
 	for _, policy := range policies {
 		log.Println(policy)
@@ -85,10 +85,6 @@ func StartService(name string, workdir string, imageName, podName string, polici
 
 	log.Printf("Docker image successfully built and imported to k3d!")
 
-	if podName == "" {
-		podName = name
-	}
-
 	// Definir o caminho do arquivo YAML
 	yamlFilePath := configPath + "/manifests/service/start.yaml"
 	log.Printf("DEBUG: Reading YAML file from path: %s", yamlFilePath)
@@ -108,7 +104,6 @@ func StartService(name string, workdir string, imageName, podName string, polici
 		"serviceName": name,
 		"workdir":     workdir,
 		"serve":       "false",
-		"podName":     podName,
 		"imageName":   imageName,
 		"namespace":   "hyperservice",
 	}

@@ -17,11 +17,12 @@ type ServiceStartRequest struct {
 	Container map[string]string `json:"container,omitempty"`
 	Workdir   string            `json:"workdir"`
 	Policies  []string          `json:"policies,omitempty"`
+	Cluster   []string          `json:"cluster,omitempty"`
 	Env       map[string]string `json:"env,omitempty"`
 }
 
 // StartService sends a request to start a service
-func StartServiceRequest(name, workdir string, image string) (string, error) {
+func StartServiceRequest(name, workdir string, image string, cluster []string) (string, error) {
 	envFilePath := filepath.Join(workdir, "apps", name, ".env")
 
 	// Read policies from the optional directory
@@ -48,6 +49,7 @@ func StartServiceRequest(name, workdir string, image string) (string, error) {
 		},
 		Workdir:  workdir,
 		Policies: policies,
+		Cluster:  cluster,
 		Env:      envVars,
 	})
 	if err != nil {

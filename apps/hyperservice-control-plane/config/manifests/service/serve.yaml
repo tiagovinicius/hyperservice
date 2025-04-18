@@ -14,14 +14,6 @@ metadata:
   namespace: "{{namespace}}"
 data:
   SERVICE_NAME: "{{serviceName}}"
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: hyperservice-pod-{{podName}}-config
-  namespace: "{{namespace}}"
-data:
-  HYPERSERVICE_POD_NAME: "{{podName}}"
   HYPERSERVICE_SERVE: "{{serve}}"
 ---
 apiVersion: apps/v1
@@ -69,15 +61,10 @@ spec:
                 configMapKeyRef:
                   name: hyperservice-svc-{{serviceName}}-config
                   key: SERVICE_NAME
-            - name: HYPERSERVICE_POD_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: hyperservice-pod-{{podName}}-config
-                  key: HYPERSERVICE_POD_NAME
             - name: HYPERSERVICE_SERVE
               valueFrom:
                 configMapKeyRef:
-                  name: hyperservice-pod-{{podName}}-config
+                  name: hyperservice-svc-{{serviceName}}-config
                   key: HYPERSERVICE_SERVE
 ---
 apiVersion: v1

@@ -58,12 +58,6 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
-	var podName string
-	if request.Pod != nil {
-		podName = request.Name
-	}
-
 	// Se Policies for nil, podemos passar um slice vazio para evitar problemas
 	if request.Policies == nil {
 		request.Policies = &[]string{}
@@ -80,7 +74,7 @@ func PostServiceStartServeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("DEBUG: ServiceStartServeRequest decoded successfully: %+v", request)
-	log.Printf("DEBUG:- name: %s, imageName: %s,  podName: %s, build: %t, workdir: %s", request.Name, request.Container.Image, podName, request.Build, request.Workdir)
+	log.Printf("DEBUG:- name: %s, imageName: %s, build: %t, workdir: %s", request.Name, request.Container.Image, request.Build, request.Workdir)
 
 	// Debugging: Print the decoded body for inspection
 	go application.ServiceServeApplication(

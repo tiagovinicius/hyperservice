@@ -16,7 +16,7 @@ app.get("/call-service-x", async (req, res) => {
       error instanceof Error ? error.message : "An unknown error occurred";
     console.error(errorMessage);
     res.status(200).json({
-      error: "Failed to fetch data from Service X :" + errorMessage,
+      error: "Failed to fetch data from Service X: " + errorMessage,
       url: process.env.SERVICE_X_API_URL,
     });
   }

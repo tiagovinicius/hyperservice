@@ -6,5 +6,6 @@ type ServiceStartRequest struct {
 	Pod       *Pod              `json:"pod,omitempty"`
 	Container *Container        `json:"container,omitempty"`
 	Policies  *[]string         `json:"policies,omitempty"`
+	Cluster   *[]string         `json:"cluster,omitempty"`
 	EnvVars   map[string]string `json:"env,omitempty"`
 }

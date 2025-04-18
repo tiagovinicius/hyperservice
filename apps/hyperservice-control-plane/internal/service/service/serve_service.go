@@ -61,7 +61,6 @@ func ServeService(name string, imageName string, policies []string, envVars map[
 	variables := map[string]string{
 		"serviceName": name,
 		"serve":       "true",
-		"podName":     name,
 		"imageName":   imageName,
 		"namespace":   "hyperservice",
 	}

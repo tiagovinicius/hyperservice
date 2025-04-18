@@ -44,12 +44,6 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
-	var podName string
-	if request.Pod != nil {
-		podName = request.Name
-	}
-
-	// Verifica se 'Pod' é nil antes de passar para a função StartServiceService
 	var imageName string
 	if request.Container != nil {
 		imageName = request.Container.Image
@@ -60,20 +54,25 @@ func PostServiceStartHandler(w http.ResponseWriter, r *http.Request) {
 		request.Policies = &[]string{}
 	}
 
+	// Se Cluster for nil, podemos passar um slice vazio para evitar problemas
+	if request.Cluster == nil {
+		request.Cluster = &[]string{}
+	}
+
 	// Se EnvVars for nil, podemos passar um slice vazio para evitar problemas
 	if request.EnvVars == nil {
 		request.EnvVars = map[string]string{}
 	}
 
 	log.Printf("DEBUG: ServiceStartRequest decoded successfully: %+v", request)
-	log.Printf("DEBUG:- name: %s, workdir: %s, imageName: %s,  podName: %s", request.Name, request.Workdir, imageName, podName)
+	log.Printf("DEBUG:- name: %s, workdir: %s, imageName: %s, cluster: %s", request.Name, request.Workdir, imageName, *request.Cluster)
 
 	// Debugging: Print the decoded body for inspection
 	go application.ServiceStartApplication(
 		request.Name,
 		request.Workdir,
+		*request.Cluster,
 		imageName,
-		podName,
 		*request.Policies,
 		request.EnvVars,
 	)
