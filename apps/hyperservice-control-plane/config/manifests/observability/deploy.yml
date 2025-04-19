@@ -13010,3 +13010,132 @@ items:
       selector:
         app.kubernetes.io/name: jaeger
         app.kubernetes.io/component: all-in-one
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: collectd
+  namespace: mesh-observability
+spec:
+  selector:
+    matchLabels:
+      app: collectd
+  template:
+    metadata:
+      labels:
+        app: collectd
+    spec:
+      hostPID: true
+      hostNetwork: true
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
+      containers:
+        - name: collectd
+          image: intel/observability-collectd:1.0
+          command:
+            - sh
+            - -c
+            - |
+              cp /opt/collectd/etc/collectd.conf.d/collectd.conf /tmp/collectd.conf && \
+              sed -i "s/REPLACE_ME_HOSTNAME/$(cat /mnt/hostname)/" /tmp/collectd.conf && \
+              exec /opt/collectd/sbin/collectd -f -C /tmp/collectd.conf
+          ports:
+            - containerPort: 9103
+          volumeMounts:
+            - name: config
+              mountPath: /opt/collectd/etc/collectd.conf.d/collectd.conf
+              subPath: collectd.conf
+            - name: hostname
+              mountPath: /mnt/hostname
+              readOnly: true
+            - name: proc
+              mountPath: /proc
+              readOnly: false
+            - name: sys
+              mountPath: /mnt/sys
+              readOnly: true
+            - name: rootfs
+              mountPath: /mnt/rootfs
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: collectd-config
+        - name: hostname
+          hostPath:
+            path: /etc/hostname
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: rootfs
+          hostPath:
+            path: /
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collectd-config
+  namespace: mesh-observability
+data:
+  collectd.conf: |
+    Hostname "REPLACE_ME_HOSTNAME"
+    FQDNLookup false
+    BaseDir "/var/lib/collectd"
+    PIDFile "/var/run/collectd.pid"
+    TypesDB "/opt/collectd/share/collectd/types.db"
+    Interval 60
+    Timeout 2
+    ReadThreads 5
+    WriteThreads 5
+
+    LoadPlugin cpu
+    <Plugin cpu>
+      ValuesPercentage true
+    </Plugin>
+
+    LoadPlugin load
+
+    LoadPlugin memory
+
+    LoadPlugin disk
+    <Plugin disk>
+      IgnoreSelected false
+    </Plugin>
+
+    LoadPlugin interface
+    <Plugin interface>
+        IgnoreSelected "true"
+        Interface "lo"
+        Interface "docker0"
+    </Plugin>
+
+    LoadPlugin uptime
+
+    LoadPlugin write_prometheus
+    <Plugin write_prometheus>
+      Port "9103"
+    </Plugin>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: collectd
+  namespace: mesh-observability
+  labels:
+    app: collectd
+spec:
+  selector:
+    app: collectd
+  ports:
+    - port: 9103
+      targetPort: 9103
+      protocol: TCP
+      name: prometheus

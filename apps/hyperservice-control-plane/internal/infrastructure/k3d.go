@@ -168,6 +168,7 @@ func CreateK3dNodes(clusterName string, agents []model.ClusterNode) error {
 		"grafana/loki:2.5.0",
 		"jimmidyson/configmap-reload:v0.6.1",
 		"grafana/promtail:2.4.1",
+		"intel/observability-collectd:1.0",
 	}
 	for _, image := range images {
 		fmt.Printf("🚀 Pulling image: %s\n", image)

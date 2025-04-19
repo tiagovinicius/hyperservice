@@ -20,3 +20,4 @@ images:
   - grafana/loki:2.5.0
   - jimmidyson/configmap-reload:v0.6.1
   - grafana/promtail:2.4.1
+  - intel/observability-collectd:1.0
