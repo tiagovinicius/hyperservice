@@ -13011,6 +13011,51 @@ items:
         app.kubernetes.io/name: jaeger
         app.kubernetes.io/component: all-in-one
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collectd-config
+  namespace: mesh-observability
+data:
+  collectd.conf: |
+    Hostname "REPLACE_ME_HOSTNAME"
+    FQDNLookup false
+    BaseDir "/var/lib/collectd"
+    PIDFile "/var/run/collectd.pid"
+    TypesDB "/opt/collectd/share/collectd/types.db"
+    Interval 60
+    Timeout 2
+    ReadThreads 5
+    WriteThreads 5
+
+    LoadPlugin cpu
+    <Plugin cpu>
+      ValuesPercentage true
+    </Plugin>
+
+    LoadPlugin load
+
+    LoadPlugin memory
+
+    LoadPlugin disk
+    <Plugin disk>
+      IgnoreSelected false
+    </Plugin>
+
+    LoadPlugin interface
+    <Plugin interface>
+      IgnoreSelected "true"
+      Interface "lo"
+      Interface "docker0"
+    </Plugin>
+
+    LoadPlugin uptime
+
+    LoadPlugin write_prometheus
+    <Plugin write_prometheus>
+      Port "9103"
+    </Plugin>
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -13024,9 +13069,11 @@ spec:
     metadata:
       labels:
         app: collectd
+        kuma.io/sidecar-injection: "enabled"
+      annotations:
+        kuma.io/sidecar-injection: "enabled"
     spec:
-      hostPID: true
-      hostNetwork: true
+      automountServiceAccountToken: true
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -13034,9 +13081,24 @@ spec:
               - matchExpressions:
                   - key: node-role.kubernetes.io/control-plane
                     operator: DoesNotExist
+      initContainers:
+        - name: wait-for-prometheus
+          image: bitnami/kubectl:1.27.5
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              echo "⏳ Waiting for Prometheus pod to reach Running phase..."
+              until [ "$(kubectl get pods -l app=prometheus -n mesh-observability -o jsonpath='{.items[0].status.phase}')" = "Running" ]; do
+                echo "🔁 Still waiting..."
+                sleep 5
+              done
+              echo "✅ Prometheus is running."
       containers:
         - name: collectd
           image: intel/observability-collectd:1.0
+          imagePullPolicy: IfNotPresent
           command:
             - sh
             - -c
@@ -13079,50 +13141,29 @@ spec:
           hostPath:
             path: /
 ---
-apiVersion: v1
-kind: ConfigMap
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
 metadata:
-  name: collectd-config
+  name: collectd-kubectl
   namespace: mesh-observability
-data:
-  collectd.conf: |
-    Hostname "REPLACE_ME_HOSTNAME"
-    FQDNLookup false
-    BaseDir "/var/lib/collectd"
-    PIDFile "/var/run/collectd.pid"
-    TypesDB "/opt/collectd/share/collectd/types.db"
-    Interval 60
-    Timeout 2
-    ReadThreads 5
-    WriteThreads 5
-
-    LoadPlugin cpu
-    <Plugin cpu>
-      ValuesPercentage true
-    </Plugin>
-
-    LoadPlugin load
-
-    LoadPlugin memory
-
-    LoadPlugin disk
-    <Plugin disk>
-      IgnoreSelected false
-    </Plugin>
-
-    LoadPlugin interface
-    <Plugin interface>
-        IgnoreSelected "true"
-        Interface "lo"
-        Interface "docker0"
-    </Plugin>
-
-    LoadPlugin uptime
-
-    LoadPlugin write_prometheus
-    <Plugin write_prometheus>
-      Port "9103"
-    </Plugin>
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: collectd-kubectl
+  namespace: mesh-observability
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: mesh-observability
+roleRef:
+  kind: Role
+  name: collectd-kubectl
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: v1
 kind: Service
